@@ -3,6 +3,9 @@
 # protecting environment variables
 .env
 
+# Databases which should not be committed
+*.sqlite3
+
 # dependencies
 /node_modules
 /.pnp

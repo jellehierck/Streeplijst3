@@ -40,10 +40,13 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'rest_framework',
     'streeplijst.apps.StreeplijstConfig',
+    'frontend',
+    'corsheaders'
 ]
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -72,6 +75,21 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'Streeplijst3.wsgi.application'
+
+# React serve settings
+# https://fractalideas.com/blog/making-react-and-django-play-well-together-single-page-app-model/
+
+CORS_ALLOW_CREDENTIALS = True
+
+CORS_ORIGIN_WHITELIST = [
+    'http://localhost:3000',
+    'https://app.streeplijst.com',
+]
+
+CSRF_TRUSTED_ORIGINS = [
+    'localhost:3000',
+    'app.streeplijst.com'
+]
 
 # Database
 # https://docs.djangoproject.com/en/3.2/ref/settings/#databases

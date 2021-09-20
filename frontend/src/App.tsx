@@ -15,6 +15,7 @@ import {
 import Container from "react-bootstrap/Container";
 
 import SNumberPad from "./auth/SNumberPad";
+import TestAPI from "./api/TestAPI";
 
 
 // Initialize a font-awesome library to use icons easily throughout the project
@@ -33,9 +34,11 @@ library.add(
 function App() {
     return (
         <Container>
+            <TestAPI />
             <SNumberPad />
         </Container>
     );
 }
 
 export default App;
+
