@@ -1,4 +1,4 @@
-import React, { useReducer } from "react";
+import React, { useReducer, useState } from "react";
 
 import Row from "react-bootstrap/Row";
 import Button from "react-bootstrap/Button";
@@ -43,12 +43,21 @@ type SNumberAction =
 
 // React component
 function SNumberPad() {
+  // reset error and try to fetch the member, if success, load sNumber into localStorage
   function logIn(sNumber: SNumberState) {
+    setErrored(false);
+
     congressus
       .getMemberByUsername(sNumber.prefix + sNumber.sNumber)
       .then((member) => console.log(member))
-      .catch();
+      .catch((e) => {
+        // this is bad, dont code like this
+        if (e.message === "invalid sNumber") {
+          setErrored(true); // show scary banner
+        }
+      });
   }
+  const [errored, setErrored] = useState(false);
 
   function sNumberReducer(
     currState: SNumberState,
@@ -90,6 +99,26 @@ function SNumberPad() {
 
   return (
     <div>
+      {errored ? (
+        <div
+          className="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 relative"
+          role="alert"
+        >
+          <p className="font-bold">Wrong student number</p>
+          <p>we couldn't find this student number.</p>
+          <span className="absolute top-0 bottom-0 right-0 px-4 py-3">
+            <svg
+              className="fill-current h-6 w-6 text-red-500"
+              role="button"
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 20 20"
+            >
+              <title>Close</title>
+              <path d="M14.348 14.849a1.2 1.2 0 0 1-1.697 0L10 11.819l-2.651 3.029a1.2 1.2 0 1 1-1.697-1.697l2.758-3.15-2.759-3.152a1.2 1.2 0 1 1 1.697-1.697L10 8.183l2.651-3.031a1.2 1.2 0 1 1 1.697 1.697l-2.758 3.152 2.758 3.15a1.2 1.2 0 0 1 0 1.698z" />
+            </svg>
+          </span>
+        </div>
+      ) : null}
       <Row className="numpad-row">
         <InputGroup className="mb-3">
           <FormControl
