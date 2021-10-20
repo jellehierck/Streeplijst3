@@ -14,6 +14,14 @@ class Congressus {
   }
 
   // todo fetch sales of member
+  async getSalesByUsername(username: string) {
+    if (!username) throw new Error("No identifier");
+
+    return this.call(`/sales/${username}`).then((sales) => {
+      if (sales.length < 1) throw new Error("invalid sNumber");
+      return sales;
+    });
+  }
 
   // todo fetch all products by category/folder
   // todo add sale to member
