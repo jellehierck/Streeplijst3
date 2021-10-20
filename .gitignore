@@ -30,3 +30,6 @@ yarn-error.log*
 
 # Project exclude paths
 /frontend/node_modules/
+
+# python compiled files
+*.pyc
