@@ -5,7 +5,7 @@ class Congressus {
 
   // todo fetch member by username
   async getMemberByUsername(username: string) {
-    if (!username) throw new Error("No identifier");
+    if (!username || username.length < 3) throw new Error("invalid sNumber");
 
     return this.call(`/members/${username}`).then((member) => {
       if (!member[0]) throw new Error("invalid sNumber");
@@ -15,7 +15,7 @@ class Congressus {
 
   // todo fetch sales of member
   async getSalesByUsername(username: string) {
-    if (!username) throw new Error("No identifier");
+    if (!username || username.length < 3) throw new Error("invalid sNumber");
 
     return this.call(`/sales/${username}`).then((sales) => {
       if (sales.length < 1) throw new Error("invalid sNumber");
