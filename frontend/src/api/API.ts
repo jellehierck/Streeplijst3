@@ -3,7 +3,7 @@ class Congressus {
 
   constructor(private API_HOST: string) {}
 
-  // todo fetch member by username
+  // fetch member by username
   async getMemberByUsername(username: string) {
     if (!username || username.length < 3) throw new Error("invalid sNumber");
 
@@ -13,7 +13,7 @@ class Congressus {
     });
   }
 
-  // todo fetch sales of member
+  // fetch sales of member
   async getSalesByUsername(username: string) {
     if (!username || username.length < 3) throw new Error("invalid sNumber");
 
