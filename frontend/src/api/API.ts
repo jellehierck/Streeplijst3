@@ -45,7 +45,7 @@ class Congressus {
   }
 
   // todo fetch all streeplijst products by category/folder
-  async getProductsByFolder(folder_id: Number) {
+  async getProductsByFolder(folder_id: number) {
     return this.call(`/products?folder_id=${folder_id}`);
   }
 
@@ -81,7 +81,21 @@ class Congressus {
 
 export default new Congressus("http://localhost:8000");
 export interface FolderType {
-  id: any;
-  name: any;
-  media: any;
+  id: number;
+  name: string;
+  media: string;
+}
+
+export interface UserType {
+  date_of_birth: string;
+  first_name: string;
+  has_sdd_mandate: boolean;
+  id: number;
+  primary_last_name_main: string;
+  primary_last_name_prefix: string;
+  profile_picture: any;
+  show_almanac: boolean;
+  status: string;
+  status_id: number;
+  username: string;
 }
