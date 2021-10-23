@@ -80,3 +80,8 @@ class Congressus {
 }
 
 export default new Congressus("http://localhost:8000");
+export interface FolderType {
+  id: any;
+  name: any;
+  media: any;
+}
