@@ -49,7 +49,9 @@ function SNumberPad() {
 
     congressus
       .getMemberByUsername(sNumber.prefix + sNumber.sNumber)
-      .then((member) => console.log(member))
+      .then((member) => {
+        localStorage.setItem('snumber', sNumber.prefix + sNumber.sNumber)
+      })
       .catch((e) => {
         // this is bad, dont code like this
         if (e.message === "invalid sNumber") {
