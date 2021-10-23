@@ -1,15 +1,8 @@
 class Congressus {
   private csrfToken: string = "";
-  private streeplijstFolders = [1991,
-    2600,
-    1993,
-    1996,
-    1994,
-    1997,
-    1995,
-    1992,
-    1998,
-    2464];
+  private streeplijstFolders = [
+    1991, 2600, 1993, 1996, 1994, 1997, 1995, 1992, 1998, 2464,
+  ];
 
   constructor(private API_HOST: string) {}
 
@@ -33,11 +26,22 @@ class Congressus {
     });
   }
 
-  // todo fetch all streeplijst folders
+  // fetch all streeplijst folders
   async getFolders() {
-    for (let folder in this.streeplijstFolders) {
+    let folders = [];
+    for (let folder_id of this.streeplijstFolders) {
+      let firstProduct = (
+        await this.call(`/products?folder_id=${folder_id}`)
+      )[0];
 
+      folders.push({
+        id: firstProduct.folder_id,
+        name: firstProduct.folder,
+        media: firstProduct.media,
+      });
     }
+
+    return folders;
   }
 
   // todo fetch all streeplijst products by category/folder
