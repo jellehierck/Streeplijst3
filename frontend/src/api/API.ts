@@ -1,5 +1,15 @@
 class Congressus {
   private csrfToken: string = "";
+  private streeplijstFolders = [1991,
+    2600,
+    1993,
+    1996,
+    1994,
+    1997,
+    1995,
+    1992,
+    1998,
+    2464];
 
   constructor(private API_HOST: string) {}
 
@@ -23,7 +33,14 @@ class Congressus {
     });
   }
 
-  // todo fetch all products by category/folder
+  // todo fetch all streeplijst folders
+  async getFolders() {
+    for (let folder in this.streeplijstFolders) {
+
+    }
+  }
+
+  // todo fetch all streeplijst products by category/folder
   // todo add sale to member
 
   private async call(url: string, options?: RequestInit) {
