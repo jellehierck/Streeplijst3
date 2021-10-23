@@ -45,6 +45,10 @@ class Congressus {
   }
 
   // todo fetch all streeplijst products by category/folder
+  async getProductsByFolder(folder_id: Number) {
+    return this.call(`/products?folder_id=${folder_id}`);
+  }
+
   // todo add sale to member
 
   private async call(url: string, options?: RequestInit) {
