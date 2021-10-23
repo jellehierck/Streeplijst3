@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 
 import { library } from "@fortawesome/fontawesome-svg-core";
 import { fas, faBackspace } from "@fortawesome/free-solid-svg-icons";
@@ -10,6 +10,9 @@ import Container from "react-bootstrap/Container";
 import SNumberPad from "./auth/SNumberPad";
 import TestAPI from "./api/TestAPI";
 import { BrowserRouter as Router, Switch, Route, Link } from "react-router-dom";
+import congressus, { FolderType } from "./api/API";
+import { Spinner } from "react-bootstrap";
+import { FolderPage } from "./FolderPage";
 
 // Initialize a font-awesome library to use icons easily throughout the project
 // src: https://fontawesome.com/v5.15/how-to-use/on-the-web/using-with/react
@@ -24,13 +27,28 @@ library.add(
 );
 
 function App() {
+  const [loading, setLoading] = useState(true);
+  const [folders, setFolders] = useState<FolderType[]>([]);
+
+  useEffect(() => {
+    congressus.getFolders().then((folders) => {
+      setFolders(folders);
+      setLoading(false);
+    });
+  }, []);
+
+  if (loading) return <Spinner animation="border" />;
+
   return (
     <Container>
-      <TestAPI />
+      {/* <TestAPI /> */}
       <Router>
         <Switch>
-          <Route path="/">
+          <Route exact path="/">
             <SNumberPad />
+          </Route>
+          <Route exact path="/products">
+            <FolderPage folders={folders} />
           </Route>
         </Switch>
       </Router>
