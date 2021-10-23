@@ -10,6 +10,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
 import "./SNumberPad.css";
 import congressus from "../api/API";
+import { Redirect } from "react-router";
 
 /**
  * Possible prefixes for an SNumber.
@@ -44,13 +45,19 @@ type SNumberAction =
 // React component
 function SNumberPad() {
   // reset error and try to fetch the member, if success, load sNumber into localStorage
+  const [loggedIn, setLoggedIn] = useState(
+    Boolean(localStorage.getItem("sNumber"))
+  );
+  const [errored, setErrored] = useState(false);
+
   function logIn(sNumber: SNumberState) {
     setErrored(false);
 
     congressus
       .getMemberByUsername(sNumber.prefix + sNumber.sNumber)
       .then((member) => {
-        localStorage.setItem('snumber', sNumber.prefix + sNumber.sNumber)
+        localStorage.setItem("sNumber", sNumber.prefix + sNumber.sNumber);
+        setLoggedIn(true);
       })
       .catch((e) => {
         // this is bad, dont code like this
@@ -59,7 +66,6 @@ function SNumberPad() {
         }
       });
   }
-  const [errored, setErrored] = useState(false);
 
   function sNumberReducer(
     currState: SNumberState,
@@ -98,6 +104,9 @@ function SNumberPad() {
     sNumberReducer,
     initialSNumberState
   );
+
+  // redirect if authenticated
+  if (loggedIn) return <Redirect to="/products" />;
 
   return (
     <div>
