@@ -12,7 +12,7 @@ import TestAPI from "./api/TestAPI";
 import { BrowserRouter as Router, Switch, Route, Link } from "react-router-dom";
 import congressus, { FolderType } from "./api/API";
 import { Spinner } from "react-bootstrap";
-import { FolderPage } from "./FolderPage";
+import { FoldersPage } from "./FoldersPage";
 
 // Initialize a font-awesome library to use icons easily throughout the project
 // src: https://fontawesome.com/v5.15/how-to-use/on-the-web/using-with/react
@@ -48,7 +48,7 @@ function App() {
             <SNumberPad />
           </Route>
           <Route exact path="/products">
-            <FolderPage folders={folders} />
+            <FoldersPage folders={folders} />
           </Route>
         </Switch>
       </Router>

@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { Spinner } from "react-bootstrap";
 import congresssus, { FolderType, UserType } from "./api/API";
 
-export function FolderPage(props: any) {
+export function FoldersPage(props: any) {
   const sNumber = localStorage.getItem("sNumber");
   const [loading, setLoading] = useState(true);
   const [member, setMember] = useState<UserType | undefined>(undefined);
