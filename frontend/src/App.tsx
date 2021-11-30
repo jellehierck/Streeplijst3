@@ -47,8 +47,11 @@ function App() {
           <Route exact path="/">
             <SNumberPad />
           </Route>
-          <Route exact path="/products">
+          <Route exact path="/folders">
             <FoldersPage folders={folders} />
+          </Route>
+          <Route exact path="/folders/:folder_id">
+            <FolderPage />
           </Route>
         </Switch>
       </Router>
