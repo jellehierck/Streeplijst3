@@ -50,7 +50,7 @@ function App() {
           <Route exact path="/folders">
             <FoldersPage folders={folders} />
           </Route>
-          <Route exact path="/folders/:folder_id">
+          <Route exact path="/folders/:folderId">
             <FolderPage />
           </Route>
         </Switch>
