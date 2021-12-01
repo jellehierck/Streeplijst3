@@ -45,7 +45,7 @@ class Congressus {
   }
 
   // todo fetch all streeplijst products by category/folder
-  async getProductsByFolder(folder_id: number) {
+  async getProductsByFolder(folder_id: number): Promise<ProductType[]> {
     return this.call(`/products?folder_id=${folder_id}`);
   }
 
@@ -80,11 +80,15 @@ class Congressus {
 }
 
 export default new Congressus("http://localhost:8000");
+
+// only the fields we need
 export interface FolderType {
   id: number;
   name: string;
   media: string;
 }
+
+export interface ProductsType {}
 
 export interface UserType {
   date_of_birth: string;

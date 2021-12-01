@@ -106,7 +106,7 @@ function SNumberPad() {
   );
 
   // redirect if authenticated
-  if (loggedIn) return <Redirect to="/products" />;
+  if (loggedIn) return <Redirect to="/folders" />;
 
   return (
     <div>

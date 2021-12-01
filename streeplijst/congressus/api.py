@@ -18,7 +18,7 @@ MAX_RETRIES = 3
 TIMEOUT = 10
 
 
-def _make_congressus_api_call(method: str, url_endpoint: str, params: dict = None) -> Response:
+def _make_congressus_api_call(method: str, url_endpoint: str, params: dict = None, data: dict = None) -> Response:
     """
     Make an API call to Congressus. Tries up to MAX_RETRIES times to get a response withing TIMEOUT seconds. If no
     response returned in that time, a Response is returned with error code HTTP_408_REQUEST_TIMEOUT.
@@ -26,6 +26,7 @@ def _make_congressus_api_call(method: str, url_endpoint: str, params: dict = Non
     :param method: Method to obtain. Must be 'get' or 'post'.
     :param url_endpoint: URL endpoint to call. Example: '/members'
     :param params: Optional parameters to add as a query.
+    :param data: Optional data to send with a POST request. Is converted from a dict to JSON.
     :return: A Response object.
     """
     retries = 0
@@ -35,6 +36,7 @@ def _make_congressus_api_call(method: str, url_endpoint: str, params: dict = Non
                                    url=CONGRESSUS_API_URL_BASE + url_endpoint,
                                    headers=CONGRESSUS_HEADERS,
                                    params=params,
+                                   json=data,
                                    timeout=TIMEOUT)
             # Return the response from the API server converted to a rest_framework.Response object
             return Response(data=res.json(),
@@ -76,6 +78,20 @@ def get_members(req: Request = None, extra_params: dict = None) -> Response:
 
     else:  # Status indicated a failure
         return res
+
+
+def get_member_id(username: str) -> int:
+    """
+    Get a member id by their username.
+    """
+    res = get_members(extra_params={'username': username})
+    if status.is_success(res.status_code):  # Request is ok
+        raw_data = res.data
+        if raw_data:
+            return raw_data[0]['id']
+
+    # Status indicated a failure or no user was found
+    return 0
 
 
 def get_products(req: Request, extra_params: dict = None) -> Response:
@@ -130,15 +146,26 @@ def get_sales(req: Request, extra_params: dict = None) -> Response:
         return res
 
 
-def get_member_id(username: str) -> int:
-    """
-    Get a member id by their username.
-    """
-    res = get_members(extra_params={'username': username})
-    if status.is_success(res.status_code):  # Request is ok
-        raw_data = res.data
-        if raw_data:
-            return raw_data[0]['id']
-
-    # Status indicated a failure or no user was found
-    return 0
+def post_sale(user_id: int, offer_id: int, quantity: int):
+    payload = {  # Store the sales parameters in the format required by Congressus
+        "user_id": user_id,  # User id (not username)
+        "items": [
+            {
+                "offer_id": offer_id,  # Offer id
+                # "product_id": product_id,  # Product id
+                "quantity": quantity  # Amount of items
+            }
+        ],
+        "payments": [
+            {
+                "type": "direct_debit"  # Type of payment
+                # TODO: Direct debit is hard coded right now. This may be changed later, although
+                #  the streeplijst is intended to only work with direct debit for now. See
+                #  http://docs.congressus.nl/#!/default/post_sales for more info.
+            }
+        ]
+    }
+    res = _make_congressus_api_call(method='post',
+                                    url_endpoint='/sales',
+                                    data=payload)
+    return res

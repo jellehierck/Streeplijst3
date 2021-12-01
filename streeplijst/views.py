@@ -1,11 +1,9 @@
-import os
-import requests
-
 from rest_framework.request import Request
-from rest_framework.decorators import api_view
 from rest_framework.response import Response
+from rest_framework.parsers import JSONParser
+from rest_framework.decorators import api_view, parser_classes
 
-from streeplijst.congressus.api import get_members, get_products, get_sales, get_member_id
+from streeplijst.congressus.api import get_members, get_products, get_sales, get_member_id, post_sale
 
 
 @api_view(['GET'])
@@ -14,7 +12,6 @@ def members(req: Request) -> Response:
     Get all members from Congressus. See https://docs.congressus.nl/#!/default/get_members for query parameters.
 
     :param req: Request object.
-    :param extra_params: Extra request parameters.
     """
     return get_members(req)
 
@@ -62,3 +59,12 @@ def sales_by_username(req: Request, username: str = None) -> Response:
     """
     member_id = get_member_id(username=username)
     return get_sales(req, extra_params={'member_id': member_id})
+
+
+@api_view(['POST'])
+def sales(req: Request) -> Response:
+    username = req.data['username']
+    offer_id = req.data['offer_id']
+    quantity = req.data['quantity']
+    member_id = get_member_id(username)
+    return post_sale(user_id=member_id, offer_id=offer_id, quantity=quantity)
