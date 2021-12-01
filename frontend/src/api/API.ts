@@ -88,7 +88,14 @@ export interface FolderType {
   media: string;
 }
 
-export interface ProductsType {}
+export interface ProductType {
+  id: number;
+  product_offer_id: number;
+  name: string;
+  description: string;
+  media: string[]; // different image sizes
+  price: number;
+}
 
 export interface UserType {
   date_of_birth: string;
