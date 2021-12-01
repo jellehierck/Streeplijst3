@@ -4,7 +4,7 @@ import { useParams } from "react-router";
 import congresssus, { FolderType, UserType } from "./api/API";
 import { User } from "./User";
 
-export function FoldersPage(props: any) {
+export function FolderPage(props: any) {
   const sNumber = localStorage.getItem("sNumber");
   const [loading, setLoading] = useState(false);
   // @ts-ignore
