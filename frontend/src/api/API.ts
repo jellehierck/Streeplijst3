@@ -27,7 +27,7 @@ class Congressus {
   }
 
   // fetch all streeplijst folders
-  async getFolders() {
+  async getFolders(): Promise<FolderType[]> {
     let folders = [];
     for (let folder_id of this.streeplijstFolders) {
       let firstProduct = (
