@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { Card, Col, Container, Row, Spinner } from "react-bootstrap";
+import { useHistory } from "react-router";
 import congresssus, { FolderType, UserType } from "./api/API";
 import { User } from "./User";
 
@@ -7,6 +8,7 @@ export function FoldersPage(props: any) {
   const sNumber = localStorage.getItem("sNumber");
   const [loading, setLoading] = useState(false);
   const [member, setMember] = useState<UserType | undefined>(undefined);
+  const history = useHistory();
 
   useEffect(() => {
     console.log("use effect is executed :DDD", loading);
@@ -56,6 +58,7 @@ export function FoldersPage(props: any) {
             key={x.id}
             onClick={() => {
               console.log(x.id);
+              history.push(`/folders/${x.id}`);
             }}
           >
             <Card.Body>
