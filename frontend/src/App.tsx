@@ -12,8 +12,8 @@ import TestAPI from "./api/TestAPI";
 import { BrowserRouter as Router, Switch, Route, Link } from "react-router-dom";
 import congressus, { FolderType } from "./api/API";
 import { Spinner } from "react-bootstrap";
-import { FoldersPage } from "./FoldersPage";
-import { FolderPage } from "./FolderPage";
+import { FoldersPage } from "./pages/FoldersPage";
+import { FolderPage } from "./pages/FolderPage";
 
 // Initialize a font-awesome library to use icons easily throughout the project
 // src: https://fontawesome.com/v5.15/how-to-use/on-the-web/using-with/react
