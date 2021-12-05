@@ -1,8 +1,9 @@
 import React, { createContext, useState } from "react";
 import { ProductType } from "../api/API";
 
-const ShoppingCartContext = createContext<Array<ProductType[]> | any>([]);
-// export shoppingCartContext;
+export const ShoppingCartContext = createContext<Array<ProductType[]> | any>(
+  []
+);
 export function ShoppingCartContextProvider(props: any) {
   const [cart, setCart] = useState<ProductType[]>([]);
 
