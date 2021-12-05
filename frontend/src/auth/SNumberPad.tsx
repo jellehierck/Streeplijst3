@@ -1,4 +1,4 @@
-import React, { useReducer, useState } from "react";
+import React, { useContext, useReducer, useState } from "react";
 
 import Row from "react-bootstrap/Row";
 import Button from "react-bootstrap/Button";
@@ -11,6 +11,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import "./SNumberPad.css";
 import congressus from "../api/API";
 import { Redirect } from "react-router";
+import { UserContext } from "../contexts/UserContext";
 
 /**
  * Possible prefixes for an SNumber.
@@ -44,6 +45,8 @@ type SNumberAction =
 
 // React component
 function SNumberPad() {
+  const [_, setUser] = useContext(UserContext);
+
   // reset error and try to fetch the member, if success, load sNumber into localStorage
   const [loggedIn, setLoggedIn] = useState(
     Boolean(localStorage.getItem("sNumber"))
@@ -57,6 +60,7 @@ function SNumberPad() {
       .getMemberByUsername(sNumber.prefix + sNumber.sNumber)
       .then((member) => {
         localStorage.setItem("sNumber", sNumber.prefix + sNumber.sNumber);
+        setUser(member);
         setLoggedIn(true);
       })
       .catch((e) => {
