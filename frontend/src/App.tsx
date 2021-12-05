@@ -41,7 +41,7 @@ function App() {
   if (loading) return <Spinner animation="border" />;
 
   return (
-    <Container>
+    <div>
       {/* <TestAPI /> */}
       <Router>
         <Switch>
@@ -56,7 +56,7 @@ function App() {
           </Route>
         </Switch>
       </Router>
-    </Container>
+    </div>
   );
 }
 
