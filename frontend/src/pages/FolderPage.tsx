@@ -2,7 +2,8 @@ import { useEffect, useState } from "react";
 import { Card, Col, Container, Row, Spinner, Button } from "react-bootstrap";
 import { useHistory, useParams } from "react-router";
 import congresssus, { FolderType, UserType } from "../api/API";
-import { User } from "../User";
+import { Stepper } from "../components/Stepper";
+import { Sidebar } from "../components/Sidebar";
 
 export function FolderPage(props: any) {
   const sNumber = localStorage.getItem("sNumber");
@@ -11,17 +12,12 @@ export function FolderPage(props: any) {
   // @ts-ignore
   let { folderId } = useParams(); // because useParams() doesn't have the correct type
 
-  const [member, setMember] = useState<UserType | undefined>(undefined);
   const [products, setProducts] = useState<any | undefined>([]);
 
   useEffect(() => {
     console.log("use effect is executed :DDD", loading);
     setLoading(true);
     Promise.all([
-      congresssus.getMemberByUsername(sNumber || "").then((user) => {
-        setMember(user);
-      }),
-
       congresssus.getProductsByFolder(folderId).then((products) => {
         setProducts(products);
       }),
@@ -35,8 +31,9 @@ export function FolderPage(props: any) {
   if (loading) return <Spinner animation="border" />;
 
   return (
-    <Container className="m-3">
+    <div className="m-3 w-full">
       <Button
+        className="float-left mr-5"
         variant="info"
         onClick={() => {
           history.push("/folders");
@@ -48,17 +45,13 @@ export function FolderPage(props: any) {
         <p className="inline-block font-bold">{folderName}</p>
 
         <div className="w-max mx-2 inline-block float-right">
-          {loading ? (
-            <Spinner animation="border"></Spinner>
-          ) : (
-            <User member={member} />
-          )}
+          {loading ? <Spinner animation="border"></Spinner> : <Sidebar />}
         </div>
       </div>
       {/* <div className="mx-auto  text-center grid grid-cols-4 gap-5"> */}
 
       <div
-        className="mt-2 grid gap-3"
+        className="mt-2 grid gap-2"
         style={{
           gridTemplateColumns: "repeat(auto-fill, 15rem)",
         }}
@@ -73,7 +66,7 @@ export function FolderPage(props: any) {
           // </div>
           <Card
             style={{
-              width: "15rem",
+              width: "14.5rem",
               borderRadius: "0.5rem",
               // backgroundColor: "#a3ffd1",
             }}
@@ -87,10 +80,11 @@ export function FolderPage(props: any) {
               <Card.Title>{x.name}</Card.Title>
             </Card.Body>
             <Card.Img variant="bottom" src={x.media} />
+            <Button variant="success">+</Button>
           </Card>
         ))}
       </div>
       {/* </div> */}
-    </Container>
+    </div>
   );
 }
