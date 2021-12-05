@@ -6,6 +6,19 @@ body {
   font-weight: 400;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  overflow-x: hidden;
+  /* background-color: aqua; */
+  /* background-image: url("https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSJ7aodDhAsRl9ERNAqszMXp0IXQiyTS7WG5A&usqp=CAU"); */
+  /* background-image: url("https://informaticalessen.be/wp-content/uploads/2019/06/Een-tekst-met-twee-kolommen.jpg"); */
+  background-size: cover;
+  /* background-repeat: no-repeat; */
+}
+* {
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  -o-box-sizing: border-box;
+  -ms-box-sizing: border-box;
+  box-sizing: border-box;
 }
 
 code {
