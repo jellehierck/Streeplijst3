@@ -17,7 +17,7 @@ export function Stepper() {
 
       <Button
         className=" max-h-28 float-right"
-        onClick={() => (quantity >= 0 ? setQuantity(quantity - 1) : null)}
+        onClick={() => (quantity > 0 ? setQuantity(quantity - 1) : null)}
       >
         -
       </Button>
