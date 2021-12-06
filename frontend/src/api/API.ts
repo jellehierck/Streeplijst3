@@ -45,7 +45,12 @@ class Congressus {
   // todo fetch all streeplijst products by category/folder
   async getProductsByFolder(folder_id: number): Promise<ProductType[]> {
     return this.call(`/products?folder_id=${folder_id}`).then((products) =>
-      products.filter((product: ProductType) => product.published)
+      products
+        .filter((product: ProductType) => product.published)
+        .map((product: any) => {
+          product.price = product?.offers[0]?.price || product.price;
+          return product;
+        })
     );
   }
 
