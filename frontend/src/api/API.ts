@@ -30,9 +30,7 @@ class Congressus {
   async getFolders(): Promise<FolderType[]> {
     let folders = [];
     for (let folder_id of this.streeplijstFolders) {
-      let firstProduct = (
-        await this.call(`/products?folder_id=${folder_id}`)
-      )[0];
+      let firstProduct = (await this.getProductsByFolder(folder_id))[0];
 
       folders.push({
         id: firstProduct.folder_id,
@@ -46,7 +44,9 @@ class Congressus {
 
   // todo fetch all streeplijst products by category/folder
   async getProductsByFolder(folder_id: number): Promise<ProductType[]> {
-    return this.call(`/products?folder_id=${folder_id}`);
+    return this.call(`/products?folder_id=${folder_id}`).then((products) =>
+      products.filter((product: ProductType) => product.published)
+    );
   }
 
   // todo add sale to member
@@ -93,8 +93,11 @@ export interface ProductType {
   product_offer_id: number;
   name: string;
   description: string;
-  media: string[]; // different image sizes
+  media: string; // would be array for different image sizes in v30
   price: number;
+  folder_id: number;
+  folder: string;
+  published: boolean;
 }
 
 export interface UserType {
