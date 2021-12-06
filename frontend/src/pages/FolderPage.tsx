@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Card, Col, Container, Row, Spinner, Button } from "react-bootstrap";
 import { useHistory, useParams } from "react-router";
-import congresssus, { FolderType, UserType } from "../api/API";
+import congresssus, { FolderType, ProductType, UserType } from "../api/API";
 import { Stepper } from "../components/Stepper";
 import { Sidebar } from "../components/Sidebar";
 
@@ -56,7 +56,7 @@ export function FolderPage(props: any) {
           gridTemplateColumns: "repeat(auto-fill, 15rem)",
         }}
       >
-        {products.map((x: FolderType) => (
+        {products.map((product: ProductType) => (
           // <div
           //   key={x.id}
           //   className="w-full p-5 justify-center flex-wrap bg-gray-100 rounded-lg"
@@ -70,17 +70,24 @@ export function FolderPage(props: any) {
               borderRadius: "0.5rem",
               // backgroundColor: "#a3ffd1",
             }}
-            className="p-3"
-            key={x.id}
+            className="p-3 shadow-sm"
+            key={product.id}
             onClick={() => {
-              console.log(x.id);
+              console.log(product);
             }}
           >
             <Card.Body>
-              <Card.Title>{x.name}</Card.Title>
+              <Card.Title>{product.name}</Card.Title>
             </Card.Body>
-            <Card.Img variant="bottom" src={x.media} />
-            <Button variant="success">+</Button>
+            <Card.Img variant="bottom" src={product.media} />
+            <div className="flex mt-1">
+              <Button variant="success" className="w-full">
+                +
+              </Button>
+              <Button variant="secondary">
+                €{(product.price / 100).toFixed(2)}
+              </Button>
+            </div>
           </Card>
         ))}
       </div>
