@@ -10,6 +10,11 @@ ReactDOM.render(
   <React.StrictMode>
     <UserContextProvider>
       <ShoppingCartContextProvider>
+        <header className="header" role="banner">
+          <div className="header-logo">
+            <a title="Logo Dienst Uitvoering Onderwijs"></a>
+          </div>
+        </header>
         <App />
       </ShoppingCartContextProvider>
     </UserContextProvider>

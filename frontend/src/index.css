@@ -29,3 +29,71 @@ code {
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+.header-logo a {
+  height: 10.4rem;
+  margin-bottom: 1.4rem;
+  margin-left: 204px;
+  width: 254px;
+}
+.header-logo a {
+  height: 9.4rem;
+  margin-left: 183px;
+  width: 228px;
+}
+.header-logo a {
+  background-size: 100%;
+  display: inline-block;
+  height: 6rem;
+  margin-bottom: 0.8rem;
+  margin-left: 96px;
+  position: relative;
+  text-align: center;
+  text-decoration: none;
+  width: 136px;
+}
+
+.header-logo {
+  padding-bottom: 0.5rem;
+  text-align: center;
+}
+
+.header-logo a:before {
+  height: 10rem;
+  width: 5rem;
+}
+.header-logo a:before {
+  background: url(https://duo.nl/libs/uno/dist/components/header/images/beeldmerk.svg)
+    bottom/100% no-repeat #154273;
+  content: "";
+  height: 6rem;
+  left: 0;
+  position: absolute;
+  top: 0;
+  width: 4rem;
+}
+
+.header-logo a:after {
+  bottom: -0.4rem;
+  height: 5.6rem;
+  left: 6rem;
+  width: 19.2rem;
+}
+.header-logo a:after {
+  background-image: url(https://duo.nl/libs/uno/dist/components/header/images/duo-text-m.svg);
+  bottom: 0.1rem;
+  height: 4.5rem;
+  left: 5.5rem;
+  width: 17.3rem;
+}
+.header-logo a:after {
+  background-image: url(https://duo.nl/libs/uno/dist/components/header/images/duo-text-s.svg);
+  background-repeat: no-repeat;
+  bottom: 0.8rem;
+  content: "";
+  display: inline-block;
+  height: 2.6rem;
+  left: 4.8rem;
+  position: absolute;
+  width: 8.8rem;
+}
