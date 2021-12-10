@@ -1,9 +1,10 @@
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { Card, Col, Container, Row, Spinner, Button } from "react-bootstrap";
 import { useHistory, useParams } from "react-router";
 import congresssus, { FolderType, ProductType, UserType } from "../api/API";
 import { Stepper } from "../components/Stepper";
 import { Sidebar } from "../components/Sidebar";
+import { ShoppingCartContext } from "../contexts/ShoppingCartContext";
 
 export function FolderPage(props: any) {
   const sNumber = localStorage.getItem("sNumber");
@@ -13,6 +14,11 @@ export function FolderPage(props: any) {
   let { folderId } = useParams(); // because useParams() doesn't have the correct type
 
   const [products, setProducts] = useState<any | undefined>([]);
+  const [cart, setCart] = useContext(ShoppingCartContext);
+
+  const addToShoppingCart = (product: ProductType) => {
+    setCart([...cart, product]);
+  };
 
   useEffect(() => {
     console.log("use effect is executed :DDD", loading);
@@ -81,7 +87,13 @@ export function FolderPage(props: any) {
             </Card.Body>
             <Card.Img variant="bottom" src={product.media} />
             <div className="flex mt-1">
-              <Button variant="success" className="w-full">
+              <Button
+                variant="success"
+                className="w-full"
+                onClick={() => {
+                  addToShoppingCart(product);
+                }}
+              >
                 +
               </Button>
               <Button variant="secondary">
