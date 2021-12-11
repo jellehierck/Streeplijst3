@@ -20,10 +20,11 @@ export function Sidebar() {
 
     setUser(null);
     setLoggedIn(false);
+    setCart([]);
   };
 
   return (
-    <Nav className="h-full mr-9">
+    <Nav className="h-full mr-5">
       <div className="ml-2 inline-block">
         <p className="font-semibold h-8">
           {user?.first_name} ({user?.username})
@@ -44,23 +45,26 @@ export function Sidebar() {
             };
           })
           .map((productWithCount: { e: ProductType; count: number }) => (
-            <Card className="mt-2 flex-row" key={productWithCount.e.id}>
-              <Card.Img className="w-16" src={productWithCount.e.media} />
+            <Card className="mt-2 flex-row w-64" key={productWithCount.e.id}>
+              <Card.Img
+                className="w-14 inline"
+                src={productWithCount.e.media}
+              />
               <Card.Body>
                 <Card.Title>{productWithCount.e.name}</Card.Title>
                 <div className="w-full">
-                  <Button variant="secondary" className="max-h-28">
+                  <Button variant="secondary" className="max-h-28 inline">
                     {productWithCount.count}
                   </Button>
                   <Button
-                    className=" max-h-28 float-right"
+                    className="max-h-28 inline"
                     onClick={() => setCart([...cart, productWithCount.e])}
                   >
                     +
                   </Button>
 
                   <Button
-                    className=" max-h-28 float-right"
+                    className="max-h-28 inline"
                     onClick={() => {
                       // have to make tempcart because otherwise the state won't update
                       let tempCart = cart.slice();
@@ -88,8 +92,8 @@ export function Sidebar() {
             .reduce((a: number, b: ProductType) => a + b.price / 100, 0)
             .toFixed(2)}
         </p>
-        <Button className="mt-4" variant="success">
-          Kopen en uitloggen
+        <Button className="m-4" variant="success">
+          Kopen en uitloggen //TODO
         </Button>
       </div>
     </Nav>

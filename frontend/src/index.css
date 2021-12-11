@@ -32,7 +32,6 @@ code {
 
 .header-logo a {
   height: 10.4rem;
-  margin-bottom: 1.4rem;
   margin-left: 204px;
   width: 254px;
 }
@@ -45,7 +44,6 @@ code {
   background-size: 100%;
   display: inline-block;
   height: 6rem;
-  margin-bottom: 0.8rem;
   margin-left: 96px;
   position: relative;
   text-align: center;
@@ -54,8 +52,8 @@ code {
 }
 
 .header-logo {
-  padding-bottom: 0.5rem;
   text-align: center;
+  line-height: 0;
 }
 
 .header-logo a:before {
@@ -74,14 +72,12 @@ code {
 }
 
 .header-logo a:after {
-  bottom: -0.4rem;
   height: 5.6rem;
   left: 6rem;
   width: 19.2rem;
 }
 .header-logo a:after {
   background-image: url(https://duo.nl/libs/uno/dist/components/header/images/duo-text-m.svg);
-  bottom: 0.1rem;
   height: 4.5rem;
   left: 5.5rem;
   width: 17.3rem;
