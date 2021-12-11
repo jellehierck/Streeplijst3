@@ -10,7 +10,7 @@ from streeplijst.congressus.utils import strip_member_data, strip_product_data, 
 CONGRESSUS_API_URL_BASE = "https://api.congressus.nl/v20"
 
 CONGRESSUS_HEADERS = {
-    'Authorization': 'Bearer:' + os.environ.get('CONGRESSUS_API_TOKEN')
+    'Authorization': 'Bearer ' + os.environ.get('CONGRESSUS_API_TOKEN')
 }
 
 MAX_RETRIES = 3
