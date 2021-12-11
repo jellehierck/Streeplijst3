@@ -24,7 +24,7 @@ export function Sidebar() {
   };
 
   return (
-    <Nav className="h-full mr-5">
+    <Nav className="h-full mr-5 text-center">
       <div className="ml-2 inline-block">
         <p className="font-semibold h-8">
           {user?.first_name} ({user?.username})
@@ -52,10 +52,11 @@ export function Sidebar() {
               />
               <Card.Body>
                 <Card.Title>{productWithCount.e.name}</Card.Title>
-                <div className="w-full">
+                <div className="w-full flex">
                   <Button variant="secondary" className="max-h-28 inline">
                     {productWithCount.count}
                   </Button>
+
                   <Button
                     className="max-h-28 inline"
                     onClick={() => setCart([...cart, productWithCount.e])}
@@ -75,7 +76,7 @@ export function Sidebar() {
                     -
                   </Button>
                 </div>
-                <p className="mt-3 text-right">
+                <p className="mt-2 text-right">
                   €
                   {(
                     (productWithCount.count * productWithCount.e.price) /
@@ -93,7 +94,7 @@ export function Sidebar() {
             .toFixed(2)}
         </p>
         <Button className="m-4" variant="success">
-          Kopen en uitloggen //TODO
+          Kopen en uitloggen
         </Button>
       </div>
     </Nav>

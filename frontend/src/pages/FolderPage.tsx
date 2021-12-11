@@ -47,12 +47,9 @@ export function FolderPage(props: any) {
       >
         Terug
       </Button>
-      <div className="">
-        <p className="inline-block font-bold">{folderName}</p>
-
-        <div className="w-max mx-2 inline-block float-right">
-          {loading ? <Spinner animation="border"></Spinner> : <Sidebar />}
-        </div>
+      <p className="inline-block font-bold">{folderName}</p>
+      <div className="w-max float-right">
+        <Sidebar />
       </div>
       {/* <div className="mx-auto  text-center grid grid-cols-4 gap-5"> */}
 
@@ -78,9 +75,7 @@ export function FolderPage(props: any) {
             }}
             className="p-3 shadow-sm"
             key={product.id}
-            onClick={() => {
-              console.log(product);
-            }}
+            onClick={() => addToShoppingCart(product)}
           >
             <Card.Body>
               <Card.Title>{product.name}</Card.Title>
