@@ -63,8 +63,10 @@ def sales_by_username(req: Request, username: str = None) -> Response:
 
 @api_view(['POST'])
 def sales(req: Request) -> Response:
-    username = req.data['username']
-    offer_id = req.data['offer_id']
-    quantity = req.data['quantity']
-    member_id = get_member_id(username)
-    return post_sale(user_id=member_id, offer_id=offer_id, quantity=quantity)
+    member_id = req.data['member_id']
+    # product_offer_id = req.data['product_offer_id']
+    # quantity = req.data['quantity']
+    items = req.data['items']
+    return post_sale(member_id=member_id, items=items)
+    # product_offer_id=product_offer_id, quantity=quantity)
+    

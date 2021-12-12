@@ -8,6 +8,7 @@ from rest_framework.response import Response
 from streeplijst.congressus.utils import strip_member_data, strip_product_data, strip_sales_data
 
 CONGRESSUS_API_URL_BASE = "https://api.congressus.nl/v20"
+CONGRESSUS_NEW_API_URL_BASE = "https://api.congressus.nl/v30"
 
 CONGRESSUS_HEADERS = {
     'Authorization': 'Bearer ' + os.environ.get('CONGRESSUS_API_TOKEN')
@@ -146,26 +147,36 @@ def get_sales(req: Request, extra_params: dict = None) -> Response:
         return res
 
 
-def post_sale(user_id: int, offer_id: int, quantity: int):
+def post_sale(member_id: int, items):
+    """
+        QUICK AND DIRTY FIX TO USE THE NEW API ONLY FOR POSTING PLS FIX THIS
+    """
     payload = {  # Store the sales parameters in the format required by Congressus
-        "user_id": user_id,  # User id (not username)
-        "items": [
-            {
-                "offer_id": offer_id,  # Offer id
-                # "product_id": product_id,  # Product id
-                "quantity": quantity  # Amount of items
-            }
-        ],
-        "payments": [
-            {
-                "type": "direct_debit"  # Type of payment
-                # TODO: Direct debit is hard coded right now. This may be changed later, although
-                #  the streeplijst is intended to only work with direct debit for now. See
-                #  http://docs.congressus.nl/#!/default/post_sales for more info.
-            }
-        ]
+        "member_id": member_id,  # User id (not username)
+        "items": items
     }
-    res = _make_congressus_api_call(method='post',
-                                    url_endpoint='/sales',
-                                    data=payload)
-    return res
+
+    method='post'
+    retries = 0
+    while retries < MAX_RETRIES:  # Attempt to get a response a number of times
+        print("trying");
+        try:
+            res = requests.request(method='post',
+                                   url=CONGRESSUS_NEW_API_URL_BASE + "/sale-invoices",
+                                   headers=CONGRESSUS_HEADERS,
+                                   params=None,
+                                   json=payload,
+                                   timeout=TIMEOUT)
+            
+            print("returning!!")
+            # Return the response from the API server converted to a rest_framework.Response object
+            return Response(data=res.json(),
+                            status=res.status_code,
+                            # headers={k:v for k,v in res.headers.items() if "Connection" not in k},
+                            content_type=res.headers['content-type'])
+
+        except requests.exceptions.Timeout:  # If the request timed out
+            retries += 1  # Increment the number of retries
+
+    # If the number of retries is exceeded, return a response with an error code
+    return Response(data={"error": "Request timeout"}, status=status.HTTP_408_REQUEST_TIMEOUT)
