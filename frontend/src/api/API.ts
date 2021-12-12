@@ -4,6 +4,8 @@ class Congressus {
     1991, 2600, 1993, 1996, 1994, 1997, 1995, 1992, 1998, 2464,
   ];
 
+  private cache: { folders: any } = { folders: undefined };
+
   constructor(private API_HOST: string) {}
 
   // fetch member by username
@@ -44,14 +46,21 @@ class Congressus {
 
   // todo fetch all streeplijst products by category/folder
   async getProductsByFolder(folder_id: number): Promise<ProductType[]> {
-    return this.call(`/products?folder_id=${folder_id}`).then((products) =>
-      products
+    if (this.cache.folders && this.cache.folders[folder_id])
+      return this.cache.folders[folder_id];
+    return this.call(`/products?folder_id=${folder_id}`).then((products) => {
+      products = products
         .filter((product: ProductType) => product.published)
         .map((product: any) => {
           product.price = product?.offers[0]?.price || product.price;
           return product;
-        })
-    );
+        });
+
+      if (!this.cache.folders) this.cache.folders = { [folder_id]: products };
+      else this.cache.folders[folder_id] = products;
+
+      return products;
+    });
   }
 
   // todo add sale to member
