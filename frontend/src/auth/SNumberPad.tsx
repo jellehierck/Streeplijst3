@@ -113,7 +113,7 @@ function SNumberPad() {
   if (loggedIn) return <Redirect to="/folders" />;
 
   return (
-    <div>
+    <div className="mx-24">
       {errored ? (
         <div
           className="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 relative"

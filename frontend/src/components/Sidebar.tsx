@@ -5,6 +5,7 @@ import { UserContext } from "../contexts/UserContext";
 import { Stepper } from "./Stepper";
 import { ShoppingCartContext } from "../contexts/ShoppingCartContext";
 import congresssus, { ProductType } from "../api/API";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 //todo import congressus and fix functiuon
 export function Sidebar() {
   const [loggedIn, setLoggedIn] = useState(true);
@@ -21,6 +22,10 @@ export function Sidebar() {
 
     setUser(null);
     setLoggedIn(false);
+    setCart([]);
+  };
+
+  const emptyCart = () => {
     setCart([]);
   };
   let addSalesAndLogOut = () => {
@@ -50,10 +55,12 @@ export function Sidebar() {
         <p className="font-semibold h-8">
           {user?.first_name} ({user?.username})
         </p>
-        <Button variant="danger" size="lg" onClick={logOut}>
+        <Button className="mx-2" variant="danger" size="lg" onClick={logOut}>
           Log uit
         </Button>
-
+        <Button variant="danger" size="lg" onClick={emptyCart}>
+          <FontAwesomeIcon icon={"trash"}></FontAwesomeIcon>
+        </Button>
         {cart
           .filter((x: ProductType, i: number) => cart.indexOf(x) === i)
           .map((x: ProductType) => {
