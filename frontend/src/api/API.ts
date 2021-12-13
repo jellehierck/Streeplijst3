@@ -72,9 +72,9 @@ class Congressus {
       headers: {
         Accept: "application/json",
         "Content-Type": "application/json; charset=UTF-8",
-        ...(options?.method === "POST"
-          ? { "X-CSRF-Token": await this.getCsrfToken() }
-          : {}), // this is really ugly
+        // ...(options?.method === "POST"
+        //   ? { "X-CSRF-Token": await this.getCsrfToken() }
+        //   : {}), // this is really ugly
         ...options?.headers,
       },
     });
