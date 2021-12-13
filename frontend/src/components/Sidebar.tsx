@@ -4,12 +4,13 @@ import { Redirect } from "react-router";
 import { UserContext } from "../contexts/UserContext";
 import { Stepper } from "./Stepper";
 import { ShoppingCartContext } from "../contexts/ShoppingCartContext";
-import { ProductType } from "../api/API";
-
+import congresssus, { ProductType } from "../api/API";
+//todo import congressus and fix functiuon
 export function Sidebar() {
   const [loggedIn, setLoggedIn] = useState(true);
   const [user, setUser] = useContext(UserContext);
   const [cart, setCart] = useContext(ShoppingCartContext);
+  console.log({ user });
 
   if (!loggedIn) {
     return <Redirect to="/" />;
@@ -22,6 +23,26 @@ export function Sidebar() {
     setLoggedIn(false);
     setCart([]);
   };
+  let addSalesAndLogOut = () => {
+    let items = cart
+      .filter((x: ProductType, i: number) => cart.indexOf(x) === i)
+      .map((x: ProductType) => {
+        return {
+          product_offer_id: x.product_offer_id,
+          quantity: cart.reduce(
+            (a: number, v: ProductType) => (v === x ? a + 1 : a),
+            0
+          ),
+        };
+      });
+    congresssus.addSaleToMember(user.id, items).then(() => {
+      logOut();
+    });
+
+    console.log(items);
+  };
+
+  console.log({ cart });
 
   return (
     <Nav className="h-full mr-5 text-center">
@@ -81,7 +102,8 @@ export function Sidebar() {
                   {(
                     (productWithCount.count * productWithCount.e.price) /
                     100
-                  ).toFixed(2)}
+                  ).toFixed(2)}{" "}
+                  ({productWithCount.count})
                 </p>
               </Card.Body>
             </Card>
@@ -93,9 +115,15 @@ export function Sidebar() {
             .reduce((a: number, b: ProductType) => a + b.price / 100, 0)
             .toFixed(2)}
         </p>
-        <Button className="m-4" variant="success">
-          Kopen en uitloggen
-        </Button>
+        {cart.length > 0 ? (
+          <Button className="m-4" variant="success" onClick={addSalesAndLogOut}>
+            Kopen en uitloggen
+          </Button>
+        ) : (
+          <Button className="m-4 text-white" variant="light" disabled>
+            Kopen en uitloggen
+          </Button>
+        )}
       </div>
     </Nav>
   );
