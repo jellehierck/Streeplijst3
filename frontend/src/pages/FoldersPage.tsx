@@ -20,7 +20,7 @@ export function FoldersPage(props: any) {
   return (
     <div className="m-3 pl-28">
       <p className="inline-block font-bold">Categories</p>
-      <div className="w-max h-full mx-2 float-right top-0">
+      <div className="w-max float-right ml-5">
         <Sidebar />
       </div>
       {/* <div className="mx-auto  text-center grid grid-cols-4 gap-5"> */}
