@@ -65,6 +65,12 @@ class Congressus {
   }
 
   // todo add sale to member
+  async addSaleToMember(member_id: number, items: ProductSaleType[]) {
+    return this.call(`/sales/`, {
+      method: "POST",
+      body: JSON.stringify({ member_id, items }),
+    });
+  }
 
   private async call(url: string, options?: RequestInit) {
     const response = await fetch(`${this.API_HOST}/streeplijst${url}`, {
@@ -113,6 +119,11 @@ export interface ProductType {
   folder_id: number;
   folder: string;
   published: boolean;
+}
+
+export interface ProductSaleType {
+  product_offer_id: number;
+  quantity: number;
 }
 
 export interface UserType {
