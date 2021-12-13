@@ -53,6 +53,7 @@ class Congressus {
         .filter((product: ProductType) => product.published)
         .map((product: any) => {
           product.price = product?.offers[0]?.price || product.price;
+          product.product_offer_id = product?.offers[0].id;
           return product;
         });
 
