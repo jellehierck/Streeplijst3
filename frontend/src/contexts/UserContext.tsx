@@ -7,17 +7,18 @@ export function UserContextProvider(props: any) {
   const sNumber = localStorage.getItem("sNumber");
 
   const [user, setUser] = useState<UserType | undefined | null>();
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    setLoading(true);
-
+    console.log("user useeffect is ebexj :XXX");
     if (sNumber) {
       // only if loggedIn
       congresssus.getMemberByUsername(sNumber || "").then((user) => {
         setUser(user);
         setLoading(false);
       });
+    } else {
+      setLoading(false);
     }
   }, []);
 
