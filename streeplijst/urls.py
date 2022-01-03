@@ -4,6 +4,8 @@ from streeplijst import views
 
 app_name = 'streeplijst'
 urlpatterns = [
+    path('', views.ping, name='ping'),  # TODO: Replace with more sensible index function instead of ping
+    path('ping/', views.ping, name='ping'),
     path('members/', views.members, name='members'),
     path('members/<str:username>', views.members_by_username, name='member_by_username'),
     path('products/', views.products, name='products'),

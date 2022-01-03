@@ -52,6 +52,11 @@ def _make_congressus_api_call(method: str, url_endpoint: str, params: dict = Non
     return Response(data={"error": "Request timeout"}, status=status.HTTP_408_REQUEST_TIMEOUT)
 
 
+def get_ping() -> Response:
+    ping_data = dict(message="Ping successful")
+    return Response(data=ping_data)
+
+
 def get_members(req: Request = None, extra_params: dict = None) -> Response:
     """
     Get members from Congressus. See http://docs.congressus.nl/#!/default/get_members for query parameters.
@@ -167,7 +172,7 @@ def post_sale(member_id: int, items):
                                    params=None,
                                    json=payload,
                                    timeout=TIMEOUT)
-            
+
             print("returning!!")
             # Return the response from the API server converted to a rest_framework.Response object
             return Response(data=res.json(),

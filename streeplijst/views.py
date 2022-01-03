@@ -3,7 +3,17 @@ from rest_framework.response import Response
 from rest_framework.parsers import JSONParser
 from rest_framework.decorators import api_view, parser_classes
 
-from streeplijst.congressus.api import get_members, get_products, get_sales, get_member_id, post_sale
+from streeplijst.congressus.api import get_members, get_products, get_sales, get_member_id, post_sale, get_ping
+
+
+@api_view(['GET'])
+def ping(req: Request) -> Response:
+    """
+    Get a ping message from the backend server.
+
+    :param req: Request object.
+    """
+    return get_ping()
 
 
 @api_view(['GET'])
@@ -69,4 +79,3 @@ def sales(req: Request) -> Response:
     items = req.data['items']
     return post_sale(member_id=member_id, items=items)
     # product_offer_id=product_offer_id, quantity=quantity)
-    
