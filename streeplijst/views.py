@@ -120,14 +120,19 @@ def sales_by_username(req: Request, version: str, username: str = None) -> Respo
     :param username: Username to search for.
     """
     if version == ApiV30.API_VERSION:
-        return api_v30_obj.get_sales()
+        return api_v30_obj.get_sales(None)
     else:
         return Response(data={'message': f"API version {version} not recognized"}, status=status.HTTP_404_NOT_FOUND)
 
 
 @api_view(['POST'])
-def sales(req: Request, version: str, ) -> Response:
-    pass
+def sales(req: Request, version: str) -> Response:
+    if version == ApiV30.API_VERSION:
+        member_id = req.data['member_id']
+        items = req.data['items']
+        return api_v30_obj.post_sale(member_id=member_id, items=items)
+    else:
+        return Response(data={'message': f"API version {version} not recognized"}, status=status.HTTP_404_NOT_FOUND)
 
     # member_id = req.data['member_id']
     # # product_offer_id = req.data['product_offer_id']

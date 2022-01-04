@@ -19,5 +19,6 @@ urlpatterns = [
     path('<str:version>/members/id/<int:id>', views.member_by_id, name='member_by_id'),  # TODO: remove this?
 
     path('<str:version>/products/folder/<int:folder_id>', views.products_by_folder_id, name='products_by_folder_id'),
-    path('<str:version>/folders', views.folders, name='folders')
+    path('<str:version>/folders', views.folders, name='folders'),
+    path('<str:version>/sales', views.sales, name='post_sale'),
 ]

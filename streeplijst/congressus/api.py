@@ -91,20 +91,29 @@ class ApiBase:
         pass
 
     @abc.abstractmethod
-    def get_sales(self, api_version: str, req: Request, extra_params: dict = None) -> Response:
+    def get_sales(self, username: str, invoice_status: str = None, period: str = None) -> Response:
         """
-        Get sales from Congressus. See https://docs.congressus.nl/#!/default/get_products for query parameters.
+        Get sales for a specific user
 
-        :param api_version: The requested api version.
-        :param req: Request object.
-        :param extra_params: Extra request query parameters. Useful parameters are listed in documentation above.
+        :param username:
+        :param invoice_status:
+        :param period:
         """
         pass
 
     @abc.abstractmethod
-    def post_sale(self, api_version: str, member_id: int, items):
+    def post_sale(self, member_id: int, items):
         """
         QUICK AND DIRTY FIX TO USE THE NEW API ONLY FOR POSTING PLS FIX THIS
+        """
+        pass
+
+    @abc.abstractmethod
+    def _member_username_to_id(self, username: str) -> int:
+        """
+        TODO
+        :param username:
+        :return:
         """
         pass
 
@@ -154,24 +163,13 @@ class ApiV30(ApiBase):
             return res
 
     def get_member_by_username(self, username: str) -> Response:
-        # Make API call with pagination as we have to perform a search
-        res = self._congressus_api_call_pagination(method='get',
-                                                   url_endpoint='/members/search',
-                                                   query_params={'term': username})  # Add a search term
-        if status.is_success(res.status_code):  # Request is ok
-            # /search likely returns more than one member, select only the member with the correct username
-            # Source: https://stackoverflow.com/a/7079297
-            correct_member = next((member for member in res.data if member['username'] == username), None)
-            if correct_member:  # An exact match for the username was found
-                # A call to /search gives a simplified user overview, we need to request all user data and return that
-                return self.get_member_by_id(id=correct_member['id'])
+        member_id = self._member_username_to_id(username=username)  # Get member ID
+        if member_id == 0:  # No user was found
+            error_data = {'message': f"No user found for {username}"}
+            return Response(data=error_data, status=status.HTTP_404_NOT_FOUND)
 
-            else:  # No exact match for the username was found, return an error
-                error_data = {'message': f"No user found for {username}"}
-                return Response(data=error_data, status=status.HTTP_404_NOT_FOUND)
-
-        else:  # Response status indicated a failure
-            return res  # Return result with failure information
+        else:  # A user was found, get details of that user
+            return self.get_member_by_id(id=member_id)
 
     def list_products(self, req: Request, extra_params: dict = None) -> Response:
         """
@@ -203,14 +201,23 @@ class ApiV30(ApiBase):
     def list_products_streeplijst(self) -> Response:
         pass  # TODO: Probably not needed anymore
 
-    def get_sales(self, api_version: str, req: Request, extra_params: dict = None) -> Response:
+    def get_sales(self, username: str, invoice_status: str = None, period: str = None) -> Response:
+        # TODO: Make this endpoint as it is currently not possible to filter sale invoices by member IDs
         pass
 
-    def post_sale(self, api_version: str, member_id: int, items):
-        pass
+    def post_sale(self, member_id: int, items):
+        payload = {  # Store the sales parameters in the format required by Congressus
+            "member_id": member_id,  # User id (not username)
+            "items": items,  # List of items
+            "invoice_type": "webshop"  # Type of invoice so we can filter TODO: Make this configurable, not hardcoded?
+        }
+        res = self._congressus_api_call_single(method='post',
+                                               url_endpoint='/sale-invoices',
+                                               payload=payload)
+        return res
 
     def _congressus_api_call_single(self, method: str, url_endpoint: str, query_params: dict = None,
-                                    data: dict = None, timeout: int = None, max_retries: int = None) -> Response:
+                                    payload: dict = None, timeout: int = None, max_retries: int = None) -> Response:
         """
         Make a call to the Congressus API where only a single response is expected (no pagination).
 
@@ -222,7 +229,7 @@ class ApiV30(ApiBase):
         :param method: Method to obtain. Must be 'get' or 'post'
         :param url_endpoint: URL endpoint to call. Example: '/members'
         :param query_params: Optional additional parameters to add as a query.
-        :param data: Optional data to send with a POST request. Is converted from a dict to JSON.
+        :param payload: Optional data to send with a POST request. Is converted from a dict to JSON.
         :param timeout: Timeout in seconds, defaults to self.CONGRESSUS_TIMEOUT.
         :param max_retries: Number of retries in case of a timeout, defaults to self.CONGRESSUS_MAX_RETRIES.
         :return: A Response object.
@@ -240,7 +247,7 @@ class ApiV30(ApiBase):
                                             url=self._congressus_url_base + url_endpoint,
                                             headers=self._congressus_headers,
                                             params=query_params,
-                                            json=data,
+                                            json=payload,
                                             timeout=self.CONGRESSUS_TIMEOUT)
                 curr_res_data = curr_res.json()  # Convert data to a python dict
 
@@ -255,7 +262,7 @@ class ApiV30(ApiBase):
         return Response(data={"error": "Request timeout"}, status=status.HTTP_408_REQUEST_TIMEOUT)
 
     def _congressus_api_call_pagination(self, method: str, url_endpoint: str, page_size: int = 25,
-                                        query_params: dict = None, data: dict = None, timeout: int = None,
+                                        query_params: dict = None, payload: dict = None, timeout: int = None,
                                         max_retries: int = None) -> Response:
         """
         Make a call to the Congressus API where a paginated response is expected. The paginated data will be combined
@@ -270,7 +277,7 @@ class ApiV30(ApiBase):
         :param url_endpoint: URL endpoint to call. Example: '/members'
         :param page_size: Optional page size for paginated responses.
         :param query_params: Optional additional parameters to add as a query.
-        :param data: Optional data to send with a POST request. Is converted from a dict to JSON.
+        :param payload: Optional data to send with a POST request. Is converted from a dict to JSON.
         :param timeout: Timeout in seconds, defaults to self.CONGRESSUS_TIMEOUT.
         :param max_retries: Number of retries in case of a timeout, defaults to self.CONGRESSUS_MAX_RETRIES.
         :return: A Response object.
@@ -297,7 +304,7 @@ class ApiV30(ApiBase):
                                             url=self._congressus_url_base + url_endpoint,
                                             headers=self._congressus_headers,
                                             params=params,
-                                            json=data,
+                                            json=payload,
                                             timeout=timeout)
                 curr_res_data = curr_res.json()  # Convert data to a python dict
 
@@ -330,6 +337,29 @@ class ApiV30(ApiBase):
 
         # If the while loop is exited, at some point there were too many timeouts and an error should be returned
         return Response(data={"error": "Request timeout"}, status=status.HTTP_408_REQUEST_TIMEOUT)
+
+    def _member_username_to_id(self, username: str) -> int:
+        """
+        Convert a member username to a member id by searching for the member username on Congressus API. Returns 0 if
+        the username could not be found.
+        """
+        # Make API call with pagination as we have to perform a search
+        res = self._congressus_api_call_pagination(method='get',
+                                                   url_endpoint='/members/search',
+                                                   query_params={'term': username})  # Add a search term
+        if status.is_success(res.status_code):  # Request is ok
+            # /search likely returns more than one member, select only the member with the correct username
+            # Source: https://stackoverflow.com/a/7079297
+            correct_member = next((member for member in res.data if member['username'] == username), None)
+            if correct_member:  # An exact match for the username was found
+                # A call to /search gives a simplified user overview, we need to request all user data and return that
+                return correct_member['id']
+
+            else:  # No exact match for the username was found, return an error
+                return 0
+
+        else:  # Response status indicated a failure
+            return 0  # Return result with failure information
 
     def _strip_member_data(self, raw_member_data: dict) -> dict:
         """
@@ -389,10 +419,10 @@ class ApiV20(ApiBase):
     def version(self) -> str:
         return self.API_VERSION
 
-    def get_sales(self, api_version: str, req: Request, extra_params: dict = None) -> Response:
+    def get_sales(self, username: dict, invoice_status=None, period=None) -> Response:
         pass
 
-    def post_sale(self, api_version: str, member_id: int, items):
+    def post_sale(self, member_id: int, items):
         pass
 
     def _make_congressus_api_call(self, method: str, url_endpoint: str, query_params: dict = None,
