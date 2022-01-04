@@ -1,8 +1,7 @@
 import abc  # Abstract Base Class package
 import os
 
-from deprecated import deprecated
-from typing import Dict, List
+from typing import Dict, List, Any
 
 import requests
 from rest_framework import status
@@ -59,7 +58,7 @@ class ApiBase:
         pass
 
     @abc.abstractmethod
-    def get_products(self, api_version: str, req: Request, extra_params: dict = None) -> Response:
+    def list_products(self, api_version: str, req: Request, extra_params: dict = None) -> Response:
         """
         Get products from Congressus. See https://docs.congressus.nl/#!/default/get_products for query parameters.
 
@@ -84,7 +83,7 @@ class ApiBase:
         """
 
     @abc.abstractmethod
-    def list_streeplijst_products(self) -> Response:
+    def list_products_streeplijst(self) -> Response:
         """
         Get all products in all folders linked to the Streeplijst specification. TODO: Add way to store which folders to
         retrieve
@@ -174,27 +173,16 @@ class ApiV30(ApiBase):
         else:  # Response status indicated a failure
             return res  # Return result with failure information
 
-    def get_products(self, api_version: str, req: Request, extra_params: dict = None) -> Response:
-        params = req.query_params.copy()
-        if extra_params:  # If extra params were provided
-            params.update(extra_params)  # Add extra params to the existing params
-
-        res = self._make_congressus_api_call(method='get', url_endpoint='/products', query_params=params)
-
-        if status.is_success(res.status_code):  # Request is ok
-            raw_data = res.data
-            stripped_data = list()
-            for raw_product_data in raw_data:
-                stripped_data.append(self._strip_product_data(raw_product_data=raw_product_data))
-            return Response(stripped_data, status=res.status_code)
-
-        else:  # Status indicated a failure
-            return res
+    def list_products(self, api_version: str, req: Request, extra_params: dict = None) -> Response:
+        """
+        Deprecated for v30, use 'list_products_*' instead.
+        """
+        message_data = {'message': "It is not allowed to list all products, list them by folders instead"}
+        return Response(data=message_data, status=status.HTTP_403_FORBIDDEN)
 
     def list_streeplijst_folders(self) -> Response:
         """
-        Get all folders from Congressus linked to the Streeplijst specification. TODO: Add way to store which folders to
-        retrieve
+        Get all folders from Congressus linked to the Streeplijst specification.
         """
         pass
 
@@ -205,12 +193,17 @@ class ApiV30(ApiBase):
         res = self._congressus_api_call_pagination(method='get',
                                                    url_endpoint='/products',
                                                    query_params={'folder_id': folder_id})  # Add the folder_id
-        return res
+        if status.is_success(res.status_code):  # Request is ok
+            stripped_products_array = []  # Empty array of stripped products
+            for product in res.data:  # Iterate all products in the response
+                stripped_products_array.append(self._strip_product_data(raw_product_data=product))  # Strip product data
+            return Response(data=stripped_products_array, status=res.status_code)  # Return response
+        else:  # Response status indicated a failure
+            return res  # Return result with failure information
 
-    def list_streeplijst_products(self) -> Response:
+    def list_products_streeplijst(self) -> Response:
         """
-        Get all products in all folders linked to the Streeplijst specification. TODO: Add way to store which folders to
-        retrieve
+        Get all products in all folders linked to the Streeplijst specification.
         """
         pass
 
@@ -221,7 +214,28 @@ class ApiV30(ApiBase):
         pass
 
     def _congressus_api_call_single(self, method: str, url_endpoint: str, query_params: dict = None,
-                                    data: dict = None) -> Response:
+                                    data: dict = None, timeout: int = None, max_retries: int = None) -> Response:
+        """
+        Make a call to the Congressus API where only a single response is expected (no pagination).
+
+        If no response is received from Congressus within timeout seconds for retries times, a Response is returned
+        with error code HTTP_408_REQUEST_TIMEOUT.
+
+        All response headers are stripped.
+
+        :param method: Method to obtain. Must be 'get' or 'post'
+        :param url_endpoint: URL endpoint to call. Example: '/members'
+        :param query_params: Optional additional parameters to add as a query.
+        :param data: Optional data to send with a POST request. Is converted from a dict to JSON.
+        :param timeout: Timeout in seconds, defaults to self.CONGRESSUS_TIMEOUT.
+        :param max_retries: Number of retries in case of a timeout, defaults to self.CONGRESSUS_MAX_RETRIES.
+        :return: A Response object.
+        """
+        if timeout is None:
+            timeout = self.CONGRESSUS_TIMEOUT
+        if max_retries is None:
+            max_retries = self.CONGRESSUS_MAX_RETRIES
+
         # Attempt making the request, taking into account the timeout and retries limits
         retries = 0
         while retries < self.CONGRESSUS_MAX_RETRIES:  # Attempt to get a response a number of times
@@ -253,6 +267,8 @@ class ApiV30(ApiBase):
 
         For every page, a timeout and number of retries is set. If no response is received from Congressus within
         timeout seconds for retries times, a Response is returned with error code HTTP_408_REQUEST_TIMEOUT.
+
+        All response headers are stripped.
 
         :param method: Method to obtain. Must be 'get' or 'post'
         :param url_endpoint: URL endpoint to call. Example: '/members'
@@ -342,7 +358,25 @@ class ApiV30(ApiBase):
         return stripped_data
 
     def _strip_product_data(self, raw_product_data: dict) -> dict:
-        pass
+        """
+        Strips data from product API response to only include data that is relevant.
+
+        :param raw_product_data: Raw API response from Congressus.
+        :return: A stripped dict only including some details of a product.
+        """
+        keys_to_transfer = [
+            'id',  # Internal congressus ID
+            'product_offer_id',  # ID for the product offer (variant)
+            'name',  # Product name
+            'description',  # Product description
+            'published',  # Whether this product is published
+            'price',  # Price of product in euros
+            'media',  # Media object
+        ]
+        stripped_data = _extract_keys(from_dict=raw_product_data, keys=keys_to_transfer, default=None)
+        if stripped_data['media']:  # If the media is not an empty array
+            stripped_data['media'] = stripped_data['media'][0]['url']  # Get a URL to the image for this product
+        return stripped_data
 
 
 class ApiV20(ApiBase):
@@ -384,7 +418,7 @@ class ApiV20(ApiBase):
         pass
 
 
-def _extract_keys(from_dict: dict, keys: List[str], default: str = 'error') -> dict:
+def _extract_keys(from_dict: dict, keys: List[str], default: Any = 'error') -> dict:
     """
     Utility function. Transfers a list of keys and their associated values to a new dict.
 

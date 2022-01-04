@@ -79,7 +79,7 @@ def products(req: Request, version: str, ) -> Response:
     :param version: API version to use.
     """
     if version == ApiV30.API_VERSION:
-        return api_v30_obj.get_products()
+        return api_v30_obj.list_products()
     else:
         return Response(data={'message': f"API version {version} not recognized"}, status=status.HTTP_404_NOT_FOUND)
 
