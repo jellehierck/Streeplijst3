@@ -15,5 +15,6 @@ urlpatterns = [
 
     path('<str:version>/ping/', views.ping, name='ping'),
     path('<str:version>/members/username/<str:username>', views.member_by_username, name='member_by_username'),
-    path('<str:version>/members/id/<int:id>', views.member_by_id, name='member_by_id'),
+    path('<str:version>/members/id/<int:id>', views.member_by_id, name='member_by_id'),  # TODO: remove this?
+    path('<str:version>/products/folder/<int:folder_id>', views.products_by_folder_id, name='products_by_folder_id')
 ]

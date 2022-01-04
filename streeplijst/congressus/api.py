@@ -12,7 +12,7 @@ from rest_framework.response import Response
 
 class ApiBase:
     CONGRESSUS_MAX_RETRIES: int = 3  # Max number of retries for any call to Congressus API
-    CONGRESSUS_TIMEOUT: int = 10  # Seconds before a request to Congressus API times out
+    CONGRESSUS_TIMEOUT: int = 5  # Seconds before a request to Congressus API times out
 
     @property
     def _congressus_url_base(self) -> str:
@@ -66,6 +66,28 @@ class ApiBase:
         :param api_version: The requested api version.
         :param req: Request object.
         :param extra_params: Extra request query parameters. Useful parameters are listed in documentation above.
+        """
+        pass
+
+    @abc.abstractmethod
+    def list_streeplijst_folders(self) -> Response:
+        """
+        Get all folders from Congressus linked to the Streeplijst specification. TODO: Add way to store which folders to
+        retrieve
+        """
+        pass
+
+    @abc.abstractmethod
+    def list_products_in_folder(self, folder_id: int) -> Response:
+        """
+        Get all products in a specific folder.
+        """
+
+    @abc.abstractmethod
+    def list_streeplijst_products(self) -> Response:
+        """
+        Get all products in all folders linked to the Streeplijst specification. TODO: Add way to store which folders to
+        retrieve
         """
         pass
 
@@ -135,7 +157,7 @@ class ApiV30(ApiBase):
     def get_member_by_username(self, username: str) -> Response:
         # Make API call with pagination as we have to perform a search
         res = self._congressus_api_call_pagination(method='get',
-                                                   url_endpoint=f'/members/search',
+                                                   url_endpoint='/members/search',
                                                    query_params={'term': username})  # Add a search term
         if status.is_success(res.status_code):  # Request is ok
             # /search likely returns more than one member, select only the member with the correct username
@@ -169,6 +191,29 @@ class ApiV30(ApiBase):
         else:  # Status indicated a failure
             return res
 
+    def list_streeplijst_folders(self) -> Response:
+        """
+        Get all folders from Congressus linked to the Streeplijst specification. TODO: Add way to store which folders to
+        retrieve
+        """
+        pass
+
+    def list_products_in_folder(self, folder_id: int) -> Response:
+        """
+        Get all products in a specific folder.
+        """
+        res = self._congressus_api_call_pagination(method='get',
+                                                   url_endpoint='/products',
+                                                   query_params={'folder_id': folder_id})  # Add the folder_id
+        return res
+
+    def list_streeplijst_products(self) -> Response:
+        """
+        Get all products in all folders linked to the Streeplijst specification. TODO: Add way to store which folders to
+        retrieve
+        """
+        pass
+
     def get_sales(self, api_version: str, req: Request, extra_params: dict = None) -> Response:
         pass
 
@@ -190,11 +235,9 @@ class ApiV30(ApiBase):
                 curr_res_data = curr_res.json()  # Convert data to a python dict
 
                 # Return the response from the API server converted to a rest_framework.Response object
-                return Response(data=curr_res_data,
-                                status=curr_res.status_code,
-                                headers=curr_res.headers,
-                                content_type=curr_res.headers['content-type'])
-
+                return Response(data=curr_res_data,  # Return the current response data
+                                status=curr_res.status_code,  # Copy the status code
+                                )
             except requests.exceptions.Timeout:  # If the request timed out
                 retries += 1  # Increment the number of retries
 
@@ -251,17 +294,13 @@ class ApiV30(ApiBase):
                     # Return the response from the API server converted to a rest_framework.Response object
                     return Response(data=curr_res_data,  # Return the error response data
                                     status=curr_res.status_code,  # Copy the status code
-                                    headers=curr_res.headers,  # Copy the headers
-                                    content_type=curr_res.headers['content-type'])  # Set to prevent hop-to-hop errors
-
+                                    )
                 # Check that the response actually has pagination, indicated by having a field 'data'
                 if 'data' not in curr_res_data:  # There is no pagination, return the current response
                     # Return the response from the API server converted to a rest_framework.Response object
                     return Response(data=curr_res_data,  # Return the current response data
                                     status=curr_res.status_code,  # Copy the status code
-                                    headers=curr_res.headers,  # Copy the headers
-                                    content_type=curr_res.headers['content-type'])  # Set to prevent hop-to-hop errors
-
+                                    )
                 # The result has pagination, add the result contents to the running total
                 total_res_data += curr_res_data['data']  # Get the data array and add to running total
 
@@ -269,8 +308,7 @@ class ApiV30(ApiBase):
                 if curr_res_data['has_next'] is False:  # No further pages to request
                     return Response(data=total_res_data,  # Return the total array with data
                                     status=curr_res.status_code,  # Copy the last results status code
-                                    headers=curr_res.headers,  # Copy the last results headers
-                                    content_type=curr_res.headers['content-type'])  # Set to prevent hop-to-hop errors
+                                    )
                 else:  # There are more pages in the request, loop again
                     retries = 0  # Reset number of retries
                     curr_page += 1  # Increment the current page

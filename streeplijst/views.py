@@ -1,3 +1,4 @@
+from rest_framework import status
 from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.parsers import JSONParser
@@ -16,26 +17,27 @@ def ping(req: Request, version: str) -> Response:
     Get a ping message from the backend server.
 
     :param req: Request object.
-    :param version: API version.
+    :param version: API version to use.
     """
     if version == ApiV30.API_VERSION:
         return api_v30_obj.ping()
-
-    # if version == api_v20.URL_PREFIX:
-    #     return api_v20.get_ping()
-    # if version == api_v30.URL_PREFIX:
-    #     return api_v30.get_ping()
+    else:
+        return Response(data={'message': f"API version {version} not recognized"}, status=status.HTTP_404_NOT_FOUND)
 
 
 @api_view(['GET'])
-def members(req: Request) -> Response:
+def members(req: Request, version: str) -> Response:
     """
     Get all members from Congressus. See https://docs.congressus.nl/#!/default/get_members for query parameters.
 
     :param req: Request object.
+    :param version: API version to use.
     """
     # return get_members(req)
-    pass
+    if version == ApiV30.API_VERSION:
+        return api_v30_obj.list_members()
+    else:
+        return Response(data={'message': f"API version {version} not recognized"}, status=status.HTTP_404_NOT_FOUND)
 
 
 @api_view(['GET'])
@@ -44,13 +46,13 @@ def member_by_id(req: Request, version: str, id: int) -> Response:
     Get a specific member from Congressus by their internal Congressus ID.
 
     :param req: Request object.
-    :param version: API version to use
+    :param version: API version to use.
     :param id: ID to use.
     """
-    print('member_by_id')
     if version == ApiV30.API_VERSION:
         return api_v30_obj.get_member_by_id(id=id)
-        # return get_members(req, extra_params={'username': username})
+    else:
+        return Response(data={'message': f"API version {version} not recognized"}, status=status.HTTP_404_NOT_FOUND)
 
 
 @api_view(['GET'])
@@ -59,53 +61,61 @@ def member_by_username(req: Request, version: str, username: str) -> Response:
     Get a specific member from Congressus by their username.
 
     :param req: Request object.
-    :param version: API version to use
+    :param version: API version to use.
     :param username: Username to search for.
     """
-    print('member_by_username')
     if version == ApiV30.API_VERSION:
         return api_v30_obj.get_member_by_username(username=username)
-    # return get_members(req, extra_params={'username': username})
+    else:
+        return Response(data={'message': f"API version {version} not recognized"}, status=status.HTTP_404_NOT_FOUND)
 
 
 @api_view(['GET'])
-def products(req: Request) -> Response:
+def products(req: Request, version: str, ) -> Response:
     """
     Get all products from Congressus. See https://docs.congressus.nl/#!/default/get_products for query parameters.
 
     :param req: Request object.
+    :param version: API version to use.
     """
-    pass
-    # return get_products(req)
+    if version == ApiV30.API_VERSION:
+        return api_v30_obj.get_products()
+    else:
+        return Response(data={'message': f"API version {version} not recognized"}, status=status.HTTP_404_NOT_FOUND)
 
 
 @api_view(['GET'])
-def products_by_folder_id(req: Request, folder_id: int) -> Response:
+def products_by_folder_id(req: Request, version:str, folder_id: int) -> Response:
     """
-    Get all products in a specific folder. Uses the folder_id query (https://docs.congressus.nl/#!/default/get_members).
+    Get all products in a specific folder.
 
     :param req: Request object.
+    :param version: API version to use.
     :param folder_id: Folder ID to search for.
     """
-    pass
-    # return get_products(req, extra_params={'folder_id': folder_id})
+    if version == ApiV30.API_VERSION:
+        return api_v30_obj.list_products_in_folder(folder_id=folder_id)
+    else:
+        return Response(data={'message': f"API version {version} not recognized"}, status=status.HTTP_404_NOT_FOUND)
 
 
 @api_view(['GET'])
-def sales_by_username(req: Request, username: str = None) -> Response:
+def sales_by_username(req: Request, version: str, username: str = None) -> Response:
     """
     Get all sales of a specific user. Uses the member_id query (https://docs.congressus.nl/#!/default/get_sales).
 
     :param req: Request object.
+    :param version: API version to use.
     :param username: Username to search for.
     """
-    pass
-    # member_id = get_member_id(username=username)
-    # return get_sales(req, extra_params={'member_id': member_id})
+    if version == ApiV30.API_VERSION:
+        return api_v30_obj.get_sales()
+    else:
+        return Response(data={'message': f"API version {version} not recognized"}, status=status.HTTP_404_NOT_FOUND)
 
 
 @api_view(['POST'])
-def sales(req: Request) -> Response:
+def sales(req: Request, version: str, ) -> Response:
     pass
 
     # member_id = req.data['member_id']

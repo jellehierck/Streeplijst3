@@ -1,4 +1,61 @@
+from dataclasses import dataclass
 from typing import List
+
+
+@dataclass
+class FolderConfiguration:
+    name: str  # folder name
+    id: int  # folder id (determined by Congressus, found in URL of the folder in the manager)
+    media: str  # url to image file
+
+
+STREEPLIJST_FOLDER_CONFIGURATION = [
+    FolderConfiguration(**{
+        'name': "Chips",
+        'id': 1991,
+        'media': "https://www.paradoks.utwente.nl/_media/889901/afa76d9d15c44705a9b7ef4da818ef2c/view"
+    }),
+    FolderConfiguration(**{
+        'name': "Soep",
+        'id': 1992,
+        'media': "https://www.paradoks.utwente.nl/_media/889902/d1de3e30149f48238d7df0566454a55f/view"
+    }),
+    FolderConfiguration(**{
+        'name': "Healthy",
+        'id': 1993,
+        'media': "https://www.paradoks.utwente.nl/_media/889906/447f0d874bcb48479b43dede97149183/view"
+    }),
+    FolderConfiguration(**{
+        'name': "Diepvries",
+        'id': 1994,
+        'media': "https://www.paradoks.utwente.nl/_media/889938/a1be36b57e9d4cd4aba77a0a169ad8ed/view"
+    }),
+    FolderConfiguration(**{
+        'name': "Snoep",
+        'id': 1995,
+        'media': "https://www.paradoks.utwente.nl/_media/889918/eda7aefce97745488c867c1fd46e580b/view"
+    }),
+    FolderConfiguration(**{
+        'name': "Koek",
+        'id': 1996,
+        'media': "https://www.paradoks.utwente.nl/_media/889908/5bbaa93d68fb4886974309dd09e3920f/view"
+    }),
+    FolderConfiguration(**{
+        'name': "Repen",
+        'id': 1997,
+        'media': "https://www.paradoks.utwente.nl/_media/889915/596ad94dc4fc42b6910d9648fed06aad/view"
+    }),
+    FolderConfiguration(**{
+        'name': "Speciaal",
+        'id': 1998,
+        'media': "https://www.paradoks.utwente.nl/_media/889910/63b78b80f2224dff8c46bfb8456d0bc8/view"
+    }),
+    FolderConfiguration(**{
+        'name': "Frisdrank",
+        'id': 2600,
+        'media': "https://www.paradoks.utwente.nl/_media/1074042/9737731eab49463eb625490e9d2d1b20/view"
+    }),
+]
 
 
 def strip_member_data(raw_member_data: dict) -> dict:
@@ -9,17 +66,30 @@ def strip_member_data(raw_member_data: dict) -> dict:
     :return: A stripped dict only including some details of a user.
     """
     keys_to_transfer = [
-        'date_of_birth',
-        'first_name',
-        'has_sdd_mandate',
         'id',
+        'username',
+        'status',
+        'gender',
+        'prefix',
+        'initials',
+        'nickname',
+        'given_name',
+        'first_name',
         'primary_last_name_main',
         'primary_last_name_prefix',
-        'profile_picture',
+        'primary_last_name',
+        'secondary_last_name_main',
+        'secondary_last_name_prefix',
+        'secondary_last_name',
+        'last_name_display',
+        'last_name',
+        'search_name',
+        'suffix',
+        'date_of_birth',
         'show_almanac',
-        'status',
-        'status_id',
-        'username'
+
+        'has_sdd_mandate',  # TODO: See how this works with sdd mandate
+        'bank_account'  # TODO: Remove this and only extract sdd mandate
     ]
     stripped_data = _extract_keys(raw_member_data, keys_to_transfer)
     return stripped_data
