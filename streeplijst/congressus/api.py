@@ -1,12 +1,13 @@
 import abc  # Abstract Base Class package
 import os
-
 from typing import Dict, List, Any
 
 import requests
 from rest_framework import status
 from rest_framework.request import Request
 from rest_framework.response import Response
+
+from streeplijst.congressus.utils import STREEPLIJST_PARENT_FOLDER_ID
 
 
 class ApiBase:
@@ -58,11 +59,10 @@ class ApiBase:
         pass
 
     @abc.abstractmethod
-    def list_products(self, api_version: str, req: Request, extra_params: dict = None) -> Response:
+    def list_products(self, req: Request, extra_params: dict = None) -> Response:
         """
         Get products from Congressus. See https://docs.congressus.nl/#!/default/get_products for query parameters.
 
-        :param api_version: The requested api version.
         :param req: Request object.
         :param extra_params: Extra request query parameters. Useful parameters are listed in documentation above.
         """
@@ -173,7 +173,7 @@ class ApiV30(ApiBase):
         else:  # Response status indicated a failure
             return res  # Return result with failure information
 
-    def list_products(self, api_version: str, req: Request, extra_params: dict = None) -> Response:
+    def list_products(self, req: Request, extra_params: dict = None) -> Response:
         """
         Deprecated for v30, use 'list_products_*' instead.
         """
@@ -181,15 +181,14 @@ class ApiV30(ApiBase):
         return Response(data=message_data, status=status.HTTP_403_FORBIDDEN)
 
     def list_streeplijst_folders(self) -> Response:
-        """
-        Get all folders from Congressus linked to the Streeplijst specification.
-        """
-        pass
+        res = self._congressus_api_call_pagination(method='get',
+                                                   url_endpoint='/product-folders',
+                                                   query_params={'parent_id': STREEPLIJST_PARENT_FOLDER_ID})
+        # TODO: Add image files to folders (image urls are not included in Congressus API response)
+        return res
+        # for folder_config in STREEPLIJST_FOLDER_CONFIGURATION:
 
     def list_products_in_folder(self, folder_id: int) -> Response:
-        """
-        Get all products in a specific folder.
-        """
         res = self._congressus_api_call_pagination(method='get',
                                                    url_endpoint='/products',
                                                    query_params={'folder_id': folder_id})  # Add the folder_id
@@ -202,10 +201,7 @@ class ApiV30(ApiBase):
             return res  # Return result with failure information
 
     def list_products_streeplijst(self) -> Response:
-        """
-        Get all products in all folders linked to the Streeplijst specification.
-        """
-        pass
+        pass  # TODO: Probably not needed anymore
 
     def get_sales(self, api_version: str, req: Request, extra_params: dict = None) -> Response:
         pass
@@ -374,6 +370,8 @@ class ApiV30(ApiBase):
             'media',  # Media object
         ]
         stripped_data = _extract_keys(from_dict=raw_product_data, keys=keys_to_transfer, default=None)
+
+        # media is an array of nested dicts, strip them to only leave the url to the image file
         if stripped_data['media']:  # If the media is not an empty array
             stripped_data['media'] = stripped_data['media'][0]['url']  # Get a URL to the image for this product
         return stripped_data

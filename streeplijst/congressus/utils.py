@@ -1,5 +1,7 @@
 from typing import List
 
+STREEPLIJST_PARENT_FOLDER_ID = 1989
+
 STREEPLIJST_FOLDER_CONFIGURATION = [
     {
         'name': "Chips",  # folder name

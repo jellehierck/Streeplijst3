@@ -1,11 +1,8 @@
 from rest_framework import status
+from rest_framework.decorators import api_view
 from rest_framework.request import Request
 from rest_framework.response import Response
-from rest_framework.parsers import JSONParser
-from rest_framework.decorators import api_view, parser_classes
 
-from streeplijst.congressus import api_v20
-from streeplijst.congressus import api_v30
 from streeplijst.congressus.api import ApiV30
 
 api_v30_obj = ApiV30()  # TODO: Move this so it is not a module variable
@@ -95,6 +92,20 @@ def products_by_folder_id(req: Request, version:str, folder_id: int) -> Response
     """
     if version == ApiV30.API_VERSION:
         return api_v30_obj.list_products_in_folder(folder_id=folder_id)
+    else:
+        return Response(data={'message': f"API version {version} not recognized"}, status=status.HTTP_404_NOT_FOUND)
+
+
+@api_view(['GET'])
+def folders(req: Request, version: str) -> Response:
+    """
+    Get all folders of the Streeplijst.
+
+    :param req: Request object.
+    :param version: API version to use.
+    """
+    if version == ApiV30.API_VERSION:
+        return api_v30_obj.list_streeplijst_folders()
     else:
         return Response(data={'message': f"API version {version} not recognized"}, status=status.HTTP_404_NOT_FOUND)
 
