@@ -3,17 +3,28 @@ from rest_framework.response import Response
 from rest_framework.parsers import JSONParser
 from rest_framework.decorators import api_view, parser_classes
 
-from streeplijst.congressus.api import get_members, get_products, get_sales, get_member_id, post_sale, get_ping
+from streeplijst.congressus import api_v20
+from streeplijst.congressus import api_v30
+from streeplijst.congressus.api import ApiV30
+
+api_v30_obj = ApiV30()  # TODO: Move this so it is not a module variable
 
 
 @api_view(['GET'])
-def ping(req: Request) -> Response:
+def ping(req: Request, version: str) -> Response:
     """
     Get a ping message from the backend server.
 
     :param req: Request object.
+    :param version: API version.
     """
-    return get_ping()
+    if version == ApiV30.API_VERSION:
+        return api_v30_obj.ping()
+
+    # if version == api_v20.URL_PREFIX:
+    #     return api_v20.get_ping()
+    # if version == api_v30.URL_PREFIX:
+    #     return api_v30.get_ping()
 
 
 @api_view(['GET'])
@@ -23,19 +34,38 @@ def members(req: Request) -> Response:
 
     :param req: Request object.
     """
-    return get_members(req)
+    # return get_members(req)
+    pass
 
 
 @api_view(['GET'])
-def members_by_username(req: Request, username: str) -> Response:
+def member_by_id(req: Request, version: str, id: int) -> Response:
     """
-    Get a specific member from Congressus. Uses the username query (https://docs.congressus.nl/#!/default/get_members).
-    Note that we still return a list containing only one object.
+    Get a specific member from Congressus by their internal Congressus ID.
 
     :param req: Request object.
+    :param version: API version to use
+    :param id: ID to use.
+    """
+    print('member_by_id')
+    if version == ApiV30.API_VERSION:
+        return api_v30_obj.get_member_by_id(id=id)
+        # return get_members(req, extra_params={'username': username})
+
+
+@api_view(['GET'])
+def member_by_username(req: Request, version: str, username: str) -> Response:
+    """
+    Get a specific member from Congressus by their username.
+
+    :param req: Request object.
+    :param version: API version to use
     :param username: Username to search for.
     """
-    return get_members(req, extra_params={'username': username})
+    print('member_by_username')
+    if version == ApiV30.API_VERSION:
+        return api_v30_obj.get_member_by_username(username=username)
+    # return get_members(req, extra_params={'username': username})
 
 
 @api_view(['GET'])
@@ -45,7 +75,8 @@ def products(req: Request) -> Response:
 
     :param req: Request object.
     """
-    return get_products(req)
+    pass
+    # return get_products(req)
 
 
 @api_view(['GET'])
@@ -56,7 +87,8 @@ def products_by_folder_id(req: Request, folder_id: int) -> Response:
     :param req: Request object.
     :param folder_id: Folder ID to search for.
     """
-    return get_products(req, extra_params={'folder_id': folder_id})
+    pass
+    # return get_products(req, extra_params={'folder_id': folder_id})
 
 
 @api_view(['GET'])
@@ -67,15 +99,18 @@ def sales_by_username(req: Request, username: str = None) -> Response:
     :param req: Request object.
     :param username: Username to search for.
     """
-    member_id = get_member_id(username=username)
-    return get_sales(req, extra_params={'member_id': member_id})
+    pass
+    # member_id = get_member_id(username=username)
+    # return get_sales(req, extra_params={'member_id': member_id})
 
 
 @api_view(['POST'])
 def sales(req: Request) -> Response:
-    member_id = req.data['member_id']
-    # product_offer_id = req.data['product_offer_id']
-    # quantity = req.data['quantity']
-    items = req.data['items']
-    return post_sale(member_id=member_id, items=items)
-    # product_offer_id=product_offer_id, quantity=quantity)
+    pass
+
+    # member_id = req.data['member_id']
+    # # product_offer_id = req.data['product_offer_id']
+    # # quantity = req.data['quantity']
+    # items = req.data['items']
+    # return post_sale(member_id=member_id, items=items)
+    # # product_offer_id=product_offer_id, quantity=quantity)
