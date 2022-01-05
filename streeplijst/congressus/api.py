@@ -1,18 +1,18 @@
 import abc  # Abstract Base Class package
 import os
-from typing import Dict, List, Any
+from typing import Dict
 
 import requests
 from rest_framework import status
 from rest_framework.request import Request
 from rest_framework.response import Response
 
-from streeplijst.congressus.utils import STREEPLIJST_PARENT_FOLDER_ID
+from streeplijst.congressus.utils import STREEPLIJST_PARENT_FOLDER_ID, _extract_keys, STREEPLIJST_FOLDER_CONFIGURATION
 
 
 class ApiBase:
-    CONGRESSUS_MAX_RETRIES: int = 3  # Max number of retries for any call to Congressus API
-    CONGRESSUS_TIMEOUT: int = 5  # Seconds before a request to Congressus API times out
+    CONGRESSUS_MAX_RETRIES: int = 2  # Max number of retries for any call to Congressus API
+    CONGRESSUS_TIMEOUT: int = 10  # Seconds before a request to Congressus API times out
 
     @property
     def _congressus_url_base(self) -> str:
@@ -37,64 +37,66 @@ class ApiBase:
         return Response(data=ping_data)
 
     @abc.abstractmethod
-    def list_members(self) -> Response:
+    def list_members(self, req: Request = None, extra_params: dict = None) -> Response:
         """
         Get multiple members from Congressus.
+        :param req:
+        :param extra_params:
         """
         pass
 
     @abc.abstractmethod
-    def get_member_by_id(self, id: int) -> Response:
+    def get_member_by_id(self, id: int, req: Request = None) -> Response:
         """
         Get a member by their internal Congressus ID. When getting a member by username, use 'get_member_by_username'
         instead.
+        :param req: Original request.
+        :param id:
         """
         pass
 
     @abc.abstractmethod
-    def get_member_by_username(self, username: str) -> Response:
+    def get_member_by_username(self, username: str, req: Request = None) -> Response:
         """
         Get a member by their username.
+        :param req: Original request.
+        :param username:
         """
         pass
 
     @abc.abstractmethod
-    def list_products(self, req: Request, extra_params: dict = None) -> Response:
+    def list_products(self, extra_params: dict = None, req: Request = None) -> Response:
         """
         Get products from Congressus. See https://docs.congressus.nl/#!/default/get_products for query parameters.
 
-        :param req: Request object.
+        :param req: Original request. Request object.
         :param extra_params: Extra request query parameters. Useful parameters are listed in documentation above.
         """
         pass
 
     @abc.abstractmethod
-    def list_streeplijst_folders(self) -> Response:
+    def list_streeplijst_folders(self, req: Request = None) -> Response:
         """
         Get all folders from Congressus linked to the Streeplijst specification. TODO: Add way to store which folders to
         retrieve
+        :param req: Original request. 
         """
         pass
 
     @abc.abstractmethod
-    def list_products_in_folder(self, folder_id: int) -> Response:
+    def list_products_in_folder(self, folder_id: int, req: Request = None) -> Response:
         """
         Get all products in a specific folder.
+        :param req: Original request.
+        :param folder_id:
         """
 
     @abc.abstractmethod
-    def list_products_streeplijst(self) -> Response:
-        """
-        Get all products in all folders linked to the Streeplijst specification. TODO: Add way to store which folders to
-        retrieve
-        """
-        pass
-
-    @abc.abstractmethod
-    def get_sales(self, username: str, invoice_status: str = None, period: str = None) -> Response:
+    def get_sales(self, username: str, invoice_status: str = None, period: str = None, req: Request = None) -> Response:
         """
         Get sales for a specific user
 
+        :param req: Original request. 
         :param username:
         :param invoice_status:
         :param period:
@@ -102,34 +104,49 @@ class ApiBase:
         pass
 
     @abc.abstractmethod
-    def post_sale(self, member_id: int, items):
+    def post_sale(self, member_id: int, items, req: Request = None):
         """
-        QUICK AND DIRTY FIX TO USE THE NEW API ONLY FOR POSTING PLS FIX THIS
+        :param req: Original request.
+        :param member_id:
+        :param items:
         """
         pass
 
     @abc.abstractmethod
     def _member_username_to_id(self, username: str) -> int:
         """
-        TODO
-        :param username:
-        :return:
+        Convert a member username to a member id by searching for the member username on Congressus API. Returns 0 if
+        the username could not be found.
         """
         pass
 
     @abc.abstractmethod
     def _strip_member_data(self, raw_member_data: dict) -> dict:
         """
-        Strips unnecessary raw member data from Congressus API and only returns relevant data.
-        :param raw_member_data: Raw data to strip.
+        Strips data from member API response to only include data that is relevant and no unnecessary personal details.
+
+        :param raw_member_data: Raw API response from Congressus.
+        :return: A stripped dict only including some details of a user.
         """
         pass
 
     @abc.abstractmethod
     def _strip_product_data(self, raw_product_data: dict) -> dict:
         """
-        Strips unnecessary raw product data from Congressus API and only returns relevant data.
-        :param raw_product_data: Raw data to strip.
+        Strips data from product API response to only include data that is relevant.
+
+        :param raw_product_data: Raw API response from Congressus.
+        :return: A stripped dict only including some details of a product.
+        """
+        pass
+
+    @abc.abstractmethod
+    def _strip_sales_data(self, raw_sales_data: dict):
+        """
+        Strips data from sales API response to only include data that is relevant.
+
+        :param raw_sales_data: Raw API response from Congressus.
+        :return: A stripped dict only including some details of a sale.
         """
         pass
 
@@ -146,14 +163,14 @@ class ApiV30(ApiBase):
     def version(self) -> str:
         return self.API_VERSION
 
-    def list_members(self) -> Response:
+    def list_members(self, req: Request = None, extra_params: dict = None) -> Response:
         """
         Deprecated for v30, use 'get_member_by_*' instead.
         """
         message_data = {'message': "It is not allowed to list all members, use a search instead"}
         return Response(data=message_data, status=status.HTTP_403_FORBIDDEN)
 
-    def get_member_by_id(self, id: int) -> Response:
+    def get_member_by_id(self, id: int, req: Request = None) -> Response:
         res = self._congressus_api_call_single(method='get',
                                                url_endpoint=f'/members/{id}')
         if status.is_success(res.status_code):  # Request is ok
@@ -162,50 +179,48 @@ class ApiV30(ApiBase):
         else:  # Response status indicated a failure
             return res
 
-    def get_member_by_username(self, username: str) -> Response:
+    def get_member_by_username(self, username: str, req: Request = None) -> Response:
         member_id = self._member_username_to_id(username=username)  # Get member ID
         if member_id == 0:  # No user was found
             error_data = {'message': f"No user found for {username}"}
             return Response(data=error_data, status=status.HTTP_404_NOT_FOUND)
 
         else:  # A user was found, get details of that user
-            return self.get_member_by_id(id=member_id)
+            return self.get_member_by_id(id=member_id, req=req)
 
-    def list_products(self, req: Request, extra_params: dict = None) -> Response:
+    def list_products(self, extra_params: dict = None, req: Request = None) -> Response:
         """
         Deprecated for v30, use 'list_products_*' instead.
         """
         message_data = {'message': "It is not allowed to list all products, list them by folders instead"}
         return Response(data=message_data, status=status.HTTP_403_FORBIDDEN)
 
-    def list_streeplijst_folders(self) -> Response:
+    def list_streeplijst_folders(self, req: Request = None) -> Response:
         res = self._congressus_api_call_pagination(method='get',
                                                    url_endpoint='/product-folders',
                                                    query_params={'parent_id': STREEPLIJST_PARENT_FOLDER_ID})
         # TODO: Add image files to folders (image urls are not included in Congressus API response)
         return res
-        # for folder_config in STREEPLIJST_FOLDER_CONFIGURATION:
 
-    def list_products_in_folder(self, folder_id: int) -> Response:
+    def list_products_in_folder(self, folder_id: int, req: Request = None) -> Response:
         res = self._congressus_api_call_pagination(method='get',
                                                    url_endpoint='/products',
                                                    query_params={'folder_id': folder_id})  # Add the folder_id
         if status.is_success(res.status_code):  # Request is ok
             stripped_products_array = []  # Empty array of stripped products
             for product in res.data:  # Iterate all products in the response
-                stripped_products_array.append(self._strip_product_data(raw_product_data=product))  # Strip product data
+                stripped_products_array.append(
+                    self._strip_product_data(raw_product_data=product))  # Strip product data
             return Response(data=stripped_products_array, status=res.status_code)  # Return response
         else:  # Response status indicated a failure
             return res  # Return result with failure information
 
-    def list_products_streeplijst(self) -> Response:
-        pass  # TODO: Probably not needed anymore
-
-    def get_sales(self, username: str, invoice_status: str = None, period: str = None) -> Response:
+    def get_sales(self, username: str, invoice_status: str = None, period: str = None, req: Request = None) -> Response:
         # TODO: Make this endpoint as it is currently not possible to filter sale invoices by member IDs
-        pass
+        message_data = {'message': f"Not supported in local API {self.version} (yet)"}
+        return Response(data=message_data, status=status.HTTP_403_FORBIDDEN)
 
-    def post_sale(self, member_id: int, items):
+    def post_sale(self, member_id: int, items, req: Request = None):
         payload = {  # Store the sales parameters in the format required by Congressus
             "member_id": member_id,  # User id (not username)
             "items": items,  # List of items
@@ -214,6 +229,7 @@ class ApiV30(ApiBase):
         res = self._congressus_api_call_single(method='post',
                                                url_endpoint='/sale-invoices',
                                                payload=payload)
+        # TODO: Strip the response data before sending it
         return res
 
     def _congressus_api_call_single(self, method: str, url_endpoint: str, query_params: dict = None,
@@ -241,14 +257,14 @@ class ApiV30(ApiBase):
 
         # Attempt making the request, taking into account the timeout and retries limits
         retries = 0
-        while retries < self.CONGRESSUS_MAX_RETRIES:  # Attempt to get a response a number of times
+        while retries < max_retries:  # Attempt to get a response a number of times
             try:
                 curr_res = requests.request(method=method,
                                             url=self._congressus_url_base + url_endpoint,
                                             headers=self._congressus_headers,
                                             params=query_params,
                                             json=payload,
-                                            timeout=self.CONGRESSUS_TIMEOUT)
+                                            timeout=timeout)
                 curr_res_data = curr_res.json()  # Convert data to a python dict
 
                 # Return the response from the API server converted to a rest_framework.Response object
@@ -339,10 +355,6 @@ class ApiV30(ApiBase):
         return Response(data={"error": "Request timeout"}, status=status.HTTP_408_REQUEST_TIMEOUT)
 
     def _member_username_to_id(self, username: str) -> int:
-        """
-        Convert a member username to a member id by searching for the member username on Congressus API. Returns 0 if
-        the username could not be found.
-        """
         # Make API call with pagination as we have to perform a search
         res = self._congressus_api_call_pagination(method='get',
                                                    url_endpoint='/members/search',
@@ -362,12 +374,6 @@ class ApiV30(ApiBase):
             return 0  # Return result with failure information
 
     def _strip_member_data(self, raw_member_data: dict) -> dict:
-        """
-        Strips data from member API response to only include data that is relevant and no unnecessary personal details.
-
-        :param raw_member_data: Raw API response from Congressus.
-        :return: A stripped dict only including some details of a user.
-        """
         keys_to_transfer = [
             'id',  # Internal congressus ID
             'username',  # Username (student number)
@@ -384,12 +390,6 @@ class ApiV30(ApiBase):
         return stripped_data
 
     def _strip_product_data(self, raw_product_data: dict) -> dict:
-        """
-        Strips data from product API response to only include data that is relevant.
-
-        :param raw_product_data: Raw API response from Congressus.
-        :return: A stripped dict only including some details of a product.
-        """
         keys_to_transfer = [
             'id',  # Internal congressus ID
             'product_offer_id',  # ID for the product offer (variant)
@@ -419,14 +419,123 @@ class ApiV20(ApiBase):
     def version(self) -> str:
         return self.API_VERSION
 
-    def get_sales(self, username: dict, invoice_status=None, period=None) -> Response:
-        pass
+    def list_members(self, req: Request = None, extra_params: dict = None) -> Response:
+        params = dict()
+        # Alter params according to the input parameters
+        if req:
+            params = req.query_params.copy()  # Copy the existing params to a mutable copy
+        if extra_params:  # If extra params were provided
+            params.update(extra_params)  # Add extra params to the existing params
 
-    def post_sale(self, member_id: int, items):
-        pass
+        # Make request to Congressus API
+        res = self._congressus_api_call(method='get',
+                                        url_endpoint='/members',
+                                        query_params=params)
 
-    def _make_congressus_api_call(self, method: str, url_endpoint: str, query_params: dict = None,
-                                  data: dict = None) -> Response:
+        if status.is_success(res.status_code):  # Request is ok
+            raw_data = res.data
+            stripped_data = list()
+            for raw_member_data in raw_data:
+                stripped_data.append(self._strip_member_data(raw_member_data=raw_member_data))
+            return Response(data=stripped_data, status=res.status_code)
+
+        else:  # Status indicated a failure
+            return res
+
+    def get_member_by_id(self, id: int, req: Request = None) -> Response:
+        res = self._congressus_api_call(method='get',
+                                        url_endpoint=f'/members/{id}')
+        if status.is_success(res.status_code):  # Request is ok
+            stripped_data = self._strip_member_data(res.data)  # Strip the raw data
+            return Response(data=stripped_data, status=res.status_code)
+        else:  # Response status indicated a failure
+            return res
+
+    def get_member_by_username(self, username: str, req: Request = None) -> Response:
+        res = self.list_members(extra_params={'username': username})
+
+        if status.is_success(res.status_code):  # Request is ok
+
+            # /members likely returns more than one member, select only the member with the correct username
+            # Source: https://stackoverflow.com/a/7079297
+            correct_member = next((member for member in res.data if member['username'] == username), None)
+            if correct_member:  # An exact match for the username was found
+                stripped_data = self._strip_member_data(correct_member)  # Strip the raw member data
+                return Response(data=stripped_data, status=res.status_code)
+
+            else:  # No exact match for the username was found, return an error
+                error_data = {'message': f"No user found for {username}"}
+                return Response(data=error_data, status=status.HTTP_404_NOT_FOUND)
+
+        else:  # Response status indicated a failure
+            return res
+
+    def list_products(self, extra_params: dict = None, req: Request = None) -> Response:
+        params = dict()
+        # Alter params according to the input parameters
+        if req:
+            params = req.query_params.copy()  # Copy the existing params to a mutable copy
+        if extra_params:  # If extra params were provided
+            params.update(extra_params)  # Add extra params to the existing params
+
+        res = self._congressus_api_call(method='get',
+                                        url_endpoint='/products',
+                                        query_params=params)
+
+        if status.is_success(res.status_code):  # Request is ok
+            raw_data = res.data
+            stripped_data = list()
+            for raw_product_data in raw_data:
+                stripped_data.append(self._strip_product_data(raw_product_data=raw_product_data))
+            return Response(stripped_data, status=res.status_code)
+
+        else:  # Status indicated a failure
+            return res
+
+    def list_streeplijst_folders(self, req: Request = None) -> Response:
+        # Do not make a call to Congressus but only return the local configuration of Streeplijst folders
+        return Response(data=STREEPLIJST_FOLDER_CONFIGURATION, status=status.HTTP_200_OK)
+
+    def list_products_in_folder(self, folder_id: int, req: Request = None) -> Response:
+        # Return a set of products with the specified folder id
+        return self.list_products(extra_params={'folder_id': folder_id})
+
+    def get_sales(self, username: str, invoice_status: str = None, period: str = None, req: Request = None) -> Response:
+        # Getting sales using the API v20 is not supported (it gives unexpected results and queries don't work)
+        message_data = {
+            'message': f"This action is not supported in Congressus API {self.version}, "
+                       f"use local API {ApiV30.API_VERSION} instead."
+        }
+        return Response(data=message_data, status=status.HTTP_403_FORBIDDEN)
+
+        # The following code should have worked but is not supported by Congressus API v20
+        # member_id = self._member_username_to_id(username=username)  # Convert username to member ID to use in search
+        # res = self._congressus_api_call(method='get',
+        #                                 url_endpoint='/sales',
+        #                                 query_params={'member_id': member_id})
+        #
+        # if status.is_success(res.status_code):  # Request is ok
+        #     raw_data = res.data
+        #     stripped_data = list()
+        #     for raw_sale_data in raw_data:
+        #         stripped_data.append(self._strip_sales_data(raw_sales_data=raw_sale_data))
+        #     return Response(stripped_data, status=res.status_code)
+        #
+        # else:  # Status indicated a failure
+        #     return res
+
+    def post_sale(self, member_id: int, items, req: Request = None):
+        """
+        Deprecated for v20, use v30 instead.
+        """
+        message_data = {
+            'message': f"It is not allowed to post sales in local API {self.version}, "
+                       f"use local API {ApiV30.API_VERSION} instead"
+        }
+        return Response(data=message_data, status=status.HTTP_403_FORBIDDEN)
+
+    def _congressus_api_call(self, method: str, url_endpoint: str, query_params: dict = None,
+                             payload: dict = None, timeout: int = None, max_retries: int = None) -> Response:
         """
         Make an API call to Congressus. Tries up to MAX_RETRIES times to get a response withing TIMEOUT seconds. If no
         response returned in that time, a Response is returned with error code HTTP_408_REQUEST_TIMEOUT.
@@ -434,27 +543,113 @@ class ApiV20(ApiBase):
         :param method: Method to obtain. Must be 'get' or 'post'
         :param url_endpoint: URL endpoint to call. Example: '/members'
         :param query_params: Optional additional parameters to add as a query.
-        :param data: Optional data to send with a POST request. Is converted from a dict to JSON.
+        :param payload: Optional data to send with a POST request. Is converted from a dict to JSON.
+        :param timeout: Timeout in seconds, defaults to self.CONGRESSUS_TIMEOUT.
+        :param max_retries: Number of retries in case of a timeout, defaults to self.CONGRESSUS_MAX_RETRIES.
         :return: A Response object.
         """
-        pass
+        if timeout is None:
+            timeout = self.CONGRESSUS_TIMEOUT
+        if max_retries is None:
+            max_retries = self.CONGRESSUS_MAX_RETRIES
+
+        # Attempt making the request, taking into account the timeout and retries limits
+        retries = 0
+        while retries < max_retries:  # Attempt to get a response a number of times
+            try:
+                curr_res = requests.request(method=method,
+                                            url=self._congressus_url_base + url_endpoint,
+                                            headers=self._congressus_headers,
+                                            params=query_params,
+                                            json=payload,
+                                            timeout=timeout)
+                curr_res_data = curr_res.json()  # Convert data to a python dict
+
+                # Return the response from the API server converted to a rest_framework.Response object
+                return Response(data=curr_res_data,  # Return the current response data
+                                status=curr_res.status_code,  # Copy the status code
+                                )
+            except requests.exceptions.Timeout:  # If the request timed out
+                retries += 1  # Increment the number of retries
+
+        # If the number of retries is exceeded, return a response with an error code
+        return Response(data={"error": "Request timeout"}, status=status.HTTP_408_REQUEST_TIMEOUT)
+
+    def _member_username_to_id(self, username: str) -> int:
+        res = self.list_members(extra_params={'username': username})
+
+        if status.is_success(res.status_code):  # Request is ok
+
+            # /members likely returns more than one member, select only the member with the correct username
+            # Source: https://stackoverflow.com/a/7079297
+            correct_member = next((member for member in res.data if member['username'] == username), None)
+            if correct_member:  # An exact match for the username was found
+                return correct_member['id']
+
+            else:  # No exact match for the username was found, return an error
+                return 0
+
+        else:  # Response status indicated a failure
+            return 0
 
     def _strip_member_data(self, raw_member_data: dict) -> dict:
-        pass
+        keys_to_transfer = [
+            'date_of_birth',
+            'first_name',
+            'has_sdd_mandate',
+            'id',
+            'primary_last_name_main',
+            'primary_last_name_prefix',
+            'profile_picture',  # TODO: Profile pictures are not supported in v30, maybe remove here too?
+            'show_almanac',
+            'status',
+            'status_id',
+            'username'
+        ]
+        stripped_data = _extract_keys(raw_member_data, keys_to_transfer)
+        return stripped_data
 
     def _strip_product_data(self, raw_product_data: dict) -> dict:
-        pass
+        keys_to_transfer = [
+            'description',
+            'folder',
+            'folder_breadcrumbs',
+            'folder_id',
+            'id',
+            'media',
+            'name',
+            'offers',
+            'published',
+            'url',
+        ]
+        stripped_data = _extract_keys(raw_product_data, keys_to_transfer)
 
+        # Perform some additional cleaning up
+        # media is an array of nested dicts, strip them to only leave the url to the image file
+        if stripped_data['media']:  # If the media is not an empty array
+            stripped_data['media'] = stripped_data['media'][0]['url']  # Get a URL to the image for this product
 
-def _extract_keys(from_dict: dict, keys: List[str], default: Any = 'error') -> dict:
-    """
-    Utility function. Transfers a list of keys and their associated values to a new dict.
+        # Offers contain their price as a string, so we convert it to an integer
+        if stripped_data['offers']:  # If the offers object is not an empty array
+            for offer in stripped_data['offers']:  # Loop al offers
+                offer['price'] = int(offer['price'])  # Convert offer to an integer
+        return stripped_data
 
-    :param from_dict: Source dict
-    :param keys: List of keys to transfer
-    :param default: Default value to transfer if a key cannot be found in from_dict (defaults to 'error')
-    """
-    return_dict = dict()
-    for key in keys:
-        return_dict[key] = from_dict.get(key, default)
-    return return_dict
+    def _strip_sales_data(self, raw_sales_data: dict):
+        keys_to_transfer = [
+            'cancelled',
+            'created',
+            'items',
+            'status',
+            'id',
+            'user_id'
+        ]
+        stripped_data = _extract_keys(raw_sales_data, keys_to_transfer)
+
+        # Perform some additional cleaning up
+        if stripped_data['items']:  # If the items list is not None
+            for item in stripped_data['items']:  # Loop all items in the list
+                item['price'] = int(item['price'])  # Convert from string to integer
+                item['total_price'] = int(item['total_price'])  # Convert from string to integer
+
+        return stripped_data

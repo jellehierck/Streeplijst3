@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Any
 
 STREEPLIJST_PARENT_FOLDER_ID = 1989
 
@@ -138,7 +138,7 @@ def strip_sales_data(raw_sales_data: dict) -> dict:
     return stripped_data
 
 
-def _extract_keys(from_dict: dict, keys: List[str], default: str = 'error') -> dict:
+def _extract_keys(from_dict: dict, keys: List[str], default: Any = 'error') -> dict:
     """
     Utility function. Transfers a list of keys and their associated values to a new dict.
 

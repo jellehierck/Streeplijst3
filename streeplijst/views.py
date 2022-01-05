@@ -3,9 +3,10 @@ from rest_framework.decorators import api_view
 from rest_framework.request import Request
 from rest_framework.response import Response
 
-from streeplijst.congressus.api import ApiV30
+from streeplijst.congressus.api import ApiV30, ApiV20
 
 api_v30_obj = ApiV30()  # TODO: Move this so it is not a module variable
+api_v20_obj = ApiV20()
 
 
 @api_view(['GET'])
@@ -18,6 +19,8 @@ def ping(req: Request, version: str) -> Response:
     """
     if version == ApiV30.API_VERSION:
         return api_v30_obj.ping()
+    elif version == ApiV20.API_VERSION:
+        return api_v20_obj.ping()
     else:
         return Response(data={'message': f"API version {version} not recognized"}, status=status.HTTP_404_NOT_FOUND)
 
@@ -32,7 +35,9 @@ def members(req: Request, version: str) -> Response:
     """
     # return get_members(req)
     if version == ApiV30.API_VERSION:
-        return api_v30_obj.list_members()
+        return api_v30_obj.list_members(req=req)
+    elif version == ApiV20.API_VERSION:
+        return api_v20_obj.list_members(req=req)
     else:
         return Response(data={'message': f"API version {version} not recognized"}, status=status.HTTP_404_NOT_FOUND)
 
@@ -47,7 +52,9 @@ def member_by_id(req: Request, version: str, id: int) -> Response:
     :param id: ID to use.
     """
     if version == ApiV30.API_VERSION:
-        return api_v30_obj.get_member_by_id(id=id)
+        return api_v30_obj.get_member_by_id(id=id, req=req)
+    elif version == ApiV20.API_VERSION:
+        return api_v20_obj.get_member_by_id(id=id, req=req)
     else:
         return Response(data={'message': f"API version {version} not recognized"}, status=status.HTTP_404_NOT_FOUND)
 
@@ -62,7 +69,9 @@ def member_by_username(req: Request, version: str, username: str) -> Response:
     :param username: Username to search for.
     """
     if version == ApiV30.API_VERSION:
-        return api_v30_obj.get_member_by_username(username=username)
+        return api_v30_obj.get_member_by_username(username=username, req=req)
+    elif version == ApiV20.API_VERSION:
+        return api_v20_obj.get_member_by_username(username=username, req=req)
     else:
         return Response(data={'message': f"API version {version} not recognized"}, status=status.HTTP_404_NOT_FOUND)
 
@@ -77,6 +86,8 @@ def products(req: Request, version: str, ) -> Response:
     """
     if version == ApiV30.API_VERSION:
         return api_v30_obj.list_products()
+    elif version == ApiV20.API_VERSION:
+        return api_v20_obj.list_products(req=req)
     else:
         return Response(data={'message': f"API version {version} not recognized"}, status=status.HTTP_404_NOT_FOUND)
 
@@ -91,7 +102,9 @@ def products_by_folder_id(req: Request, version:str, folder_id: int) -> Response
     :param folder_id: Folder ID to search for.
     """
     if version == ApiV30.API_VERSION:
-        return api_v30_obj.list_products_in_folder(folder_id=folder_id)
+        return api_v30_obj.list_products_in_folder(folder_id=folder_id, req=req)
+    elif version == ApiV20.API_VERSION:
+        return api_v20_obj.list_products_in_folder(folder_id=folder_id, req=req)
     else:
         return Response(data={'message': f"API version {version} not recognized"}, status=status.HTTP_404_NOT_FOUND)
 
@@ -105,7 +118,9 @@ def folders(req: Request, version: str) -> Response:
     :param version: API version to use.
     """
     if version == ApiV30.API_VERSION:
-        return api_v30_obj.list_streeplijst_folders()
+        return api_v30_obj.list_streeplijst_folders(req=req)
+    elif version == ApiV20.API_VERSION:
+        return api_v20_obj.list_streeplijst_folders(req=req)
     else:
         return Response(data={'message': f"API version {version} not recognized"}, status=status.HTTP_404_NOT_FOUND)
 
@@ -120,7 +135,9 @@ def sales_by_username(req: Request, version: str, username: str = None) -> Respo
     :param username: Username to search for.
     """
     if version == ApiV30.API_VERSION:
-        return api_v30_obj.get_sales(None)
+        return api_v30_obj.get_sales(username=username, req=req)
+    if version == ApiV20.API_VERSION:
+        return api_v20_obj.get_sales(username=username, req=req)
     else:
         return Response(data={'message': f"API version {version} not recognized"}, status=status.HTTP_404_NOT_FOUND)
 
@@ -130,7 +147,11 @@ def sales(req: Request, version: str) -> Response:
     if version == ApiV30.API_VERSION:
         member_id = req.data['member_id']
         items = req.data['items']
-        return api_v30_obj.post_sale(member_id=member_id, items=items)
+        return api_v30_obj.post_sale(member_id=member_id, items=items, req=req)
+    if version == ApiV20.API_VERSION:
+        member_id = req.data['member_id']
+        items = req.data['items']
+        return api_v20_obj.post_sale(member_id=member_id, items=items, req=req)
     else:
         return Response(data={'message': f"API version {version} not recognized"}, status=status.HTTP_404_NOT_FOUND)
 
