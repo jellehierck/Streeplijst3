@@ -61,8 +61,9 @@ code {
   width: 5rem;
 }
 .header-logo a:before {
-  background: url(https://duo.nl/libs/uno/dist/components/header/images/beeldmerk.svg)
-    bottom/100% no-repeat #154273;
+  /*background: url(https://duo.nl/libs/uno/dist/components/header/images/beeldmerk.svg)*/
+  /*  bottom/100% no-repeat #154273;*/
+  background: url(https://www.paradoks.utwente.nl/_media/1620430/7e58988fda09443a805702f84d4a7ac8/view) bottom/100% no-repeat #154273;
   content: "";
   height: 6rem;
   left: 0;

@@ -1,20 +1,19 @@
-import { useContext, useEffect, useState } from "react";
-import { Card, Col, Container, Row, Spinner, Button } from "react-bootstrap";
-import { useHistory, useParams } from "react-router";
-import congresssus, { FolderType, ProductType, UserType } from "../api/API";
-import { Stepper } from "../components/Stepper";
-import { Sidebar } from "../components/Sidebar";
-import { ShoppingCartContext } from "../contexts/ShoppingCartContext";
+import React, {useContext, useEffect, useState} from "react";
+import {Button, Card, Spinner} from "react-bootstrap";
+import {useHistory, useParams} from "react-router";
+import congresssus, {ProductType} from "../api/API";
+import {Sidebar} from "../components/Sidebar";
+import {ShoppingCartContext} from "../contexts/ShoppingCartContext";
 
 export function FolderPage(props: any) {
-  const sNumber = localStorage.getItem("sNumber");
-  const [loading, setLoading] = useState(false);
-  const history = useHistory();
-  // @ts-ignore
-  let { folderId } = useParams(); // because useParams() doesn't have the correct type
+    const sNumber = localStorage.getItem("sNumber");
+    const [loading, setLoading] = useState(false);
+    const history = useHistory();
+    // @ts-ignore
+    let {folderId} = useParams(); // because useParams() doesn't have the correct type
 
-  const [products, setProducts] = useState<any | undefined>([]);
-  const [cart, setCart] = useContext(ShoppingCartContext);
+    const [products, setProducts] = useState<any | undefined>([]);
+    const [cart, setCart] = useContext(ShoppingCartContext);
 
   const addToShoppingCart = (product: ProductType) => {
     setCart([...cart, product]);
@@ -59,25 +58,26 @@ export function FolderPage(props: any) {
           gridTemplateColumns: "repeat(auto-fill, 15rem)",
         }}
       >
-        {products.map((product: ProductType) => (
-          // <div
-          //   key={x.id}
-          //   className="w-full p-5 justify-center flex-wrap bg-gray-100 rounded-lg"
-          // >
-          //   <img className="h-40 block mx-auto" src={x.media} alt={x.name} />
-          //   <p className="font-bold text-xl">{x.name}</p>
-          // </div>
-          <Card
-            style={{
-              width: "14.5rem",
-              borderRadius: "0.5rem",
-              // backgroundColor: "#a3ffd1",
-            }}
-            className="p-3 shadow-sm"
-            key={product.id}
-            onClick={() => addToShoppingCart(product)}
-          >
-            <Card.Body>
+          {products.map((product: ProductType) => {
+              // <div
+              //   key={x.id}
+              //   className="w-full p-5 justify-center flex-wrap bg-gray-100 rounded-lg"
+              // >
+              //   <img className="h-40 block mx-auto" src={x.media} alt={x.name} />
+              //   <p className="font-bold text-xl">{x.name}</p>
+              // </div>
+              //   console.log(product);
+              return <Card
+                  style={{
+                      width: "14.5rem",
+                      borderRadius: "0.5rem",
+                      // backgroundColor: "#a3ffd1",
+                  }}
+                  className="p-3 shadow-sm"
+                  key={product.id}
+                  onClick={() => addToShoppingCart(product)}
+              >
+                  <Card.Body>
               <Card.Title>{product.name}</Card.Title>
             </Card.Body>
             <Card.Img variant="bottom" src={product.media} />
@@ -86,17 +86,17 @@ export function FolderPage(props: any) {
                 variant="success"
                 className="w-full"
                 onClick={() => {
-                  addToShoppingCart(product);
+                    addToShoppingCart(product);
                 }}
               >
-                +
+                  +
               </Button>
-              <Button variant="secondary">
-                €{(product.price / 100).toFixed(2)}
-              </Button>
+                <Button variant="secondary">
+                    €{(product.price / 100).toFixed(2)}
+                </Button>
             </div>
-          </Card>
-        ))}
+              </Card>
+          })}
       </div>
       {/* </div> */}
     </div>
