@@ -87,8 +87,8 @@ CORS_ORIGIN_WHITELIST = [
 ]
 
 CSRF_TRUSTED_ORIGINS = [
-    'localhost:3000',
-    'app.streeplijst.com'
+    'http://localhost:3000',
+    'https://app.streeplijst.com'
 ]
 
 # Database
