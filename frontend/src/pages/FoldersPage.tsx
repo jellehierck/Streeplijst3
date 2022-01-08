@@ -1,18 +1,18 @@
-import { useEffect, useState } from "react";
-import { Card, Col, Container, Row, Spinner } from "react-bootstrap";
-import { useHistory } from "react-router";
-import congresssus, { FolderType, UserType } from "../api/API";
-import { Sidebar } from "../components/Sidebar";
+import React, {useEffect, useState} from "react";
+import {Card, Spinner} from "react-bootstrap";
+import {useHistory} from "react-router";
+import {FolderType, UserType} from "../api/API";
+import {Sidebar} from "../components/Sidebar";
 
 export function FoldersPage(props: any) {
-  const sNumber = localStorage.getItem("sNumber");
-  const [loading, setLoading] = useState(false);
-  const [member, setMember] = useState<UserType | undefined>(undefined);
-  const history = useHistory();
+    const sNumber = localStorage.getItem("sNumber");
+    const [loading, setLoading] = useState(false);
+    const [member, setMember] = useState<UserType | undefined>(undefined);
+    const history = useHistory();
 
-  useEffect(() => {
-    console.log("use effect is executed :DDD", loading);
-    setLoading(false);
+    useEffect(() => {
+        console.log("use effect is executed :DDD", loading);
+        setLoading(false);
   }, []);
 
   if (loading) return <Spinner animation="border" />;

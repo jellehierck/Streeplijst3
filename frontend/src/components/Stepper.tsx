@@ -1,15 +1,15 @@
-import { useState } from "react";
-import { Button } from "react-bootstrap";
+import React, {useState} from "react";
+import {Button} from "react-bootstrap";
 
 export function Stepper() {
-  const [quantity, setQuantity] = useState(0);
-  return (
-    <div className="h-full w-full">
-      <Button variant="secondary" className="max-h-28">
-        {quantity}
-      </Button>
-      <Button
-        className=" max-h-28 float-right"
+    const [quantity, setQuantity] = useState(0);
+    return (
+        <div className="h-full w-full">
+            <Button variant="secondary" className="max-h-28">
+                {quantity}
+            </Button>
+            <Button
+                className=" max-h-28 float-right"
         onClick={() => setQuantity(quantity + 1)}
       >
         +

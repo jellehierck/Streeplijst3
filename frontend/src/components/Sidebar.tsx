@@ -1,17 +1,17 @@
-import { Button, Card, Nav } from "react-bootstrap";
-import { useContext, useState } from "react";
-import { Redirect } from "react-router";
-import { UserContext } from "../contexts/UserContext";
-import { Stepper } from "./Stepper";
-import { ShoppingCartContext } from "../contexts/ShoppingCartContext";
-import congresssus, { ProductType } from "../api/API";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import {Button, Card, Nav} from "react-bootstrap";
+import React, {useContext, useState} from "react";
+import {Redirect} from "react-router";
+import {UserContext} from "../contexts/UserContext";
+import {ShoppingCartContext} from "../contexts/ShoppingCartContext";
+import congresssus, {ProductType} from "../api/API";
+import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
+
 //todo import congressus and fix functiuon
 export function Sidebar() {
   const [loggedIn, setLoggedIn] = useState(true);
   const [user, setUser] = useContext(UserContext);
   const [cart, setCart] = useContext(ShoppingCartContext);
-  console.log({ user });
+  console.log({user});
 
   if (!loggedIn) {
     return <Redirect to="/" />;

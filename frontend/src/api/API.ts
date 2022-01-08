@@ -1,7 +1,7 @@
 class Congressus {
   private csrfToken: string = "";
   private streeplijstFolders = [
-    1991, 2600, 1993, 1996, 1994, 1997, 1995, 1992, 1998, 2464,
+    1991, 2600, 1993, 1996, 1994, 1997, 1995, 1992, 1998,
   ];
 
   private cache: { folders: any } = { folders: undefined };
@@ -12,9 +12,11 @@ class Congressus {
   async getMemberByUsername(username: string) {
     if (!username || username.length < 3) throw new Error("invalid sNumber");
 
-    return this.call(`/members/${username}`).then((member) => {
-      if (!member[0]) throw new Error("invalid sNumber");
-      return member[0];
+    return this.call(`/v20/members/username/${username}`).then((member) => {
+      // if (!member[0]) throw new Error("invalid sNumber");
+      // return member[0];
+      if (!member) throw new Error("invalid sNumber");
+      return member;
     });
   }
 
@@ -22,7 +24,7 @@ class Congressus {
   async getSalesByUsername(username: string) {
     if (!username || username.length < 3) throw new Error("invalid sNumber");
 
-    return this.call(`/sales/${username}`).then((sales) => {
+    return this.call(`/v20/sales/${username}`).then((sales) => {
       if (sales.length < 1) throw new Error("invalid sNumber");
       return sales;
     });
@@ -48,16 +50,19 @@ class Congressus {
   async getProductsByFolder(folder_id: number): Promise<ProductType[]> {
     if (this.cache.folders && this.cache.folders[folder_id])
       return this.cache.folders[folder_id];
-    return this.call(`/products?folder_id=${folder_id}`).then((products) => {
+    // return this.call(`/v20/products?folder_id=${folder_id}`).then((products) => {
+    return this.call(`/v20/products/folder/${folder_id}`).then((products) => {
+      console.log(products)
       products = products
-        .filter((product: ProductType) => product.published)
-        .map((product: any) => {
-          product.price = product?.offers[0]?.price || product.price;
-          product.product_offer_id = product?.offers[0].id;
-          return product;
-        });
+          .filter((product: ProductType) => product.published)
+          .map((product: any) => {
+            // product.price = product?.offers[0]?.price || product.price;
+            product.price = product?.offers[0]?.price;
+            product.product_offer_id = product?.offers[0].id;
+            return product;
+          });
 
-      if (!this.cache.folders) this.cache.folders = { [folder_id]: products };
+      if (!this.cache.folders) this.cache.folders = {[folder_id]: products};
       else this.cache.folders[folder_id] = products;
 
       return products;
@@ -66,9 +71,9 @@ class Congressus {
 
   // todo add sale to member
   async addSaleToMember(member_id: number, items: ProductSaleType[]) {
-    return this.call(`/sales/`, {
+    return this.call(`/v30/sales`, {
       method: "POST",
-      body: JSON.stringify({ member_id, items }),
+      body: JSON.stringify({member_id, items}),
     });
   }
 

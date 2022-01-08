@@ -1,8 +1,9 @@
-import { createContext, useEffect, useState } from "react";
-import { Spinner } from "react-bootstrap";
-import congresssus, { UserType } from "../api/API";
+import React, {createContext, useEffect, useState} from "react";
+import {Spinner} from "react-bootstrap";
+import congresssus, {UserType} from "../api/API";
 
 export const UserContext = createContext<UserType | any>([]);
+
 export function UserContextProvider(props: any) {
   const sNumber = localStorage.getItem("sNumber");
 
