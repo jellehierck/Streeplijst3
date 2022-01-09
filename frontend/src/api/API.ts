@@ -1,26 +1,66 @@
+/**
+ * APIError - Base error for any custom error messages in this API
+ */
+class APIError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = this.constructor.name;
+  }
+}
+
+/**
+ * NotFoundError - Error indicating a 404 NOT FOUND return value
+ */
+class NotFoundError extends APIError {
+  constructor(message: string) {
+    super(message);
+    this.name = "NotFoundError";
+  }
+}
+
+/**
+ * todo
+ */
 class Congressus {
   private csrfToken: string = "";
   private streeplijstFolders = [
     1991, 2600, 1993, 1996, 1994, 1997, 1995, 1992, 1998,
   ];
 
-  private cache: { folders: any } = { folders: undefined };
+  private cache: { folders: any } = {folders: undefined};
 
-  constructor(private API_HOST: string) {}
+  constructor(private API_HOST: string) {
+  }
 
-  // fetch member by username
+  /**
+   * fetch member by username
+   * @param username
+   */
   async getMemberByUsername(username: string) {
     if (!username || username.length < 3) throw new Error("invalid sNumber");
 
-    return this.call(`/v20/members/username/${username}`).then((member) => {
-      // if (!member[0]) throw new Error("invalid sNumber");
-      // return member[0];
-      if (!member) throw new Error("invalid sNumber");
-      return member;
-    });
+    // Make a request and get the response
+    return this.request(`/v20/members/username/${username}`)
+      .then((res) => {
+        return res.json()
+      })
+      .catch((error) => {
+        // Throw a not found error
+        throw new NotFoundError(error);
+      })
+
+    // return this.call(`/v20/members/username/${username}`).then((member) => {
+    //   // if (!member[0]) throw new Error("invalid sNumber");
+    //   // return member[0];
+    //   if (!member) throw new Error("invalid sNumber");
+    //   return member;
+    // });
   }
 
-  // fetch sales of member
+  /**
+   * fetch sales of member
+   * @param username
+   */
   async getSalesByUsername(username: string) {
     if (!username || username.length < 3) throw new Error("invalid sNumber");
 
@@ -30,7 +70,9 @@ class Congressus {
     });
   }
 
-  // fetch all streeplijst folders
+  /**
+   * fetch all streeplijst folders
+   */
   async getFolders(): Promise<FolderType[]> {
     let folders = [];
     for (let folder_id of this.streeplijstFolders) {
@@ -46,7 +88,10 @@ class Congressus {
     return folders;
   }
 
-  // todo fetch all streeplijst products by category/folder
+  /**
+   * todo fetch all streeplijst products by category/folder
+   * @param folder_id
+   */
   async getProductsByFolder(folder_id: number): Promise<ProductType[]> {
     if (this.cache.folders && this.cache.folders[folder_id])
       return this.cache.folders[folder_id];
@@ -54,13 +99,13 @@ class Congressus {
     return this.call(`/v20/products/folder/${folder_id}`).then((products) => {
       console.log(products)
       products = products
-          .filter((product: ProductType) => product.published)
-          .map((product: any) => {
-            // product.price = product?.offers[0]?.price || product.price;
-            product.price = product?.offers[0]?.price;
-            product.product_offer_id = product?.offers[0].id;
-            return product;
-          });
+        .filter((product: ProductType) => product.published)
+        .map((product: any) => {
+          // product.price = product?.offers[0]?.price || product.price;
+          product.price = product?.offers[0]?.price;
+          product.product_offer_id = product?.offers[0].id;
+          return product;
+        });
 
       if (!this.cache.folders) this.cache.folders = {[folder_id]: products};
       else this.cache.folders[folder_id] = products;
@@ -69,15 +114,49 @@ class Congressus {
     });
   }
 
-  // todo add sale to member
-  async addSaleToMember(member_id: number, items: ProductSaleType[]) {
+  /**
+   * todo add sale to member
+   * @param member_id
+   * @param items
+   */
+  async addSaleToMember(member_id: number,
+    items: ProductSaleType[]) {
     return this.call(`/v30/sales`, {
       method: "POST",
       body: JSON.stringify({member_id, items}),
     });
   }
 
-  private async call(url: string, options?: RequestInit) {
+  /**
+   * Make request to the Congressus API and return the Promise instance (for error catching)
+   * @param url
+   * @param options
+   * @private
+   */
+  private async request(url: string,
+    options?: RequestInit) {
+    return await fetch(`${this.API_HOST}/streeplijst${url}`, {
+      credentials: "include",
+      ...options,
+      headers: {
+        Accept: "application/json",
+        "Content-Type": "application/json; charset=UTF-8",
+        // ...(options?.method === "POST"
+        //   ? { "X-CSRF-Token": await this.getCsrfToken() }
+        //   : {}), // this is really ugly
+        ...options?.headers,
+      },
+    });
+  }
+
+  /**
+   * Make request to the Congressus API and return the response data (strips all HTTP status information)
+   * @param url
+   * @param options
+   * @private
+   */
+  private async call(url: string,
+    options?: RequestInit) {
     const response = await fetch(`${this.API_HOST}/streeplijst${url}`, {
       credentials: "include",
       ...options,
@@ -93,6 +172,11 @@ class Congressus {
 
     return response.json();
   }
+
+  /**
+   * todo
+   * @private
+   */
   private async getCsrfToken() {
     if (!this.csrfToken) {
       const response = await fetch(`${this.API_HOST}/csrf/`, {
@@ -107,30 +191,41 @@ class Congressus {
 
 export default new Congressus("http://localhost:8000");
 
-// only the fields we need
+/**
+ * The only fields needed in a Folder
+ */
 export interface FolderType {
   id: number;
   name: string;
   media: string;
 }
 
+/**
+ * The only fields needed in a Product
+ */
 export interface ProductType {
   id: number;
   product_offer_id: number;
   name: string;
   description: string;
-  media: string; // would be array for different image sizes in v30
+  media: string;
   price: number;
   folder_id: number;
   folder: string;
   published: boolean;
 }
 
+/**
+ * todo
+ */
 export interface ProductSaleType {
   product_offer_id: number;
   quantity: number;
 }
 
+/**
+ * todo
+ */
 export interface UserType {
   date_of_birth: string;
   first_name: string;

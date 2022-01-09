@@ -64,10 +64,11 @@ function SNumberPad() {
         setLoggedIn(true);
       })
       .catch((e) => {
-        // this is bad, dont code like this
-        if (e.message === "invalid sNumber") {
-          setErrored(true); // show scary banner
-        }
+        // todo this is bad, dont code like this
+        setErrored(true);
+        // if (e.message === "invalid sNumber") {
+        //   setErrored(true); // show scary banner
+        // }
       });
   }
 
