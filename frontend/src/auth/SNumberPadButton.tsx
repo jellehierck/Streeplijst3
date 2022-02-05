@@ -20,7 +20,6 @@ const SNumberPadButton : React.FC<SNumberPadButtonProps> = (props) => {
         return <h1>{action.nr}</h1>;
 
       case "remove": // Remove the last number
-        // return <h6>back</h6>
         return <FontAwesomeIcon icon={["fas", "backspace"]} />;
 
       case "togglePrefix": // Toggle the prefix
