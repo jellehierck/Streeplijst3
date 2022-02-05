@@ -97,7 +97,7 @@ const SNumberPad : React.FC<SNumberPadProps> = (props) => {
   const [sNumber, sNumberDispatch] = useReducer(sNumberReducer, initialSNumberState);
 
   // Handle a keypress on the input field
-  const handleKeyPress = (event : KeyboardEvent) => {
+  const handleKeyPress = (event : KeyboardEvent) : void => {
     switch (event.key) {
       case "Enter":
         logIn(sNumber)

@@ -1,21 +1,21 @@
-import React, {useContext, useEffect, useState} from "react";
-import {Button, Card, Spinner} from "react-bootstrap";
-import {useHistory, useParams} from "react-router";
-import congresssus, {ProductType} from "../api/API";
-import {Sidebar} from "../components/Sidebar";
-import {ShoppingCartContext} from "../contexts/ShoppingCartContext";
+import React, { useContext, useEffect, useState } from "react";
+import { Button, Card, Spinner } from "react-bootstrap";
+import { useHistory, useParams } from "react-router";
+import congresssus, { ProductType } from "../api/API";
+import { Sidebar } from "../components/Sidebar";
+import { ShoppingCartContext } from "../contexts/ShoppingCartContext";
 
-export function FolderPage(props: any) {
-    const sNumber = localStorage.getItem("sNumber");
-    const [loading, setLoading] = useState(false);
-    const history = useHistory();
-    // @ts-ignore
-    let {folderId} = useParams(); // because useParams() doesn't have the correct type
+export function InsideFolderPage(props : any) {
+  const sNumber = localStorage.getItem("sNumber");
+  const [loading, setLoading] = useState(false);
+  const history = useHistory();
+  // @ts-ignore
+  let {folderId} = useParams(); // because useParams() doesn't have the correct type
 
-    const [products, setProducts] = useState<any | undefined>([]);
-    const [cart, setCart] = useContext(ShoppingCartContext);
+  const [products, setProducts] = useState<any | undefined>([]);
+  const [cart, setCart] = useContext(ShoppingCartContext);
 
-  const addToShoppingCart = (product: ProductType) => {
+  const addToShoppingCart = (product : ProductType) => {
     setCart([...cart, product]);
   };
 
