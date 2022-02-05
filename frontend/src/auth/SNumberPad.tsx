@@ -1,4 +1,4 @@
-import React, {useContext, useReducer, useState} from "react";
+import React, { useContext, useEffect, useReducer, useState } from "react";
 
 import Row from "react-bootstrap/Row";
 import Button from "react-bootstrap/Button";
@@ -6,30 +6,28 @@ import ButtonGroup from "react-bootstrap/ButtonGroup";
 import InputGroup from "react-bootstrap/InputGroup";
 import FormControl from "react-bootstrap/FormControl";
 
-import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
 import "./SNumberPad.css";
 import congressus from "../api/API";
-import {Redirect} from "react-router";
-import {UserContext} from "../contexts/UserContext";
+import { Redirect } from "react-router";
+import { UserContext } from "../contexts/UserContext";
+import SNumberPadButton from "./SNumberPadButton";
 
-/**
- * Possible prefixes for an SNumber.
- */
-const SNumberPrefixes = ["s", "m", "x"] as const;
+// Max SNumber length
+const MAX_SNUMBER_LENGTH = 7;
 
-/**
- * SNumber state contents.
- */
-type SNumberState = {
-  prefix: typeof SNumberPrefixes[number];
-  sNumber: string;
+// Possible prefixes for SNumber
+const SNumberPrefix = ["s", "m", "x"] as const;
+
+// SNumber state contents
+type SNumber = {
+  prefix : typeof SNumberPrefix[number];
+  sNumber : string;
 };
 
-/**
- * Initial state for the SNumber
- */
-const initialSNumberState: SNumberState = {
+// Initial state for SNumber
+const initialSNumberState : SNumber = {
   prefix: "s",
   sNumber: "",
 };
@@ -38,13 +36,111 @@ const initialSNumberState: SNumberState = {
  * Actions which can be taken on the SNumber state.
  */
 type SNumberAction =
-  | { type: "add"; nr: number }
-  | { type: "remove" }
-  | { type: "clear" }
-  | { type: "togglePrefix" };
+  | { type : "add"; nr : number }
+  | { type : "remove" }
+  | { type : "clear" }
+  | { type : "togglePrefix" }
+  | { type : "setPrefix", prefix : typeof SNumberPrefix[number] };
+
+// Props sent to SNumberPad
+type SNumberPadProps = {}
 
 // React component
-function SNumberPad() {
+const SNumberPad : React.FC<SNumberPadProps> = (props) => {
+
+  /**
+   * Reducer function for actions on the student number
+   * @param currSNumber Current SNumber state
+   * @param action Action object
+   */
+  const sNumberReducer = (currSNumber : SNumber, action : SNumberAction) : SNumber => {
+    switch (action.type) {
+      case "add": // Add a number to the s number
+        if (currSNumber.sNumber.length < MAX_SNUMBER_LENGTH) {  // Check if SNumber is not too long
+          return {
+            ...currSNumber,  // Copy existing SNumber
+            sNumber: currSNumber.sNumber + action.nr, // Add the new number
+          };
+
+        } else {  // There are too many characters in the s number, do not add the new number
+          return {...currSNumber};
+        }
+
+      case "remove": // Remove the last number of the s number
+        return {
+          ...currSNumber,  // Copy existing SNumber
+          sNumber: currSNumber.sNumber.slice(0, -1),  // Remove last element in string
+        };
+
+      case "clear": // Replace the entire s number with the initial s number
+        return {
+          ...initialSNumberState,
+        };
+
+      case "togglePrefix": // Replace first character of the s number
+        const currPrefixIndex = SNumberPrefix.indexOf(currSNumber.prefix);  // Obtain index of current prefix
+        return {
+          ...currSNumber,
+          prefix:
+            SNumberPrefix[(currPrefixIndex + 1) % SNumberPrefix.length],  // Set new prefix index or wrap around to 0
+        };
+
+      case "setPrefix":  // Set the prefix to the passed value
+        return {
+          ...currSNumber,
+          prefix: action.prefix
+        };
+    }
+  }
+
+  // Create reducer hook for accessing and updating the current SNumber
+  const [sNumber, sNumberDispatch] = useReducer(sNumberReducer, initialSNumberState);
+
+  // Handle a keypress on the input field
+  const handleKeyPress = (event : KeyboardEvent) => {
+    switch (event.key) {
+      case "Enter":
+        logIn(sNumber)
+        sNumberDispatch({type: "clear"});  // Clear the input field
+        break;
+
+      case "Backspace":
+        sNumberDispatch({type: "remove"});  // Remove the last number
+        break;
+
+      // Any number is pressed
+      case "1":
+      case "2":
+      case "3":
+      case "4":
+      case "5":
+      case "6":
+      case "7":
+      case "8":
+      case "9":
+      case "0":
+        sNumberDispatch({type: "add", nr: +event.key});  // Convert string to number using unary operator (+)
+        break;
+
+      // One of the prefix keys is pressed
+      case "s":
+      case "x":
+      case "m":
+        sNumberDispatch({type: "setPrefix", prefix: event.key})
+        break;
+    }
+  };
+
+  // Use the Effect to bind any keypresses to the s number field
+  useEffect(() => {
+    document.addEventListener("keydown", handleKeyPress);
+
+    return function cleanup() {  // Unregister the event listener when this component is unloaded
+      document.removeEventListener("keydown", handleKeyPress);
+    }
+  }, []);
+
+
   const [_, setUser] = useContext(UserContext);
 
   // reset error and try to fetch the member, if success, load sNumber into localStorage
@@ -53,7 +149,8 @@ function SNumberPad() {
   );
   const [errored, setErrored] = useState(false);
 
-  function logIn(sNumber: SNumberState) {
+  // Log in a user with this SNumber
+  function logIn(sNumber : SNumber) : void {
     setErrored(false);
 
     congressus
@@ -72,47 +169,10 @@ function SNumberPad() {
       });
   }
 
-  function sNumberReducer(
-    currState: SNumberState,
-    action: SNumberAction
-  ): SNumberState {
-    switch (action.type) {
-      case "add": // Add a number to the s number
-        return {
-          ...currState,
-          sNumber: currState.sNumber + action.nr,
-        };
-
-      case "remove": // Remove the last number of the s number
-        return {
-          ...currState,
-          sNumber: currState.sNumber.slice(0, -1),
-        };
-
-      case "clear": // Replace the entire s number with the initial s number
-        return {
-          ...initialSNumberState,
-        };
-      case "togglePrefix": // Replace first character of the s number
-        const indexOfCurrentPrefix = SNumberPrefixes.indexOf(currState.prefix);
-        return {
-          ...currState,
-          prefix:
-            SNumberPrefixes[
-            (indexOfCurrentPrefix + 1) % SNumberPrefixes.length
-              ],
-        };
-    }
-  }
-
-  const [sNumber, sNumberDispatch] = useReducer(
-    sNumberReducer,
-    initialSNumberState
-  );
-
   // redirect if authenticated
   if (loggedIn) return <Redirect to="/folders" />;
 
+  // Return component
   return (
     <div className="flex justify-center">
       <div>
@@ -136,132 +196,63 @@ function SNumberPad() {
             </span>
           </div>
         ) : null}
+
         <Row className="numpad-row">
           <InputGroup className="mb-3">
-            <FormControl
-              value={sNumber.prefix + sNumber.sNumber}
-              aria-label="Student number input"
-              aria-describedby="s-number-input"
-            />
-            <Button
-              variant="success"
-              className="btn-sq-md"
-              onClick={() => logIn(sNumber)}
-            >
+            <FormControl value={sNumber.prefix + sNumber.sNumber}
+                         onChange={() => {
+                         }}  // We ignore the onChange function as we handle this elsewhere
+                         aria-label="Student number input"
+                         aria-describedby="s-number-input" />
+            <Button variant="success"
+                    className="btn-sq-md"
+                    onClick={() => logIn(sNumber)}>
               <FontAwesomeIcon icon={["far", "check-circle"]} />
             </Button>
           </InputGroup>
         </Row>
+
         <Row className="numpad-row">
-          <ButtonGroup
-            className="btn-group-no-padding"
-            aria-label="Basic example"
-          >
-            <Button
-              variant="secondary"
-              className="btn-sq-md"
-              onClick={() => sNumberDispatch({type: "add", nr: 1})}
-            >
-              <h1>1</h1>
-            </Button>
-            <Button
-              variant="secondary"
-              className="btn-sq-md"
-              onClick={() => sNumberDispatch({type: "add", nr: 2})}
-            >
-              <h1>2</h1>
-            </Button>
-            <Button
-              variant="secondary"
-              className="btn-sq-md"
-              onClick={() => sNumberDispatch({type: "add", nr: 3})}
-            >
-              <h1>3</h1>
-            </Button>
+          <ButtonGroup className="btn-group-no-padding">
+            <SNumberPadButton dispatch={sNumberDispatch}
+                              action={{type: "add", nr: 1}} />
+            <SNumberPadButton dispatch={sNumberDispatch}
+                              action={{type: "add", nr: 2}} />
+            <SNumberPadButton dispatch={sNumberDispatch}
+                              action={{type: "add", nr: 3}} />
           </ButtonGroup>
         </Row>
+
         <Row className="numpad-row">
-          <ButtonGroup
-            className="btn-group-no-padding"
-            aria-label="Basic example"
-          >
-            <Button
-              variant="secondary"
-              className="btn-sq-md"
-              onClick={() => sNumberDispatch({type: "add", nr: 4})}
-            >
-              <h1>4</h1>
-            </Button>
-            <Button
-              variant="secondary"
-              className="btn-sq-md"
-              onClick={() => sNumberDispatch({type: "add", nr: 5})}
-            >
-              <h1>5</h1>
-            </Button>
-            <Button
-              variant="secondary"
-              className="btn-sq-md"
-              onClick={() => sNumberDispatch({type: "add", nr: 6})}
-            >
-              <h1>6</h1>
-            </Button>
+          <ButtonGroup className="btn-group-no-padding">
+            <SNumberPadButton dispatch={sNumberDispatch}
+                              action={{type: "add", nr: 4}} />
+            <SNumberPadButton dispatch={sNumberDispatch}
+                              action={{type: "add", nr: 5}} />
+            <SNumberPadButton dispatch={sNumberDispatch}
+                              action={{type: "add", nr: 6}} />
           </ButtonGroup>
         </Row>
+
         <Row className="numpad-row">
-          <ButtonGroup
-            className="btn-group-no-padding"
-            aria-label="Basic example"
-          >
-            <Button
-              variant="secondary"
-              className="btn-sq-md"
-              onClick={() => sNumberDispatch({type: "add", nr: 7})}
-            >
-              <h1>7</h1>
-            </Button>
-            <Button
-              variant="secondary"
-              className="btn-sq-md"
-              onClick={() => sNumberDispatch({type: "add", nr: 8})}
-            >
-              <h1>8</h1>
-            </Button>
-            <Button
-              variant="secondary"
-              className="btn-sq-md"
-              onClick={() => sNumberDispatch({type: "add", nr: 9})}
-            >
-              <h1>9</h1>
-            </Button>
+          <ButtonGroup className="btn-group-no-padding">
+            <SNumberPadButton dispatch={sNumberDispatch}
+                              action={{type: "add", nr: 7}} />
+            <SNumberPadButton dispatch={sNumberDispatch}
+                              action={{type: "add", nr: 8}} />
+            <SNumberPadButton dispatch={sNumberDispatch}
+                              action={{type: "add", nr: 9}} />
           </ButtonGroup>
         </Row>
+
         <Row className="numpad-row">
-          <ButtonGroup
-            className="btn-group-no-padding"
-            aria-label="Basic example"
-          >
-            <Button
-              variant="secondary"
-              className="btn-sq-md"
-              onClick={() => sNumberDispatch({type: "togglePrefix"})}
-            >
-              {SNumberPrefixes.join("/")}
-            </Button>
-            <Button
-              variant="secondary"
-              className="btn-sq-md"
-              onClick={() => sNumberDispatch({type: "add", nr: 0})}
-            >
-              <h1>0</h1>
-            </Button>
-            <Button
-              variant="secondary"
-              className="btn-sq-md"
-              onClick={() => sNumberDispatch({type: "remove"})}
-            >
-              <FontAwesomeIcon icon={["fas", "backspace"]} />
-            </Button>
+          <ButtonGroup className="btn-group-no-padding">
+            <SNumberPadButton dispatch={sNumberDispatch}
+                              action={{type: "togglePrefix"}} />
+            <SNumberPadButton dispatch={sNumberDispatch}
+                              action={{type: "add", nr: 0}} />
+            <SNumberPadButton dispatch={sNumberDispatch}
+                              action={{type: "remove"}} />
           </ButtonGroup>
         </Row>
       </div>
@@ -271,3 +262,5 @@ function SNumberPad() {
 
 // Exports
 export default SNumberPad;
+export type { SNumberAction };
+export { SNumberPrefix }
