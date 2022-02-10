@@ -2,8 +2,8 @@ import React from "react";
 import { Button } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
 
-import { ContentContainer } from "../../components/layout/Layout";
-import ShoppingCart from "../../components/shopping-cart/ShoppingCart";
+import { ContentContainer } from "../layout/Layout";
+import ShoppingCart from "../shopping-cart/ShoppingCart";
 
 type FolderOverviewProps = {}
 

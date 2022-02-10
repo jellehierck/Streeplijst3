@@ -2,8 +2,8 @@ import React from "react";
 import { Button } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
 
-import { useAuth } from "../../components/auth/AuthContext";
-import { ContentContainer } from "../../components/layout/Layout";
+import { useAuth } from "../auth/AuthContext";
+import { ContentContainer } from "../layout/Layout";
 
 type LoginProps = {
   afterLogin : string

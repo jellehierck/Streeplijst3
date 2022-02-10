@@ -1,10 +1,10 @@
 import React from "react";
 import { Button } from "react-bootstrap";
 import { useNavigate, useParams } from "react-router-dom";
+import streeplijstRouteConfig from "../../streeplijst/streeplijstRouteConfig";
 
-import { ContentContainer } from "../../components/layout/Layout";
-import ShoppingCart from "../../components/shopping-cart/ShoppingCart";
-import streeplijstRouteConfig from "../streeplijstRouteConfig";
+import { ContentContainer } from "../layout/Layout";
+import ShoppingCart from "../shopping-cart/ShoppingCart";
 
 type FolderProductsProps = {}
 

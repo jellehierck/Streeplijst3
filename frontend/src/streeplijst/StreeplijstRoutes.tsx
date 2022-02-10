@@ -2,12 +2,12 @@ import React from "react";
 import { Route, Routes } from "react-router-dom"
 import ForceLogout from "../components/auth/ForceLogout";
 import RequireAuth from "../components/auth/RequireAuth";
-import Checkout from "./content/Checkout";
-import FolderOverview from "./content/FolderOverview";
-import FolderProducts from "./content/FolderProducts";
-import Home from "./content/Home";
-import Login from "./content/Login";
-import UserOverview from "./content/UserOverview";
+import Checkout from "../components/content/Checkout";
+import FolderOverview from "../components/content/FolderOverview";
+import FolderProducts from "../components/content/FolderProducts";
+import Home from "../components/content/Home";
+import Login from "../components/content/Login";
+import UserOverview from "../components/content/UserOverview";
 import StreeplijstLayout from "./StreeplijstLayout";
 
 import streeplijstRouteConfig, { streeplijstRoutes } from "./streeplijstRouteConfig";

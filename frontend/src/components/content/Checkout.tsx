@@ -1,9 +1,9 @@
 import React from "react";
-import LogoutButton from "../../components/auth/LogoutButton";
+import LogoutButton from "../auth/LogoutButton";
 
-import { ContentContainer } from "../../components/layout/Layout";
-import ShoppingCart from "../../components/shopping-cart/ShoppingCart";
-import UserInformation from "../../components/user/UserInformation";
+import { ContentContainer } from "../layout/Layout";
+import ShoppingCart from "../shopping-cart/ShoppingCart";
+import UserInformation from "../user/UserInformation";
 
 type CheckoutProps = {}
 

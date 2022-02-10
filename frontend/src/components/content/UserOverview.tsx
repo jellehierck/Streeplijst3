@@ -1,11 +1,11 @@
 import React from "react";
 import { Button } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
-import { useAuth } from "../../components/auth/AuthContext";
-import AuthStatus from "../../components/auth/AuthStatus";
-import { ContentContainer } from "../../components/layout/Layout";
-import UserInformation from "../../components/user/UserInformation";
-import { streeplijstRoutes } from "../streeplijstRouteConfig";
+import { streeplijstRoutes } from "../../streeplijst/streeplijstRouteConfig";
+import { useAuth } from "../auth/AuthContext";
+import AuthStatus from "../auth/AuthStatus";
+import { ContentContainer } from "../layout/Layout";
+import UserInformation from "../user/UserInformation";
 
 type UserOverviewProps = {}
 

@@ -1,9 +1,9 @@
 import React from "react";
 import { Button } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
+import { streeplijstRoutes } from "../../streeplijst/streeplijstRouteConfig";
 
-import { ContentContainer } from "../../components/layout/Layout";
-import { streeplijstRoutes } from "../streeplijstRouteConfig";
+import { ContentContainer } from "../layout/Layout";
 
 type HomeProps = {}
 
