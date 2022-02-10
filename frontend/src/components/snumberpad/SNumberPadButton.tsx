@@ -1,29 +1,29 @@
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import React from "react";
 
 import Button from "react-bootstrap/Button"
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { SNumberAction, SNumberPrefix } from "./SNumberPad";
+import { SNumberActionType, SNumberPrefix } from "./SNumberContext";
 
 type SNumberPadButtonProps = {
-  dispatch : React.Dispatch<SNumberAction>,
-  action : SNumberAction
+  action : SNumberActionType
+  dispatch : React.Dispatch<SNumberActionType>,
 }
 
 // React component
 const SNumberPadButton : React.FC<SNumberPadButtonProps> = (props) => {
-  const {dispatch, action} = props;
+  const {action, dispatch} = props;
 
   // Determines what to display based on the action passed to this button
   const buttonText = () : JSX.Element => {
     switch (action.type) {
       case "add":  // Display the number to add
-        return <h1>{action.nr}</h1>;
+        return <h2>{action.nr}</h2>;
 
       case "remove": // Remove the last number
-        return <FontAwesomeIcon icon={["fas", "backspace"]} />;
+        return <h2><FontAwesomeIcon icon={["fas", "backspace"]} /></h2>;
 
       case "togglePrefix": // Toggle the prefix
-        return <h1>{SNumberPrefix.join("/")}</h1>;
+        return <h4>{SNumberPrefix.join("/")}</h4>;
 
       default:  // Any other action displays nothing
         return <></>;

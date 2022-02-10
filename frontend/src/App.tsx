@@ -1,12 +1,15 @@
-import React from "react";
-
 import { library } from "@fortawesome/fontawesome-svg-core";
-import { faBackspace, fas } from "@fortawesome/free-solid-svg-icons";
 import { faCheckCircle, far } from "@fortawesome/free-regular-svg-icons";
-import StreeplijstApp from "./applications/StreeplijstApp";
-import { ShoppingCartContextProvider } from "./contexts/ShoppingCartContext";
-import { UserContextProvider } from "./contexts/UserContext";
-import Header from "./components/Header";
+import { faBackspace, fas } from "@fortawesome/free-solid-svg-icons";
+import React from "react";
+import { BrowserRouter } from "react-router-dom";
+import { AlertContextProvider } from "./components/alert/AlertContext";
+import { AuthContextProvider } from "./components/auth/AuthContext";
+
+import { ShoppingCartContextProvider } from "./components/shopping-cart/ShoppingCartContext";
+import { UserContextProvider } from "./components/user/UserContext";
+
+import StreeplijstRoutes from "./streeplijst/StreeplijstRoutes";
 
 // Initialize a font-awesome library to use icons easily throughout the project
 // src: https://fontawesome.com/v5.15/how-to-use/on-the-web/using-with/react
@@ -23,12 +26,17 @@ library.add(
 function App() {
 
   return (
-    <UserContextProvider>
-      <ShoppingCartContextProvider>
-        <Header />
-        <StreeplijstApp />
-      </ShoppingCartContextProvider>
-    </UserContextProvider>
+    <AuthContextProvider>
+      <UserContextProvider>
+        <ShoppingCartContextProvider>
+          <AlertContextProvider>
+            <BrowserRouter>
+              <StreeplijstRoutes />
+            </BrowserRouter>
+          </AlertContextProvider>
+        </ShoppingCartContextProvider>
+      </UserContextProvider>
+    </AuthContextProvider>
   )
 
   // const [loading, setLoading] = useState(true);

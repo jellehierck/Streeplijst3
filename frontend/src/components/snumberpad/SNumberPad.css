@@ -7,10 +7,6 @@
     height: var(--numpad-btn-size);
 }
 
-.numpad-row * {
-
-}
-
 .btn-group-no-padding > * {
     padding: 0;
 }

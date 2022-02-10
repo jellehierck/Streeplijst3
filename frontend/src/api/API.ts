@@ -1,58 +1,99 @@
-/**
- * APIError - Base error for any custom error messages in this API
- */
-class APIError extends Error {
-  constructor(message: string) {
-    super(message);
-    this.name = this.constructor.name;
-  }
+import axios from "axios"
+
+// Folder information
+type FolderType = {
+  id : number
+  name : string
+  parent_id : number
+  published : boolean
+  path : string
+  media? : string
 }
 
-/**
- * NotFoundError - Error indicating a 404 NOT FOUND return value
- */
-class NotFoundError extends APIError {
-  constructor(message: string) {
-    super(message);
-    this.name = "NotFoundError";
-  }
+// Product information
+type ProductType = {
+  id : number
+  product_offer_id : number
+  name : string;
+  description? : string
+  published : boolean
+  media? : string
+  price : number
 }
 
+// Sale information
+type SaleType = {
+  member_id : number
+  items : SaleItemType[]
+}
+
+// Product sale data
+type  SaleItemType = {
+  product_offer_id : number
+  quantity : number
+}
+
+// User type
+type MemberType = {
+  id : number;
+  username : string
+  first_name : string
+  last_name : string
+  prefix? : string
+  suffix? : string
+  date_of_birth : string
+  show_almanac : boolean
+  status : MemberStatusType
+  profile_picture? : string
+}
+
+// User status type
+type MemberStatusType = {
+  archived : boolean,
+  member_from : string,
+  member_to : string | null,
+  name : string,
+  status_id : number,
+}
+
+
 /**
- * todo
+ * TODO
  */
 class Congressus {
-  private csrfToken: string = "";
+  private csrfToken : string = "";
   private streeplijstFolders = [
     1991, 2600, 1993, 1996, 1994, 1997, 1995, 1992, 1998,
   ];
 
-  private cache: { folders: any } = {folders: undefined};
+  private cache : { folders : any } = {folders: undefined};
 
-  constructor(private API_HOST: string) {
+  constructor(private API_HOST : string) {
+  }
+
+  async getMemberByUsername(username : string) {
+    axios.get(`${this.API_HOST}/streeplijst/v30/`)
   }
 
   /**
    * fetch member by username
    * @param username
    */
-  async getMemberByUsername(username: string) {
-    if (!username || username.length < 3) throw new Error("invalid sNumber");
-
+  async getMemberByUsernameOld(username : string) {
     // Make a request and get the response
-    return this.request(`/v20/members/username/${username}`)
+    return this.request(`/v30/members/username/${username}`)
       .then((res) => {
         return res.json()
       })
       .catch((error) => {
         // Throw a not found error
-        throw new NotFoundError(error);
+        throw new Error(error);
       })
 
     // return this.call(`/v20/members/username/${username}`).then((member) => {
-    //   // if (!member[0]) throw new Error("invalid sNumber");
+    //   // if (!member[0]) throw new Error("invalid number");
     //   // return member[0];
-    //   if (!member) throw new Error("invalid sNumber");
+    //   if (!member) throw new Error("invalid number");
     //   return member;
     // });
   }
@@ -61,11 +102,11 @@ class Congressus {
    * fetch sales of member
    * @param username
    */
-  async getSalesByUsername(username: string) {
-    if (!username || username.length < 3) throw new Error("invalid sNumber");
+  async getSalesByUsername(username : string) {
+    if (!username || username.length < 3) throw new Error("invalid number");
 
     return this.call(`/v20/sales/${username}`).then((sales) => {
-      if (sales.length < 1) throw new Error("invalid sNumber");
+      if (sales.length < 1) throw new Error("invalid number");
       return sales;
     });
   }
@@ -73,17 +114,17 @@ class Congressus {
   /**
    * fetch all streeplijst folders
    */
-  async getFolders(): Promise<FolderType[]> {
-    let folders = [];
-    for (let folder_id of this.streeplijstFolders) {
-      let firstProduct = (await this.getProductsByFolder(folder_id))[0];
-
-      folders.push({
-        id: firstProduct.folder_id,
-        name: firstProduct.folder,
-        media: firstProduct.media,
-      });
-    }
+  async getFolders() : Promise<FolderType[]> {
+    let folders : FolderType[] = [];
+    // for (let folder_id of this.streeplijstFolders) {
+    //   let firstProduct = (await this.getProductsByFolder(folder_id))[0];
+    //
+    //   folders.push({
+    //     id: firstProduct.folder_id,
+    //     name: firstProduct.folder,
+    //     media: firstProduct.media,
+    //   });
+    // }
 
     return folders;
   }
@@ -92,15 +133,15 @@ class Congressus {
    * todo fetch all streeplijst products by category/folder
    * @param folder_id
    */
-  async getProductsByFolder(folder_id: number): Promise<ProductType[]> {
+  async getProductsByFolder(folder_id : number) : Promise<ProductType[]> {
     if (this.cache.folders && this.cache.folders[folder_id])
       return this.cache.folders[folder_id];
     // return this.call(`/v20/products?folder_id=${folder_id}`).then((products) => {
     return this.call(`/v20/products/folder/${folder_id}`).then((products) => {
       console.log(products)
       products = products
-        .filter((product: ProductType) => product.published)
-        .map((product: any) => {
+        .filter((product : ProductType) => product.published)
+        .map((product : any) => {
           // product.price = product?.offers[0]?.price || product.price;
           product.price = product?.offers[0]?.price;
           product.product_offer_id = product?.offers[0].id;
@@ -119,8 +160,8 @@ class Congressus {
    * @param member_id
    * @param items
    */
-  async addSaleToMember(member_id: number,
-    items: ProductSaleType[]) {
+  async addSaleToMember(member_id : number,
+    items : SaleItemType[]) {
     return this.call(`/v30/sales`, {
       method: "POST",
       body: JSON.stringify({member_id, items}),
@@ -133,8 +174,8 @@ class Congressus {
    * @param options
    * @private
    */
-  private async request(url: string,
-    options?: RequestInit) {
+  private async request(url : string,
+    options? : RequestInit) {
     return await fetch(`${this.API_HOST}/streeplijst${url}`, {
       credentials: "include",
       ...options,
@@ -155,8 +196,8 @@ class Congressus {
    * @param options
    * @private
    */
-  private async call(url: string,
-    options?: RequestInit) {
+  private async call(url : string,
+    options? : RequestInit) {
     const response = await fetch(`${this.API_HOST}/streeplijst${url}`, {
       credentials: "include",
       ...options,
@@ -189,53 +230,8 @@ class Congressus {
   }
 }
 
-export default new Congressus("http://localhost:8000");
+const congressus = new Congressus("http://localhost:8000")
 
-/**
- * The only fields needed in a Folder
- */
-export interface FolderType {
-  id: number;
-  name: string;
-  media: string;
-}
-
-/**
- * The only fields needed in a Product
- */
-export interface ProductType {
-  id: number;
-  product_offer_id: number;
-  name: string;
-  description: string;
-  media: string;
-  price: number;
-  folder_id: number;
-  folder: string;
-  published: boolean;
-}
-
-/**
- * todo
- */
-export interface ProductSaleType {
-  product_offer_id: number;
-  quantity: number;
-}
-
-/**
- * todo
- */
-export interface UserType {
-  date_of_birth: string;
-  first_name: string;
-  has_sdd_mandate: boolean;
-  id: number;
-  primary_last_name_main: string;
-  primary_last_name_prefix: string;
-  profile_picture: any;
-  show_almanac: boolean;
-  status: string;
-  status_id: number;
-  username: string;
-}
+// Exports
+export default congressus;
+export type { MemberType, MemberStatusType, FolderType, ProductType, SaleItemType, SaleType };

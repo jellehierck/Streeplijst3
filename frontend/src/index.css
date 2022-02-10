@@ -26,10 +26,6 @@ code {
     monospace;
 }
 
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
-
 .header-logo a {
   height: 10.4rem;
   margin-left: 204px;

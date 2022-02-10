@@ -1,46 +1,17 @@
-import React, { useContext, useEffect, useReducer, useState } from "react";
-
-import Row from "react-bootstrap/Row";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import React, { useContext, useEffect, useState } from "react";
 import Button from "react-bootstrap/Button";
 import ButtonGroup from "react-bootstrap/ButtonGroup";
-import InputGroup from "react-bootstrap/InputGroup";
 import FormControl from "react-bootstrap/FormControl";
+import InputGroup from "react-bootstrap/InputGroup";
 
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import Row from "react-bootstrap/Row";
+import { useNavigate } from "react-router";
+// import { Redirect } from "react-router-dom";
+import { SNumberContext } from "./SNumberContext";
 
 import "./SNumberPad.css";
-import congressus from "../api/API";
-import { Redirect } from "react-router";
-import { UserContext } from "../contexts/UserContext";
 import SNumberPadButton from "./SNumberPadButton";
-
-// Max SNumber length
-const MAX_SNUMBER_LENGTH = 7;
-
-// Possible prefixes for SNumber
-const SNumberPrefix = ["s", "m", "x"] as const;
-
-// SNumber state contents
-type SNumber = {
-  prefix : typeof SNumberPrefix[number];
-  sNumber : string;
-};
-
-// Initial state for SNumber
-const initialSNumberState : SNumber = {
-  prefix: "s",
-  sNumber: "",
-};
-
-/**
- * Actions which can be taken on the SNumber state.
- */
-type SNumberAction =
-  | { type : "add"; nr : number }
-  | { type : "remove" }
-  | { type : "clear" }
-  | { type : "togglePrefix" }
-  | { type : "setPrefix", prefix : typeof SNumberPrefix[number] };
 
 // Props sent to SNumberPad
 type SNumberPadProps = {}
@@ -48,59 +19,13 @@ type SNumberPadProps = {}
 // React component
 const SNumberPad : React.FC<SNumberPadProps> = (props) => {
 
-  /**
-   * Reducer function for actions on the student number
-   * @param currSNumber Current SNumber state
-   * @param action Action object
-   */
-  const sNumberReducer = (currSNumber : SNumber, action : SNumberAction) : SNumber => {
-    switch (action.type) {
-      case "add": // Add a number to the s number
-        if (currSNumber.sNumber.length < MAX_SNUMBER_LENGTH) {  // Check if SNumber is not too long
-          return {
-            ...currSNumber,  // Copy existing SNumber
-            sNumber: currSNumber.sNumber + action.nr, // Add the new number
-          };
-
-        } else {  // There are too many characters in the s number, do not add the new number
-          return {...currSNumber};
-        }
-
-      case "remove": // Remove the last number of the s number
-        return {
-          ...currSNumber,  // Copy existing SNumber
-          sNumber: currSNumber.sNumber.slice(0, -1),  // Remove last element in string
-        };
-
-      case "clear": // Replace the entire s number with the initial s number
-        return {
-          ...initialSNumberState,
-        };
-
-      case "togglePrefix": // Replace first character of the s number
-        const currPrefixIndex = SNumberPrefix.indexOf(currSNumber.prefix);  // Obtain index of current prefix
-        return {
-          ...currSNumber,
-          prefix:
-            SNumberPrefix[(currPrefixIndex + 1) % SNumberPrefix.length],  // Set new prefix index or wrap around to 0
-        };
-
-      case "setPrefix":  // Set the prefix to the passed value
-        return {
-          ...currSNumber,
-          prefix: action.prefix
-        };
-    }
-  }
-
-  // Create reducer hook for accessing and updating the current SNumber
-  const [sNumber, sNumberDispatch] = useReducer(sNumberReducer, initialSNumberState);
+  const {sNumber, sNumberDispatch} = useContext(SNumberContext);
 
   // Handle a keypress on the input field
   const handleKeyPress = (event : KeyboardEvent) : void => {
     switch (event.key) {
       case "Enter":
-        logIn(sNumber)
+        // TODO logIn(number)
         sNumberDispatch({type: "clear"});  // Clear the input field
         break;
 
@@ -138,39 +63,39 @@ const SNumberPad : React.FC<SNumberPadProps> = (props) => {
     return function cleanup() {  // Unregister the event listener when this component is unloaded
       document.removeEventListener("keydown", handleKeyPress);
     }
-  }, []);
+  });
 
+  // const [_, setUser] = useContext(UserContext);
 
-  const [_, setUser] = useContext(UserContext);
+  // To navigate to other links
+  let navigate = useNavigate();
 
-  // reset error and try to fetch the member, if success, load sNumber into localStorage
+  // restartTimer error and try to fetch the member, if success, load number into localStorage
   const [loggedIn, setLoggedIn] = useState(
     Boolean(localStorage.getItem("sNumber"))
   );
   const [errored, setErrored] = useState(false);
 
-  // Log in a user with this SNumber
-  function logIn(sNumber : SNumber) : void {
-    setErrored(false);
-
-    congressus
-      .getMemberByUsername(sNumber.prefix + sNumber.sNumber)
-      .then((member) => {
-        localStorage.setItem("sNumber", sNumber.prefix + sNumber.sNumber);
-        setUser(member);
-        setLoggedIn(true);
-      })
-      .catch((e) => {
-        // todo this is bad, dont code like this
-        setErrored(true);
-        // if (e.message === "invalid sNumber") {
-        //   setErrored(true); // show scary banner
-        // }
-      });
-  }
-
-  // redirect if authenticated
-  if (loggedIn) return <Redirect to="/folders" />;
+  // Log in a user with this SNumberType
+  // function logIn(sNumber : SNumberType) : void {
+  //   setErrored(false);
+  //
+  //   congressus
+  //     .getMemberByUsername(sNumber.prefix + sNumber.number)
+  //     .then((member) => {
+  //       localStorage.setItem("sNumber", sNumber.prefix + sNumber.number);
+  //       setUser(member);
+  //       setLoggedIn(true);
+  //       navigate("/folders");  // Navigate to the folders page
+  //     })
+  //     .catch((e) => {
+  //       // todo this is bad, dont code like this
+  //       setErrored(true);
+  //       // if (e.message === "invalid number") {
+  //       //   setErrored(true); // show scary banner
+  //       // }
+  //     });
+  // }
 
   // Return component
   return (
@@ -191,7 +116,6 @@ const SNumberPad : React.FC<SNumberPadProps> = (props) => {
                 viewBox="0 0 20 20"
               >
                 <title>Close</title>
-                {/*<path d="M14.348 14.849a1.2 1.2 0 0 1-1.697 0L10 11.819l-2.651 3.029a1.2 1.2 0 1 1-1.697-1.697l2.758-3.15-2.759-3.152a1.2 1.2 0 1 1 1.697-1.697L10 8.183l2.651-3.031a1.2 1.2 0 1 1 1.697 1.697l-2.758 3.152 2.758 3.15a1.2 1.2 0 0 1 0 1.698z" />*/}
               </svg>
             </span>
           </div>
@@ -199,14 +123,16 @@ const SNumberPad : React.FC<SNumberPadProps> = (props) => {
 
         <Row className="numpad-row">
           <InputGroup className="mb-3">
-            <FormControl value={sNumber.prefix + sNumber.sNumber}
-                         onChange={() => {
-                         }}  // We ignore the onChange function as we handle this elsewhere
+            <FormControl value={sNumber.prefix + sNumber.number}
+                         size="lg"
+                         onChange={() => { // We ignore the onChange function as we handle this elsewhere
+                         }}
                          aria-label="Student number input"
                          aria-describedby="s-number-input" />
             <Button variant="success"
                     className="btn-sq-md"
-                    onClick={() => logIn(sNumber)}>
+              // onClick={() => logIn(sNumber)}
+            >
               <FontAwesomeIcon icon={["far", "check-circle"]} />
             </Button>
           </InputGroup>
@@ -262,5 +188,5 @@ const SNumberPad : React.FC<SNumberPadProps> = (props) => {
 
 // Exports
 export default SNumberPad;
-export type { SNumberAction };
-export { SNumberPrefix }
+// export type { SNumberAction };
+// export { SNumberPrefix }

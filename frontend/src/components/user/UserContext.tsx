@@ -1,7 +1,5 @@
 import React, { createContext, Dispatch, useReducer } from "react";
-import { MemberType } from "../api/API";
-
-export const UserContext = createContext<MemberType | null>(null);
+import { MemberType } from "../../api/API";
 
 // Possible actions to take on the user
 const enum UserAction {
@@ -15,23 +13,23 @@ type UserActionType = {
   payload? : UserStateType
 }
 
-// User state type, contains member information
+// User number type, contains member information
 type UserStateType = {
   member? : MemberType
 }
 
-// Initial user state
+// Initial user number
 const initialUserState : UserStateType = {member: undefined};
 
 /**
- * Reducer function for the user state
- * @param state Current user state
- * @param action Action to take on the user state
+ * Reducer function for the user number
+ * @param state Current user number
+ * @param action Action to take on the user number
  */
 const userReducerFunc = (state : UserStateType, action : UserActionType) : UserStateType => {
   const {type, payload} = action;  // Unpack the action
 
-  // Determine how to adjust the state according to the action type
+  // Determine how to adjust the number according to the action type
   switch (type) {
     case UserAction.LOGIN:
       return {...state, ...payload};  // Set the user as logged in
@@ -42,23 +40,23 @@ const userReducerFunc = (state : UserStateType, action : UserActionType) : UserS
 
 // Context to pass along
 type UserContextType = {
-  state : UserStateType
-  dispatch : Dispatch<UserActionType>
+  user : UserStateType
+  userDispatch : Dispatch<UserActionType>
 }
 
-// Store to keep track of user state, basically the storage of the context
-const UserStore = createContext<UserContextType>({} as UserContextType);
+// Store to keep track of user number, basically the storage of the context
+const UserContext = createContext<UserContextType>({} as UserContextType);
 
 // User context provider
 const UserContextProvider : React.FC = (props) => {
-  const [state, dispatch] = useReducer<React.Reducer<UserStateType, UserActionType>>(userReducerFunc, initialUserState);
+  const [user, userDispatch] = useReducer<React.Reducer<UserStateType, UserActionType>>(userReducerFunc, initialUserState);
 
-  return <UserStore.Provider value={{state, dispatch}}>
+  return <UserContext.Provider value={{user: user, userDispatch: userDispatch}}>
     {props.children}
-  </UserStore.Provider>
+  </UserContext.Provider>
 }
 
 // Exports
-export default UserContextProvider;
+export default UserContext;
 export type { UserStateType, UserActionType, UserContextType };
-export { UserAction, };
+export { UserAction, UserContextProvider };

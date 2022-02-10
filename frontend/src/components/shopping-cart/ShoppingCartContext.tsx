@@ -1,5 +1,5 @@
 import React, { createContext, useState } from "react";
-import { ProductType } from "../api/API";
+import { ProductType } from "../../api/API";
 
 export const ShoppingCartContext = createContext<Array<ProductType[]> | any>(
   []

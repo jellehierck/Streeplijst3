@@ -1,10 +1,10 @@
 import React, { useContext, useState } from "react";
 import { Alert } from "react-bootstrap";
 import useTimeout from "../../hooks/useTimeout";
-import AlertContext, { AlertAction } from "../../contexts/AlertContext";
 import useUpdateEffect from "../../hooks/useUpdateEffect";
+import AlertContext, { AlertAction } from "./AlertContext";
 
-const TimedAlert : React.FC = (props) => {
+const TimedAlert : React.FC = () => {
   // Obtain alert state from context
   const {alert, alertDispatch} = useContext(AlertContext);
 

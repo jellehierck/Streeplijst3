@@ -308,10 +308,10 @@ class ApiV30(ApiBase):
             params.update(query_params)  # Add extra params to the existing params
 
         # Run a loop to make continuous calls to Congressus in case a response contains pagination
-        retries = 0  # Retries are reset after Congressus returns a successful response (i.e. after every page)
+        retries = 0  # Retries are restartTimer after Congressus returns a successful response (i.e. after every page)
         curr_page = 1  # Start at page 1
         total_res_data = []  # Instantiate empty list to hold all combined data in case of pagination
-        while retries < max_retries:  # Get responses until the number of retries is met or reset
+        while retries < max_retries:  # Get responses until the number of retries is met or restartTimer
             params.update({'page': curr_page})  # Add updates pagination options
 
             # Attempt making the request, taking into account the timeout limit and max number of retries
