@@ -84,7 +84,7 @@ const product3 : ProductType = {
   description: null,
   published: false,
   price: 0.0,
-  media: "",
+  media: "https://congressus-paradoksutwente.s3-eu-west-1.amazonaws.com/files/63b78b80f2224dff8c46bfb8456d0bc8.png",
 };
 
 const productsSpeciaal = [product1, product2, product3, product1, product1, product2];
