@@ -1,4 +1,4 @@
-import axios from "axios"
+import axios from "axios";
 
 // Folder information
 type FolderType = {
@@ -8,6 +8,7 @@ type FolderType = {
   published : boolean
   path : string
   media? : string
+  children? : string[] | null  // TODO: check if this type is correct and/or necessary
 }
 
 // Product information
@@ -15,9 +16,9 @@ type ProductType = {
   id : number
   product_offer_id : number
   name : string;
-  description? : string
+  description? : string | null
   published : boolean
-  media? : string
+  media? : string | null | null[]  // TODO: Remove returning empty array in Python API
   price : number
 }
 
@@ -39,12 +40,13 @@ type MemberType = {
   username : string
   first_name : string
   last_name : string
-  prefix? : string
-  suffix? : string
+  prefix? : string | null
+  suffix? : string | null
   date_of_birth : string
   show_almanac : boolean
   status : MemberStatusType
   profile_picture? : string
+  bank_account? : null  // TODO: add bank account information if needed
 }
 
 // User status type
