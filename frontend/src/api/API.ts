@@ -7,7 +7,7 @@ type FolderType = {
   parent_id : number
   published : boolean
   path : string
-  media? : string
+  media? : string  // TODO: Add a way to add media to the folders and configure that in some way
   children? : string[] | null  // TODO: check if this type is correct and/or necessary
 }
 
@@ -74,7 +74,7 @@ class Congressus {
   }
 
   async getMemberByUsername(username : string) {
-    axios.get(`${this.API_HOST}/streeplijst/v30/`)
+    axios.get(`${this.API_HOST}/streeplijst/v30/`);
   }
 
   /**
@@ -85,12 +85,12 @@ class Congressus {
     // Make a request and get the response
     return this.request(`/v30/members/username/${username}`)
       .then((res) => {
-        return res.json()
+        return res.json();
       })
       .catch((error) => {
         // Throw a not found error
         throw new Error(error);
-      })
+      });
 
     // return this.call(`/v20/members/username/${username}`).then((member) => {
     //   // if (!member[0]) throw new Error("invalid number");
@@ -140,7 +140,7 @@ class Congressus {
       return this.cache.folders[folder_id];
     // return this.call(`/v20/products?folder_id=${folder_id}`).then((products) => {
     return this.call(`/v20/products/folder/${folder_id}`).then((products) => {
-      console.log(products)
+      console.log(products);
       products = products
         .filter((product : ProductType) => product.published)
         .map((product : any) => {
@@ -232,7 +232,7 @@ class Congressus {
   }
 }
 
-const congressus = new Congressus("http://localhost:8000")
+const congressus = new Congressus("http://localhost:8000");
 
 // Exports
 export default congressus;

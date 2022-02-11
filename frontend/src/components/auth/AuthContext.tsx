@@ -2,7 +2,7 @@
  * Contents of this file are very much inspired from https://github.com/remix-run/react-router/tree/main/examples/auth
  */
 import React, { createContext, useContext } from "react";
-import { fakeAuthProvider } from "./fakeAuth";
+import { fakeAuthProvider } from "../../api/fakeAuth";
 
 // User type
 // TODO: Change to actual user type

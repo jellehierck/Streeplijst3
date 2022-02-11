@@ -43,6 +43,7 @@ const folder1 : FolderType = {
   parent_id: 1989,
   path: "streeplijst-pk/speciaal",
   published: true,
+  media: "https://congressus-paradoksutwente.s3-eu-west-1.amazonaws.com/files/63b78b80f2224dff8c46bfb8456d0bc8.png",
 };
 
 const folder2 : FolderType = {
@@ -73,7 +74,7 @@ const product2 : ProductType = {
   description: null,
   published: true,
   price: 1.89,
-  media: [],
+  media: "https://congressus-paradoksutwente.s3-eu-west-1.amazonaws.com/files/63b78b80f2224dff8c46bfb8456d0bc8.png",
 };
 
 const product3 : ProductType = {
