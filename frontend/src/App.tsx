@@ -1,6 +1,6 @@
 import { library } from "@fortawesome/fontawesome-svg-core";
 import { faCheckCircle, far } from "@fortawesome/free-regular-svg-icons";
-import { faBackspace, fas } from "@fortawesome/free-solid-svg-icons";
+import { faBackspace, faMinus, faPlus, fas } from "@fortawesome/free-solid-svg-icons";
 import React from "react";
 import { BrowserRouter } from "react-router-dom";
 import { AlertContextProvider } from "./components/alert/AlertContext";
@@ -13,14 +13,16 @@ import StreeplijstRoutes from "./streeplijst/StreeplijstRoutes";
 
 // Initialize a font-awesome library to use icons easily throughout the project
 // src: https://fontawesome.com/v5.15/how-to-use/on-the-web/using-with/react
-library.add(
-  // Solid icons
+library.add(  // Solid icons
   fas,
   faBackspace,
+  faMinus,
+  faPlus,
+);
 
-  // Regular icons
+library.add(  // Regular icons
   far,
-  faCheckCircle
+  faCheckCircle,
 );
 
 function App() {
@@ -37,7 +39,7 @@ function App() {
         </ShoppingCartContextProvider>
       </UserContextProvider>
     </AuthContextProvider>
-  )
+  );
 
   // const [loading, setLoading] = useState(true);
   // const [folders, setFolders] = useState<FolderType[]>([]);
