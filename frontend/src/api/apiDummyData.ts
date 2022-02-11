@@ -64,7 +64,7 @@ const product1 : ProductType = {
   description: null,
   published: true,
   price: 0.0,
-  media: [],
+  media: "",
 };
 
 const product2 : ProductType = {
@@ -80,13 +80,13 @@ const product2 : ProductType = {
 const product3 : ProductType = {
   id: 21151,
   product_offer_id: 23902,
-  name: "Testproduct2",
+  name: "Testproduct2 maar dan een lange naam",
   description: null,
   published: false,
   price: 0.0,
-  media: [],
+  media: "",
 };
 
-const products = [product1, product2, product3];
+const productsSpeciaal = [product1, product2, product3, product1, product1, product2];
 
-export { members, member2, member1, product3, product2, product1, products, folder1, folder2, folders };
+export { members, member2, member1, product3, product2, product1, productsSpeciaal, folder1, folder2, folders };

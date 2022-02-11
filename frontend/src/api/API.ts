@@ -9,6 +9,7 @@ type FolderType = {
   path : string
   media? : string  // TODO: Add a way to add media to the folders and configure that in some way
   children? : string[] | null  // TODO: check if this type is correct and/or necessary
+  products? : ProductType[] | null  // TODO: Add a way to add products to folder automatically in API
 }
 
 // Product information
@@ -18,7 +19,7 @@ type ProductType = {
   name : string;
   description? : string | null
   published : boolean
-  media? : string | null | null[]  // TODO: Remove returning empty array in Python API
+  media? : string | null   // TODO: Remove returning empty array in Python API
   price : number
 }
 

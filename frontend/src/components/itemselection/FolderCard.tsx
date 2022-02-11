@@ -17,14 +17,16 @@ const FolderCard : React.FC<FolderProps> = (props) => {
   return (
     <Card key={props.folder.id}
           onClick={() => props.onClick()}
-          className="p-3"
+          className="p-2"
           style={{
-            width: "15rem",
+            // width: "15rem",
             borderRadius: "0.5rem",
           }}>
       <Card.Img variant="top" src={props.folder.media} />
-      <Card.Body>
-        <Card.Title>{props.folder.name}</Card.Title>
+      <Card.Body className="p-2">
+        <Card.Title className="mb-auto">
+          {props.folder.name}
+        </Card.Title>
       </Card.Body>
     </Card>
   );
