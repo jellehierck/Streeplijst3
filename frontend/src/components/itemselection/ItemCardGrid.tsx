@@ -1,5 +1,5 @@
 import React from "react";
-import { Col, Row } from "react-bootstrap";
+import { Col } from "react-bootstrap";
 
 type ItemCardGridProps = {
   cards : JSX.Element[]
@@ -16,14 +16,16 @@ const ItemCardGrid : React.FC<ItemCardGridProps> = (props) => {
   });
 
   return (
-    // Create a row which allows only a certain number of columns depending on the screen width
-    <Row md={2}  // Max cols on a small screen
-         lg={3}  // Max cols a middle size screen
-         xl={4}  // Max cols a large screen
-         className="g-2"  // Gutter, horizontal and vertical space in between columns
-    >
-      {cards}
-    </Row>
+    <div className="overflow-hidden"> {/* Because we use gutters on the Row, we should hide overflow */}
+      {/* Row which only allows a max number of columns depending on screen size */}
+      <Row md={2}  // Max cols on a small screen
+           lg={3}  // Max cols a middle size screen
+           xl={4}  // Max cols a large screen
+           className="g-2"  // Gutter, vertical and horizontal space between columns
+      >
+        {cards}
+      </Row>
+    </div>
   );
 };
 
