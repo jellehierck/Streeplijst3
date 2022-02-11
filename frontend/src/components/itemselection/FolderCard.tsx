@@ -17,11 +17,7 @@ const FolderCard : React.FC<FolderProps> = (props) => {
   return (
     <Card key={props.folder.id}
           onClick={() => props.onClick()}
-          className="p-2"
-          style={{
-            // width: "15rem",
-            borderRadius: "0.5rem",
-          }}>
+          className="p-2">
       <Card.Img variant="top" src={props.folder.media} />
       <Card.Body className="p-2">
         <Card.Title className="mb-auto">
