@@ -1,5 +1,5 @@
 import React from "react";
-import { Col } from "react-bootstrap";
+import { Col, Row } from "react-bootstrap";
 
 type ItemCardGridProps = {
   cards : JSX.Element[]
