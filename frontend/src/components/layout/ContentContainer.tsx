@@ -18,19 +18,23 @@ const ContentContainer : React.FC<ContentContainerProps> = (props) => {
     return <Container style={{height: "calc(100% - 60px)"}}>
       <Row>
         <Col xs={9}>
-          <main style={{background: "pink"}}>
-            {/*<h1>Main</h1>*/}
+          {/* <main style={{background: "pink"}}> */}
+          {/*<h1>Main</h1>*/}
+
+          <main>
             {props.children}
           </main>
         </Col>
         <Col xs={3}>
-          <aside style={{background: "lightsalmon"}}>
-            {/*<h1>Sidebar</h1>*/}
+          {/* <aside style={{background: "lightsalmon"}}> */}
+          {/*<h1>Sidebar</h1>*/}
+
+          <aside>
             {props.sidebarContent}
           </aside>
         </Col>
       </Row>
-    </Container>
+    </Container>;
   } else {
     return <Container style={{height: "calc(100% - 60px)"}}>
       <Row>
@@ -41,10 +45,10 @@ const ContentContainer : React.FC<ContentContainerProps> = (props) => {
           </main>
         </Col>
       </Row>
-    </Container>
+    </Container>;
   }
-}
+};
 
 // Exports
 export default ContentContainer;
-export type { ContentContainerProps }
+export type { ContentContainerProps };
