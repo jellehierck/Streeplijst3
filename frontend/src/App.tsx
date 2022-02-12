@@ -1,6 +1,6 @@
 import { library } from "@fortawesome/fontawesome-svg-core";
 import { faCheckCircle, far } from "@fortawesome/free-regular-svg-icons";
-import { faBackspace, faMinus, faPlus, fas } from "@fortawesome/free-solid-svg-icons";
+import { faBackspace, faMinus, faPlus, fas, faShoppingCart, faTrash } from "@fortawesome/free-solid-svg-icons";
 import React from "react";
 import { BrowserRouter } from "react-router-dom";
 import { AlertContextProvider } from "./components/alert/AlertContext";
@@ -18,6 +18,8 @@ library.add(  // Solid icons
   faBackspace,
   faMinus,
   faPlus,
+  faTrash,
+  faShoppingCart,
 );
 
 library.add(  // Regular icons

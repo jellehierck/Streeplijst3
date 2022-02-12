@@ -2,10 +2,10 @@ import React from "react";
 import { useNavigate } from "react-router-dom";
 
 import { folders } from "../../api/apiDummyData";
-
-import FolderCard from "../itemselection/FolderCard";
-import ItemCardGrid from "../itemselection/ItemCardGrid";
 import { ContentContainer } from "../layout/Layout";
+
+import FolderCard from "../products/FolderCard";
+import ItemCardGrid from "../products/ItemCardGrid";
 import ShoppingCart from "../shopping-cart/ShoppingCart";
 
 type FolderOverviewProps = {}

@@ -2,9 +2,9 @@ import React from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { productsSpeciaal } from "../../api/apiDummyData";
 import { streeplijstRoutes } from "../../streeplijst/streeplijstRouteConfig";
-import ItemCardGrid from "../itemselection/ItemCardGrid";
-import ProductCard from "../itemselection/ProductCard";
 import { ContentContainer } from "../layout/Layout";
+import ItemCardGrid from "../products/ItemCardGrid";
+import ProductCard from "../products/ProductCard";
 import ShoppingCart from "../shopping-cart/ShoppingCart";
 
 type FolderProductsProps = {}
