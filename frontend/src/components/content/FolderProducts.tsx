@@ -1,7 +1,6 @@
 import React from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { productsSpeciaal } from "../../api/apiDummyData";
-import { streeplijstRoutes } from "../../streeplijst/streeplijstRouteConfig";
 import { ContentContainer } from "../layout/Layout";
 import ItemCardGrid from "../products/ItemCardGrid";
 import ProductCard from "../products/ProductCard";
@@ -23,7 +22,7 @@ const FolderProducts : React.FC<FolderProductsProps> = (props) => {
   const listProductCards = () => {
     return productsSpeciaal.map((product) => {
       return <ProductCard product={product}
-                          onClick={() => navigate(streeplijstRoutes.checkoutPage)}
+                          // onClick={() => navigate(streeplijstRoutes.checkoutPage)}
                           key={product.id} />;
     });
   };

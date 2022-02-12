@@ -1,19 +1,21 @@
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import React from "react";
 import { Button, ButtonGroup, Stack } from "react-bootstrap";
-
-import { product1, product2, product3 } from "../../api/apiDummyData";
 import ItemCard from "../products/ItemCard";
 import ProductControlButtonGroup from "./ProductControlButtonGroup";
+import { useShoppingCart } from "./ShoppingCartContext";
 
 type CartProps = {}
 
 // React component
 const ShoppingCart : React.FC<CartProps> = (props) => {
+  const cart = useShoppingCart();
+
   return (
     <>
       {/* Top display */}
       <ButtonGroup className="d-flex">
+
         {/* Title (button used for styling) */}
         <Button variant="secondary"
                 className="p-2 w-100 text-start"
@@ -25,26 +27,33 @@ const ShoppingCart : React.FC<CartProps> = (props) => {
 
         {/* Clear contents button */}
         <Button variant="danger"
-                onClick={() => {
-                }}>
+                onClick={cart.empty}>
           <FontAwesomeIcon icon={["fas", "trash"]} />
         </Button>
       </ButtonGroup>
 
       {/* All ttems in the cart */}
       <Stack direction="vertical">
-        <ItemCard title={product1.name}
-                  small>
-          <ProductControlButtonGroup />
-        </ItemCard>
-        <ItemCard title={product2.name}
-                  small>
-          <ProductControlButtonGroup />
-        </ItemCard>
-        <ItemCard title={product3.name}
-                  small>
-          <ProductControlButtonGroup />
-        </ItemCard>
+
+        {cart.items.map(item => {
+          return <ItemCard title={item.product.name}>
+            <ProductControlButtonGroup product={item.product} />
+          </ItemCard>;
+        })}
+
+        {/*   <ItemCard title={product1.name} */}
+        {/*             small> */}
+        {/*     <ProductControlButtonGroup product={product1} /> */}
+        {/*   </ItemCard> */}
+        {/*   <ItemCard title={product2.name} */}
+        {/*             small> */}
+        {/*     <ProductControlButtonGroup product={product2} /> */}
+        {/*   </ItemCard> */}
+        {/*   <ItemCard title={product3.name} */}
+        {/*             small> */}
+        {/*     <ProductControlButtonGroup product={product3} /> */}
+        {/*   </ItemCard> */}
+
       </Stack>
 
       {/* Checkout button */}
@@ -54,7 +63,7 @@ const ShoppingCart : React.FC<CartProps> = (props) => {
               }}
               className="w-100">
         <h3 className="mb-auto text-reset">
-          <FontAwesomeIcon icon={["fas", "shopping-cart"]} /> €40.00
+          <FontAwesomeIcon icon={["fas", "shopping-cart"]} /> €{cart.getTotal().toFixed(2)}
         </h3>
       </Button>
 

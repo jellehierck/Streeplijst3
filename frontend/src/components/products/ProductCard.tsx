@@ -5,24 +5,16 @@ import ItemCard from "./ItemCard";
 
 type ProductCardProps = {
   product : ProductType,
-  onClick : VoidFunction  // TODO: Replace with more sensible stuff to handle the products related to the ShoppingCart
+  onClick? : VoidFunction  // TODO: Replace with more sensible stuff to handle the products related to the ShoppingCart
 }
 
 // React component
 const ProductCard : React.FC<ProductCardProps> = (props) => {
-
-  // Get media URL
-  const media = () => {
-    if (props.product.media) {
-      return props.product.media;
-    }
-  };
-
   return (
     <ItemCard title={props.product.name}
               media={props.product.media}
-              onClick={() => props.onClick()}>
-      <ProductControlButtonGroup />
+              onClick={props.onClick}>
+      <ProductControlButtonGroup product={props.product} />
     </ItemCard>
   );
 };

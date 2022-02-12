@@ -1,4 +1,4 @@
-import React, { createContext, Dispatch, useContext, useReducer } from "react";
+import React, { createContext, useContext, useReducer } from "react";
 import { ProductType } from "../../api/API";
 
 // Action names
@@ -9,16 +9,15 @@ const enum ShoppingCartAction {
 }
 
 // Actions to take on state
-type ShoppingCartActionType = {
-  type : ShoppingCartAction,
-  payload : ShoppingCartItem
-}
+type ShoppingCartActionType = { type : ShoppingCartAction.ADD, product : ProductType, quantity : number }
+  | { type : ShoppingCartAction.REMOVE, product : ProductType }
+  | { type : ShoppingCartAction.EMPTY }
 
 // Items in a shopping cart
-type ShoppingCartItem = {
+type  ShoppingCartItem = {
   product : ProductType
-  quantity : number
-}
+  quantity : number,
+};
 
 // State type
 type ShoppingCartStateType = ShoppingCartItem[]
@@ -33,13 +32,15 @@ const initialShoppingCartState : ShoppingCartItem[] = [];
  * @param action
  */
 const ShoppingCartReducer = (currItems : ShoppingCartStateType, action : ShoppingCartActionType) : ShoppingCartStateType => {
-  // See if the target item already exists in the current item list
-  const existingItem = currItems.find(item => item.product.id === action.payload.product.id);
+
 
   // Take the action
   switch (action.type) {
     // When an item is added
-    case ShoppingCartAction.ADD:
+    case ShoppingCartAction.ADD: {
+      // See if the target item already exists in the current item list
+      const existingItem = currItems.find(item => item.product.id === action.product.id);
+
       // If the item is already in the list, increase its quantity
       if (existingItem) {
         // Return a new state which is constructed from mapping a new array of states
@@ -48,7 +49,7 @@ const ShoppingCartReducer = (currItems : ShoppingCartStateType, action : Shoppin
           if (currItem.product.id === existingItem.product.id) {
             return {
               ...currItem,
-              quantity: currItem.quantity + action.payload.quantity,  // Increase the quantity
+              quantity: currItem.quantity + action.quantity,  // Increase the quantity
             };
           } else {
             return currItem;  // If the item is not found, return the current item
@@ -57,13 +58,18 @@ const ShoppingCartReducer = (currItems : ShoppingCartStateType, action : Shoppin
       } else {  // No existing item was found, return the current list with a new item added
         return [
           ...currItems,
-          action.payload,
+          {
+            product: action.product,
+            quantity: action.quantity,
+          },
         ];
       }
-
+    }
     // When an item is removed
-    case ShoppingCartAction.REMOVE:
-      // If the target item does not exist in the list yet, do nothing
+    case ShoppingCartAction.REMOVE: {
+      // See if the target item already exists in the current item list
+      const existingItem = currItems.find(item => item.product.id === action.product.id);
+      // If the target item does not exist in the list yet, return the list as is
       if (!existingItem) {
         // Return the current list
         return [
@@ -88,17 +94,23 @@ const ShoppingCartReducer = (currItems : ShoppingCartStateType, action : Shoppin
           }
         });
       }
+    }
 
     // When the shopping cart is emptied
-    case ShoppingCartAction.EMPTY:
+    case ShoppingCartAction.EMPTY: {
       return initialShoppingCartState;
+    }
   }
 };
 
 // Context type to pass along
 type ShoppingCartContextType = {
-  currItems : ShoppingCartStateType
-  itemsDispatch : Dispatch<ShoppingCartActionType>
+  items : ShoppingCartStateType
+  add : (product : ProductType, quantity : number) => void
+  remove : (product : ProductType) => void
+  empty : () => void
+  getQuantity : (product : ProductType) => number
+  getTotal : () => number
 }
 
 // Actual context, store of the current state
@@ -111,10 +123,64 @@ const useShoppingCart = () : ShoppingCartContextType => {
 
 // React component
 const ShoppingCartContextProvider : React.FC = (props) => {
-  const [ShoppingCart, ShoppingCartDispatch] = useReducer<React.Reducer<ShoppingCartStateType, ShoppingCartActionType>>(ShoppingCartReducer, initialShoppingCartState);
+  const [items, cartItemsDispatch] = useReducer<React.Reducer<ShoppingCartStateType, ShoppingCartActionType>>(ShoppingCartReducer, initialShoppingCartState);
 
+  /**
+   * Add items to the cart.
+   * @param {ProductType} product Product to add
+   * @param {number} quantity Quantity, defaults to 1
+   */
+  const add = (product : ProductType, quantity : number = 1) : void => {
+    cartItemsDispatch({type: ShoppingCartAction.ADD, product: product, quantity: quantity});
+  };
+
+  /**
+   * Remove item from the cart
+   * @param {ProductType} product
+   */
+  const remove = (product : ProductType) : void => {
+    cartItemsDispatch({type: ShoppingCartAction.REMOVE, product: product});
+  };
+
+  /**
+   * Empty the shopping cart
+   */
+  const empty = () : void => {
+    cartItemsDispatch({type: ShoppingCartAction.EMPTY});
+  };
+
+  /**
+   * Return the quantity of an item in the shopping cart. If the item is not in the shopping cart, returns 0
+   * @param {ProductType} product Product to get the quantity for.
+   * @returns {number}
+   */
+  const getQuantity = (product : ProductType) : number => {
+    const existingItem = items.find(item => item.product.id === product.id);  // Find the item if it exists
+
+    if (existingItem) {  // If the item exists, return the quantity of that item
+      return existingItem.quantity;
+    } else { // If the item does not exist, return 0 quantity
+      return 0;
+    }
+  };
+
+  const getTotal = () : number => {
+    let total = 0;
+    items.forEach(item => {
+      total += item.product.price * item.quantity;
+    });
+    return total;
+  };
   return (
-    <ShoppingCartContext.Provider value={{currItems: ShoppingCart, itemsDispatch: ShoppingCartDispatch}}>
+    <ShoppingCartContext.Provider
+      value={{
+        items: items,
+        add: add,
+        remove: remove,
+        empty: empty,
+        getQuantity: getQuantity,
+        getTotal: getTotal,
+      }}>
       {props.children}
     </ShoppingCartContext.Provider>
   );
@@ -122,5 +188,5 @@ const ShoppingCartContextProvider : React.FC = (props) => {
 
 // Exports
 export default ShoppingCartContext;
-export { ShoppingCartContextProvider, initialShoppingCartState, useShoppingCart };
+export { ShoppingCartContextProvider, useShoppingCart, ShoppingCartAction };
 export type { ShoppingCartStateType, ShoppingCartContextType, ShoppingCartActionType };
