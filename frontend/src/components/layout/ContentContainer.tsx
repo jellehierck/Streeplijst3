@@ -39,8 +39,9 @@ const ContentContainer : React.FC<ContentContainerProps> = (props) => {
     return <Container style={{height: "calc(100% - 60px)"}}>
       <Row>
         <Col>
-          <main style={{background: "pink"}}>
-            {/*<h1>Main</h1>*/}
+          {/* <main style={{background: "pink"}}> */}
+          {/*<h1>Main</h1>*/}
+          <main>
             {props.children}
           </main>
         </Col>
