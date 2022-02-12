@@ -8,12 +8,22 @@ type BaseCardProps = {
   small? : boolean  // When true, less padding is added
 }
 
-// React component
+/**
+ * Generic card for items.
+ * @param {string} props.title Title
+ * @param {string | undefined | null} props.media Optional media URL. If not given or null, no image is displayed
+ * @param {VoidFunction | undefined} props.onClick Optional function to call upon clicking the image or card title
+ * @param {boolean | undefined} props.small When set, less padding is used around the card body
+ * @returns {JSX.Element}
+ * @constructor
+ */
 const ItemCard : React.FC<BaseCardProps> = (props) => {
   // Display an image if one is provided
   const displayImage = () => {
     if (props.media) {
-      return <Card.Img variant="top" src={props.media} />;
+      return <Card.Img variant="top"
+                       src={props.media}
+                       onClick={props.onClick} />;
     }
   };
 
@@ -28,11 +38,10 @@ const ItemCard : React.FC<BaseCardProps> = (props) => {
 
 
   return (
-    <Card onClick={props.onClick}
-          className="p-2">
+    <Card className="p-2">
       {displayImage()}
       <Card.Body className={bodyPadding()}>
-        <Card.Title>
+        <Card.Title onClick={props.onClick}>
           {props.title}
         </Card.Title>
         {props.children}

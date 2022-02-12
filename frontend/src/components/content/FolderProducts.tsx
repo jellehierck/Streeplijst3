@@ -1,5 +1,5 @@
 import React from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useParams } from "react-router-dom";
 import { productsSpeciaal } from "../../api/apiDummyData";
 import { ContentContainer } from "../layout/Layout";
 import ItemCardGrid from "../products/ItemCardGrid";
@@ -15,14 +15,12 @@ type FolderIdType = {
 
 // React component
 const FolderProducts : React.FC<FolderProductsProps> = (props) => {
-  const navigate = useNavigate();
   const params = useParams<FolderIdType>();
 
   // Create list of product cards
   const listProductCards = () => {
     return productsSpeciaal.map((product) => {
       return <ProductCard product={product}
-                          // onClick={() => navigate(streeplijstRoutes.checkoutPage)}
                           key={product.id} />;
     });
   };

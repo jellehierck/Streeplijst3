@@ -164,6 +164,10 @@ const ShoppingCartContextProvider : React.FC = (props) => {
     }
   };
 
+  /**
+   * Get the total amount in the cart at this point.
+   * @returns {number} Total amount in this cart
+   */
   const getTotal = () : number => {
     let total = 0;
     items.forEach(item => {
@@ -171,6 +175,7 @@ const ShoppingCartContextProvider : React.FC = (props) => {
     });
     return total;
   };
+
   return (
     <ShoppingCartContext.Provider
       value={{
