@@ -1,16 +1,7 @@
-import React, { createContext, Dispatch, useReducer } from "react";
+import React, { createContext, useContext, useState } from "react";
 import { Variant } from "react-bootstrap/types";
 
-// Possible action values
-const enum AlertAction {
-  SHOW = "SHOW",
-  HIDE = "HIDE",
-}
-
-// Possible action groups to be performed on the Alert
-type AlertActionType = { type : AlertAction.SHOW, payload : AlertStateType }
-  | { type : AlertAction.HIDE }
-
+// State of the alert
 type AlertStateType = {
   display : {  // What to display
     heading? : string  // Optional heading message
@@ -21,45 +12,54 @@ type AlertStateType = {
 }
 
 // Initial alert state
-const initialAlertState = {display: null, timeout: null};
+const initialAlertState : AlertStateType = {display: null, timeout: null};
 
-/**
- *
- * @param state
- * @param action
- */
-const alertReducer = (state : AlertStateType, action : AlertActionType) : AlertStateType => {
-  switch (action.type) {
-    case AlertAction.SHOW:  // Show the alert
-      return action.payload;
-
-    case AlertAction.HIDE:  // Hide the alert
-      return initialAlertState;
-  }
-}
-
-// Context type to pass along
+// Context type to pass along, all functions and variables present in the context
 type AlertContextType = {
-  alert : AlertStateType
-  alertDispatch : Dispatch<AlertActionType>
+  currAlert : AlertStateType
+  set : (alert : AlertStateType) => void
+  hide : () => void
 }
 
 // Actual context, store of the current state
 const AlertContext = createContext<AlertContextType>({} as AlertContextType);
 
+/**
+ * Custom hook as shorthand for using the AlertContext
+ * @returns {AlertContextType}
+ */
+const useAlert = () => {
+  return useContext(AlertContext);
+};
+
 // React component
 const AlertContextProvider : React.FC = (props) => {
-  const [alert, alertDispatch] = useReducer<React.Reducer<AlertStateType, AlertActionType>>(alertReducer, initialAlertState);
+  const [currAlert, setCurrAlert] = useState(initialAlertState);
+
+  /**
+   * Set the alert
+   * @param {AlertStateType} alert The alert configuration to set
+   */
+  const set = (alert : AlertStateType) => {
+    setCurrAlert(alert);
+  };
+
+  /**
+   * Hide the alert
+   */
+  const hide = () => {
+    setCurrAlert(initialAlertState);
+  };
 
   return (
-    <AlertContext.Provider value={{alert: alert, alertDispatch: alertDispatch}}>
+    <AlertContext.Provider value={{currAlert: currAlert, set: set, hide: hide}}>
       {props.children}
     </AlertContext.Provider>
   );
-}
+};
 
 
 // Exports
 export default AlertContext;
-export { AlertContextProvider, initialAlertState, AlertAction };
-export type { AlertStateType, AlertContextType, AlertActionType };
+export { AlertContextProvider, initialAlertState, useAlert };
+export type { AlertStateType, AlertContextType };

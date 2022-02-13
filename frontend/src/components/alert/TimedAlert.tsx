@@ -1,44 +1,44 @@
-import React, { useContext, useState } from "react";
+import React, { useState } from "react";
 import { Alert } from "react-bootstrap";
 import useTimeout from "../../hooks/useTimeout";
 import useUpdateEffect from "../../hooks/useUpdateEffect";
-import AlertContext, { AlertAction } from "./AlertContext";
+import { useAlert } from "./AlertContext";
 
 const TimedAlert : React.FC = () => {
   // Obtain alert state from context
-  const {alert, alertDispatch} = useContext(AlertContext);
+  const alert = useAlert();
 
   // Current delay state
-  const [delay, setDelay] = useState<number | null>(alert.timeout);
+  const [delay, setDelay] = useState<number | null>(alert.currAlert.timeout);
 
   // Timeout hook
-  useTimeout(() => alertDispatch({type: AlertAction.HIDE}), delay);
+  useTimeout(() => alert.hide, delay);
 
   // Start the timer when the Alert component is updated AFTER its initial load
   useUpdateEffect(() => {
-    setDelay(alert.timeout);
-  }, [alert]);
+    setDelay(alert.currAlert.timeout);
+  }, [alert.currAlert]);
 
   const closeAlert = () => {
     setDelay(null);
-    alertDispatch({type: AlertAction.HIDE});  // Disable the alert display
-  }
+    alert.hide();  // Disable the alert display
+  };
 
   // Display the alert if alert.display is not null
-  if (alert.display) {
+  if (alert.currAlert.display) {
     return (
-      <Alert variant={alert.display.variant} onClose={() => closeAlert()} dismissible>
-        {alert.display.heading && <Alert.Heading>{alert.display.heading}</Alert.Heading>}
+      <Alert variant={alert.currAlert.display.variant} onClose={() => closeAlert()} dismissible>
+        {alert.currAlert.display.heading && <Alert.Heading>{alert.currAlert.display.heading}</Alert.Heading>}
         <p>
-          {alert.display.message}
+          {alert.currAlert.display.message}
         </p>
       </Alert>
     );
 
   } else {  // Display nothing if alert.display is null
-    return null
+    return null;
   }
-}
+};
 
 
 // Exports
