@@ -30,17 +30,18 @@ library.add(  // Regular icons
 function App() {
 
   return (
-    <AuthContextProvider>
-      <UserContextProvider>
-        <ShoppingCartContextProvider>
-          <AlertContextProvider>
-            <BrowserRouter>
-              <StreeplijstRoutes />
+    <AlertContextProvider> {/* Context provider for alerts */}
+      <AuthContextProvider>  {/* Context provider for authentication of users */}
+        <UserContextProvider>  {/* Context provider for users itself TODO: Replace with authcontext */}
+          <ShoppingCartContextProvider> {/* Context provider for the shopping cart */}
+            <BrowserRouter> {/* react-router-dom base, enables routing */}
+              <StreeplijstRoutes /> {/* The Streeplijst app, TODO: we could also add the Bierstreeplijst here */}
             </BrowserRouter>
-          </AlertContextProvider>
-        </ShoppingCartContextProvider>
-      </UserContextProvider>
-    </AuthContextProvider>
+          </ShoppingCartContextProvider>
+        </UserContextProvider>
+      </AuthContextProvider>
+    </AlertContextProvider>
+
   );
 
   // const [loading, setLoading] = useState(true);
