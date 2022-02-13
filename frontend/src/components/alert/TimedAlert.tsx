@@ -5,40 +5,51 @@ import useUpdateEffect from "../../hooks/useUpdateEffect";
 import { useAlert } from "./AlertContext";
 
 const TimedAlert : React.FC = () => {
-  // Obtain alert state from context
-  const alert = useAlert();
+    // Obtain alert state from context
+    const alertContext = useAlert();
 
-  // Current delay state
-  const [delay, setDelay] = useState<number | null>(alert.currAlert.timeout);
+    // Current delay state
+    const [delay, setDelay] = useState<number | null>(alertContext.currAlert.timeout);
 
-  // Timeout hook
-  useTimeout(() => alert.hide, delay);
+    // Start the timer when the alert context is updated AFTER its initial load
+    useUpdateEffect(() => {
+      setDelay(alertContext.currAlert.timeout);  // Start the delay
+    }, [alertContext.currAlert]);
 
-  // Start the timer when the Alert component is updated AFTER its initial load
-  useUpdateEffect(() => {
-    setDelay(alert.currAlert.timeout);
-  }, [alert.currAlert]);
+    // Stop the timer and hide the alert
+    const closeAlert = () => {
+      setDelay(null);  // Disable the delay
+      alertContext.hide();  // Disable the alert display
+    };
 
-  const closeAlert = () => {
-    setDelay(null);
-    alert.hide();  // Disable the alert display
-  };
+    // Timeout hook, starts the timer when a delay is given
+    useTimeout(() => closeAlert(), delay);
 
-  // Display the alert if alert.display is not null
-  if (alert.currAlert.display) {
-    return (
-      <Alert variant={alert.currAlert.display.variant} onClose={() => closeAlert()} dismissible>
-        {alert.currAlert.display.heading && <Alert.Heading>{alert.currAlert.display.heading}</Alert.Heading>}
-        <p>
-          {alert.currAlert.display.message}
-        </p>
-      </Alert>
-    );
+    // Display the heading if one is given
+    const displayHeading = () => {
+      if (alertContext.currAlert.display?.heading) {
+        return <Alert.Heading>
+          {alertContext.currAlert.display.heading}
+        </Alert.Heading>;
+      }
+    };
 
-  } else {  // Display nothing if alert.display is null
-    return null;
+    // Display the alert if alert.display is not null
+    if (alertContext.currAlert.display) {
+      return (
+        <Alert variant={alertContext.currAlert.display.variant}
+               onClose={() => closeAlert()}
+               dismissible>
+          {displayHeading()}
+          {alertContext.currAlert.display.message}
+        </Alert>
+      );
+
+    } else {  // Display nothing if alert.display is null
+      return null;
+    }
   }
-};
+;
 
 
 // Exports
