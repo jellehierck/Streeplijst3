@@ -11,6 +11,9 @@ type CartProps = {}
 const ShoppingCart : React.FC<CartProps> = (props) => {
   const cart = useShoppingCart();
 
+  // Store boolean to indicate whether the cart is currently empty
+  const cartEmpty = cart.items.length === 0;
+
   return (
     <>
       {/* Top display */}
@@ -27,6 +30,7 @@ const ShoppingCart : React.FC<CartProps> = (props) => {
 
         {/* Clear contents button */}
         <Button variant="danger"
+                disabled={cartEmpty}
                 onClick={cart.empty}>
           <FontAwesomeIcon icon={["fas", "trash"]} />
         </Button>
@@ -34,30 +38,16 @@ const ShoppingCart : React.FC<CartProps> = (props) => {
 
       {/* All ttems in the cart */}
       <Stack direction="vertical">
-
         {cart.items.map(item => {
           return <ItemCard title={item.product.name}>
             <ProductControlButtonGroup product={item.product} />
           </ItemCard>;
         })}
-
-        {/*   <ItemCard title={product1.name} */}
-        {/*             small> */}
-        {/*     <ProductControlButtonGroup product={product1} /> */}
-        {/*   </ItemCard> */}
-        {/*   <ItemCard title={product2.name} */}
-        {/*             small> */}
-        {/*     <ProductControlButtonGroup product={product2} /> */}
-        {/*   </ItemCard> */}
-        {/*   <ItemCard title={product3.name} */}
-        {/*             small> */}
-        {/*     <ProductControlButtonGroup product={product3} /> */}
-        {/*   </ItemCard> */}
-
       </Stack>
 
       {/* Checkout button */}
       <Button variant="info"
+              disabled={cartEmpty}
               size="lg"
               onClick={() => {
               }}
