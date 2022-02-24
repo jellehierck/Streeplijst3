@@ -1,12 +1,22 @@
+// import 'bootstrap/dist/css/bootstrap.min.css';
 import { library } from "@fortawesome/fontawesome-svg-core";
-import { faCheckCircle, far } from "@fortawesome/free-regular-svg-icons";
-import { faBackspace, faMinus, faPlus, fas, faShoppingCart, faTrash } from "@fortawesome/free-solid-svg-icons";
+import {
+  faBackspace,
+  faMinus,
+  faPaperPlane,
+  faPlus,
+  fas,
+  faShoppingCart,
+  faTrash,
+} from "@fortawesome/free-solid-svg-icons";
 import React from "react";
+
 import { BrowserRouter } from "react-router-dom";
 import { AlertContextProvider } from "./components/alert/AlertContext";
 import { AuthContextProvider } from "./components/auth/AuthContext";
 
 import { ShoppingCartContextProvider } from "./components/shopping-cart/ShoppingCartContext";
+import { SNumberContextProvider } from "./components/snumberpad/SNumberContext";
 import { UserContextProvider } from "./components/user/UserContext";
 
 import StreeplijstRoutes from "./streeplijst/StreeplijstRoutes";
@@ -20,11 +30,7 @@ library.add(  // Solid icons
   faPlus,
   faTrash,
   faShoppingCart,
-);
-
-library.add(  // Regular icons
-  far,
-  faCheckCircle,
+  faPaperPlane,
 );
 
 function App() {
@@ -32,13 +38,15 @@ function App() {
   return (
     <AlertContextProvider> {/* Context provider for alerts */}
       <AuthContextProvider>  {/* Context provider for authentication of users */}
-        <UserContextProvider>  {/* Context provider for users itself TODO: Replace with authcontext */}
-          <ShoppingCartContextProvider> {/* Context provider for the shopping cart */}
-            <BrowserRouter> {/* react-router-dom base, enables routing */}
-              <StreeplijstRoutes /> {/* The Streeplijst app, TODO: we could also add the Bierstreeplijst here */}
-            </BrowserRouter>
-          </ShoppingCartContextProvider>
-        </UserContextProvider>
+        <SNumberContextProvider>
+          <UserContextProvider>  {/* Context provider for users itself TODO: Replace with authcontext */}
+            <ShoppingCartContextProvider> {/* Context provider for the shopping cart */}
+              <BrowserRouter> {/* react-router-dom base, enables routing */}
+                <StreeplijstRoutes /> {/* The Streeplijst app, TODO: we could also add the Bierstreeplijst here */}
+              </BrowserRouter>
+            </ShoppingCartContextProvider>
+          </UserContextProvider>
+        </SNumberContextProvider>
       </AuthContextProvider>
     </AlertContextProvider>
 

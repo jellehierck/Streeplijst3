@@ -20,7 +20,6 @@ const ContentContainer : React.FC<ContentContainerProps> = (props) => {
         <Col xs={9}>
           {/* <main style={{background: "pink"}}> */}
           {/*<h1>Main</h1>*/}
-
           <main>
             {props.children}
           </main>
@@ -28,7 +27,6 @@ const ContentContainer : React.FC<ContentContainerProps> = (props) => {
         <Col xs={3}>
           {/* <aside style={{background: "lightsalmon"}}> */}
           {/*<h1>Sidebar</h1>*/}
-
           <aside>
             {props.sidebarContent}
           </aside>
@@ -37,15 +35,11 @@ const ContentContainer : React.FC<ContentContainerProps> = (props) => {
     </Container>;
   } else {
     return <Container style={{height: "calc(100% - 60px)"}}>
-      <Row>
-        <Col>
-          {/* <main style={{background: "pink"}}> */}
-          {/*<h1>Main</h1>*/}
-          <main>
-            {props.children}
-          </main>
-        </Col>
-      </Row>
+      {/* <main style={{background: "pink"}}> */}
+      {/*<h1>Main</h1>*/}
+      <main>
+        {props.children}
+      </main>
     </Container>;
   }
 };

@@ -1,4 +1,4 @@
-import React, { createContext, Dispatch, useReducer } from "react";
+import React, { createContext, useContext, useReducer } from "react";
 
 // Max SNumberType length
 const MAX_SNUMBER_LENGTH = 7;
@@ -18,13 +18,23 @@ const initialSNumber : SNumberType = {
   number: "",
 };
 
+const enum SNumberAction {
+  ADD = "add",
+  REMOVE = "REMOVE",
+  SET = "SET",
+  CLEAR = "CLEAR",
+  TOGGLE_PREFIX = "TOGGLE_PREFIX",
+  SET_PREFIX = "SET_PREFIX"
+}
+
 // Actions which can be taken on the SNumberType number.
 type SNumberActionType =
-  | { type : "add"; nr : number }
-  | { type : "remove" }
-  | { type : "clear" }
-  | { type : "togglePrefix" }
-  | { type : "setPrefix", prefix : typeof SNumberPrefix[number] };
+  | { type : SNumberAction.ADD, nr : number }
+  | { type : SNumberAction.REMOVE }
+  | { type : SNumberAction.SET, sNumber : SNumberType }
+  | { type : SNumberAction.CLEAR }
+  | { type : SNumberAction.TOGGLE_PREFIX }
+  | { type : SNumberAction.SET_PREFIX, prefix : typeof SNumberPrefix[number] };
 
 /**
  * Reducer function for actions on the student number
@@ -33,7 +43,7 @@ type SNumberActionType =
  */
 const sNumberReducer = (currSNumber : SNumberType, action : SNumberActionType) : SNumberType => {
   switch (action.type) {
-    case "add": // Add a number to the s number
+    case SNumberAction.ADD: // Add a number to the s number
       if (currSNumber.number.length < MAX_SNUMBER_LENGTH) {  // Check if SNumberType is not too long
         return {
           ...currSNumber,  // Copy existing SNumberType
@@ -44,18 +54,23 @@ const sNumberReducer = (currSNumber : SNumberType, action : SNumberActionType) :
         return {...currSNumber};
       }
 
-    case "remove": // Remove the last number of the s number
+    case SNumberAction.REMOVE: // Remove the last number of the s number
       return {
         ...currSNumber,  // Copy existing SNumberType
         number: currSNumber.number.slice(0, -1),  // Remove last element in string
       };
 
-    case "clear": // Replace the entire s number with the initial s number
+    case SNumberAction.SET:  // Set the SNumber to a value
+      return {
+        ...action.sNumber,
+      };
+
+    case SNumberAction.CLEAR: // Replace the entire s number with the initial s number
       return {
         ...initialSNumber,
       };
 
-    case "togglePrefix": // Replace first character of the s number
+    case SNumberAction.TOGGLE_PREFIX: // Replace first character of the s number
       const currPrefixIndex = SNumberPrefix.indexOf(currSNumber.prefix);  // Obtain index of current prefix
       return {
         ...currSNumber,
@@ -63,33 +78,122 @@ const sNumberReducer = (currSNumber : SNumberType, action : SNumberActionType) :
           SNumberPrefix[(currPrefixIndex + 1) % SNumberPrefix.length],  // Set new prefix index or wrap around to 0
       };
 
-    case "setPrefix":  // Set the prefix to the passed value
+    case SNumberAction.SET_PREFIX:  // Set the prefix to the passed value
       return {
         ...currSNumber,
-        prefix: action.prefix
+        prefix: action.prefix,
       };
   }
-}
+};
 
 // Context to pass along
 type SNumberContextType = {
+  /**
+   * The current sNumber
+   */
   sNumber : SNumberType
-  sNumberDispatch : Dispatch<SNumberActionType>
+
+  /**
+   * Add a number to the student number
+   * @param {number} nr Number to add
+   */
+  add : (nr : number) => void
+
+  /**
+   * Remove the last number from the sNumber, leaving the prefix in place.
+   */
+  remove : () => void
+
+  /**
+   * Set the entire sNumber
+   * @param {SNumberType} sNumber New sNumber to set
+   */
+  set : (sNumber : SNumberType) => void
+
+
+  /**
+   * Clear the sNumber
+   */
+  clear : () => void
+
+  /**
+   * Toggle the sNumber prefix
+   */
+  togglePrefix : () => void
+
+  /**
+   * Set the prefix
+   * @param {readonly [string, string, string][number]} prefix Prefix to set
+   */
+  setPrefix : (prefix : typeof SNumberPrefix[number]) => void
+
+  /**
+   * Return the sNumber as string
+   */
+  toString : () => string
+
+  /**
+   * Raw dispatch function
+   */
+  dispatch : React.Dispatch<SNumberActionType>
 }
 
 // Store to keep track of SNumberType number, basically the storage of the context
 const SNumberContext = createContext<SNumberContextType>({} as SNumberContextType);
 
+// Custom hook as shorthand to use the SNumberContext
+const useSNumber = () => {
+  return useContext(SNumberContext);
+};
+
 // User context provider
 const SNumberContextProvider : React.FC = (props) => {
-  const [state, dispatch] = useReducer<React.Reducer<SNumberType, SNumberActionType>>(sNumberReducer, initialSNumber);
+  const [sNumber, sNumberDispatch] = useReducer<React.Reducer<SNumberType, SNumberActionType>>(sNumberReducer, initialSNumber);
 
-  return <SNumberContext.Provider value={{sNumber: state, sNumberDispatch: dispatch}}>
+  const add = (nr : number) : void => {
+    sNumberDispatch({type: SNumberAction.ADD, nr: nr});
+  };
+
+  const remove = () : void => {
+    sNumberDispatch({type: SNumberAction.REMOVE});
+  };
+
+  const set = (sNumber : SNumberType) : void => {
+    sNumberDispatch({type: SNumberAction.SET, sNumber: sNumber});
+  };
+
+  const clear = () : void => {
+    sNumberDispatch({type: SNumberAction.CLEAR});
+  };
+
+  const togglePrefix = () : void => {
+    sNumberDispatch({type: SNumberAction.TOGGLE_PREFIX});
+  };
+
+  const setPrefix = (prefix : typeof SNumberPrefix[number]) : void => {
+    sNumberDispatch({type: SNumberAction.SET_PREFIX, prefix: prefix});
+  };
+
+  const toString = () : string => {
+    return `${sNumber.prefix}${sNumber.number}`;
+  };
+
+  return <SNumberContext.Provider value={{
+    sNumber: sNumber,
+    add: add,
+    remove: remove,
+    set: set,
+    clear: clear,
+    togglePrefix: togglePrefix,
+    setPrefix: setPrefix,
+    toString: toString,
+    dispatch: sNumberDispatch,
+  }}>
     {props.children}
-  </SNumberContext.Provider>
-}
+  </SNumberContext.Provider>;
+};
 
 // Exports
-export default SNumberContextProvider;
+export default SNumberContext;
 export type { SNumberType, SNumberActionType, SNumberContextType };
-export { SNumberPrefix, SNumberContext };
+export { SNumberPrefix, SNumberContextProvider, useSNumber, SNumberAction };

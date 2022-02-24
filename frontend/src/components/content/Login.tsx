@@ -2,9 +2,11 @@ import React from "react";
 import { Button } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
 import { useAlert } from "../alert/AlertContext";
+import { usernameNotFoundAlert } from "../alert/standardAlerts";
 
 import { useAuth } from "../auth/AuthContext";
 import { ContentContainer } from "../layout/Layout";
+import SNumberPad from "../snumberpad/SNumberPad";
 
 type LoginProps = {
   afterLogin : string
@@ -25,22 +27,12 @@ const Login : React.FC<LoginProps> = (props) => {
   };
 
   const loginFailed = () => {
-    alert.set({
-      display: {
-        heading: "Failed",
-        message: "s1779397 bestaat niet",
-        variant: "warning",
-      },
-      timeout: 1000000,
-    });
+    alert.set(usernameNotFoundAlert("s1779397"));
   };
 
   return (
     <ContentContainer>
-      <Button variant="primary"
-              onClick={() => login("Jelle")}>
-        Login
-      </Button>
+      <SNumberPad />
 
       <Button variant="primary"
               onClick={loginFailed}>

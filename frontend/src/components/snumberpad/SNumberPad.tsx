@@ -1,14 +1,12 @@
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import React, { useContext, useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
+import { Col, Stack } from "react-bootstrap";
 import Button from "react-bootstrap/Button";
-import ButtonGroup from "react-bootstrap/ButtonGroup";
-import FormControl from "react-bootstrap/FormControl";
-import InputGroup from "react-bootstrap/InputGroup";
 
 import Row from "react-bootstrap/Row";
 import { useNavigate } from "react-router";
 // import { Redirect } from "react-router-dom";
-import { SNumberContext } from "./SNumberContext";
+import { SNumberAction, useSNumber } from "./SNumberContext";
 
 import "./SNumberPad.css";
 import SNumberPadButton from "./SNumberPadButton";
@@ -18,19 +16,19 @@ type SNumberPadProps = {}
 
 // React component
 const SNumberPad : React.FC<SNumberPadProps> = (props) => {
-
-  const {sNumber, sNumberDispatch} = useContext(SNumberContext);
+  // SNumber context
+  const sNumber = useSNumber();
 
   // Handle a keypress on the input field
   const handleKeyPress = (event : KeyboardEvent) : void => {
     switch (event.key) {
       case "Enter":
         // TODO logIn(number)
-        sNumberDispatch({type: "clear"});  // Clear the input field
+        sNumber.clear();
         break;
 
       case "Backspace":
-        sNumberDispatch({type: "remove"});  // Remove the last number
+        sNumber.remove();  // Remove the last number
         break;
 
       // Any number is pressed
@@ -44,14 +42,14 @@ const SNumberPad : React.FC<SNumberPadProps> = (props) => {
       case "8":
       case "9":
       case "0":
-        sNumberDispatch({type: "add", nr: +event.key});  // Convert string to number using unary operator (+)
+        sNumber.add(+event.key);  // Convert string to number using unary operator (+)
         break;
 
       // One of the prefix keys is pressed
       case "s":
       case "x":
       case "m":
-        sNumberDispatch({type: "setPrefix", prefix: event.key})
+        sNumber.setPrefix(event.key);
         break;
     }
   };
@@ -62,7 +60,7 @@ const SNumberPad : React.FC<SNumberPadProps> = (props) => {
 
     return function cleanup() {  // Unregister the event listener when this component is unloaded
       document.removeEventListener("keydown", handleKeyPress);
-    }
+    };
   });
 
   // const [_, setUser] = useContext(UserContext);
@@ -72,9 +70,9 @@ const SNumberPad : React.FC<SNumberPadProps> = (props) => {
 
   // restartTimer error and try to fetch the member, if success, load number into localStorage
   const [loggedIn, setLoggedIn] = useState(
-    Boolean(localStorage.getItem("sNumber"))
+    Boolean(localStorage.getItem("sNumber")),
   );
-  const [errored, setErrored] = useState(false);
+  // const [errored, setErrored] = useState(false);
 
   // Log in a user with this SNumberType
   // function logIn(sNumber : SNumberType) : void {
@@ -99,94 +97,61 @@ const SNumberPad : React.FC<SNumberPadProps> = (props) => {
 
   // Return component
   return (
-    <div className="flex justify-center">
-      <div>
-        {errored ? (
-          <div
-            className="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 relative"
-            role="alert"
-          >
-            <p className="font-bold">Wrong student number</p>
-            <p>we couldn't find this student number.</p>
-            <span className="absolute top-0 bottom-0 right-0 px-4 py-3">
-              <svg
-                className="fill-current h-6 w-6 text-red-500"
-                role="button"
-                xmlns="http://www.w3.org/2000/svg"
-                viewBox="0 0 20 20"
-              >
-                <title>Close</title>
-              </svg>
-            </span>
-          </div>
-        ) : null}
+    <Stack direction="vertical"
+           gap={0}
+           className="mx-auto numpad-width">
 
-        <Row className="numpad-row">
-          <InputGroup className="mb-3">
-            <FormControl value={sNumber.prefix + sNumber.number}
-                         size="lg"
-                         onChange={() => { // We ignore the onChange function as we handle this elsewhere
-                         }}
-                         aria-label="Student number input"
-                         aria-describedby="s-number-input" />
-            <Button variant="success"
-                    className="btn-sq-md"
-              // onClick={() => logIn(sNumber)}
-            >
-              <FontAwesomeIcon icon={["far", "check-circle"]} />
-            </Button>
-          </InputGroup>
-        </Row>
+      {/* Top row is current s number display and submit button */}
+      <Row className="g-0 numpad-row">
+        <Col xs={8}>
+          {/* Display of the current s number */}
+          <Button variant="outline-secondary"
+                  className="numpad-row-height numpad-display text-start"
+                  disabled>
+            <h2>{sNumber.toString()}</h2>
+          </Button>
+        </Col>
+        <Col xs={4}>
+          {/* Submit button */}
+          <Button variant="success"
+                  className="numpad-btn">
+            <h3 className="text-reset"><FontAwesomeIcon icon={["fas", "paper-plane"]} /></h3>
+          </Button>
+        </Col>
+      </Row>
 
-        <Row className="numpad-row">
-          <ButtonGroup className="btn-group-no-padding">
-            <SNumberPadButton dispatch={sNumberDispatch}
-                              action={{type: "add", nr: 1}} />
-            <SNumberPadButton dispatch={sNumberDispatch}
-                              action={{type: "add", nr: 2}} />
-            <SNumberPadButton dispatch={sNumberDispatch}
-                              action={{type: "add", nr: 3}} />
-          </ButtonGroup>
-        </Row>
+      {/* Rows of numbers */}
+      <Row xs={3}
+           className="g-0">
+        <Col> <SNumberPadButton action={{type: SNumberAction.ADD, nr: 1}} /> </Col>
+        <Col> <SNumberPadButton action={{type: SNumberAction.ADD, nr: 2}} /> </Col>
+        <Col> <SNumberPadButton action={{type: SNumberAction.ADD, nr: 3}} /> </Col>
+      </Row>
 
-        <Row className="numpad-row">
-          <ButtonGroup className="btn-group-no-padding">
-            <SNumberPadButton dispatch={sNumberDispatch}
-                              action={{type: "add", nr: 4}} />
-            <SNumberPadButton dispatch={sNumberDispatch}
-                              action={{type: "add", nr: 5}} />
-            <SNumberPadButton dispatch={sNumberDispatch}
-                              action={{type: "add", nr: 6}} />
-          </ButtonGroup>
-        </Row>
+      <Row xs={3}
+           className="g-0">
+        <Col> <SNumberPadButton action={{type: SNumberAction.ADD, nr: 4}} /> </Col>
+        <Col> <SNumberPadButton action={{type: SNumberAction.ADD, nr: 5}} /> </Col>
+        <Col> <SNumberPadButton action={{type: SNumberAction.ADD, nr: 6}} /> </Col>
+      </Row>
 
-        <Row className="numpad-row">
-          <ButtonGroup className="btn-group-no-padding">
-            <SNumberPadButton dispatch={sNumberDispatch}
-                              action={{type: "add", nr: 7}} />
-            <SNumberPadButton dispatch={sNumberDispatch}
-                              action={{type: "add", nr: 8}} />
-            <SNumberPadButton dispatch={sNumberDispatch}
-                              action={{type: "add", nr: 9}} />
-          </ButtonGroup>
-        </Row>
+      <Row xs={3}
+           className="g-0">
+        <Col> <SNumberPadButton action={{type: SNumberAction.ADD, nr: 7}} /> </Col>
+        <Col> <SNumberPadButton action={{type: SNumberAction.ADD, nr: 8}} /> </Col>
+        <Col> <SNumberPadButton action={{type: SNumberAction.ADD, nr: 9}} /> </Col>
+      </Row>
 
-        <Row className="numpad-row">
-          <ButtonGroup className="btn-group-no-padding">
-            <SNumberPadButton dispatch={sNumberDispatch}
-                              action={{type: "togglePrefix"}} />
-            <SNumberPadButton dispatch={sNumberDispatch}
-                              action={{type: "add", nr: 0}} />
-            <SNumberPadButton dispatch={sNumberDispatch}
-                              action={{type: "remove"}} />
-          </ButtonGroup>
-        </Row>
-      </div>
-    </div>
+      {/* Row with additional controls */}
+      <Row xs={3}
+           className="g-0">
+        <Col> <SNumberPadButton action={{type: SNumberAction.TOGGLE_PREFIX}} /> </Col>
+        <Col> <SNumberPadButton action={{type: SNumberAction.ADD, nr: 0}} /> </Col>
+        <Col> <SNumberPadButton action={{type: SNumberAction.REMOVE}} /> </Col>
+      </Row>
+    </Stack>
   );
-}
+};
 
 // Exports
 export default SNumberPad;
-// export type { SNumberAction };
-// export { SNumberPrefix }
