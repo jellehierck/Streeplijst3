@@ -1,6 +1,6 @@
 import React from "react";
 
-import { FolderType } from "../../api/API";
+import { FolderType } from "../../api/localAPI";
 import ItemCard from "./ItemCard";
 
 type FolderProps = {

@@ -1,5 +1,5 @@
 import React, { createContext, Dispatch, useReducer } from "react";
-import { MemberType } from "../../api/API";
+import { MemberType } from "../../api/localAPI";
 
 // Possible actions to take on the user
 const enum UserAction {

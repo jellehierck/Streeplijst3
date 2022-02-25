@@ -1,6 +1,6 @@
 import React from "react";
 
-import { ProductType } from "../../api/API";
+import { ProductType } from "../../api/localAPI";
 import ProductControlButtonGroup from "../shopping-cart/ProductControlButtonGroup";
 import { useShoppingCart } from "../shopping-cart/ShoppingCartContext";
 import ItemCard from "./ItemCard";

@@ -1,4 +1,4 @@
-import { FolderType, MemberType, ProductType } from "./API";
+import { FolderType, MemberType, ProductType } from "./localAPI";
 
 const member1 : MemberType = {
   id: 347980,

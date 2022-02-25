@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useReducer } from "react";
-import { ProductType } from "../../api/API";
+import { ProductType } from "../../api/localAPI";
 
 // Action names
 const enum ShoppingCartAction {

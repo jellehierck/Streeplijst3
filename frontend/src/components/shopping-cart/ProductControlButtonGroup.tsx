@@ -2,7 +2,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import React from "react";
 import { Button, ButtonGroup } from "react-bootstrap";
 
-import { ProductType } from "../../api/API";
+import { ProductType } from "../../api/localAPI";
 import { useShoppingCart } from "./ShoppingCartContext";
 
 type ProductControlProps = {
