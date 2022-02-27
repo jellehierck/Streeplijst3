@@ -404,6 +404,9 @@ class ApiV30(ApiBase):
         # media is an array of nested dicts, strip them to only leave the url to the image file
         if stripped_data['media']:  # If the media is not an empty array
             stripped_data['media'] = stripped_data['media'][0]['url']  # Get a URL to the image for this product
+        else:  # If the media is an empty array, set it to None (because this will serialize to null in javascript)
+            stripped_data['media'] = None
+
         return stripped_data
 
 
