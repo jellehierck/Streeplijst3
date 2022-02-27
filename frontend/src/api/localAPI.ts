@@ -16,7 +16,7 @@ export type FolderType = {
 export type ProductType = {
   id : number
   product_offer_id : number
-  name : string;
+  name : string
   description? : string | null
   published : boolean
   media? : string | null   // TODO: Remove returning empty array in Python API
@@ -35,9 +35,29 @@ export type  SaleItemType = {
   quantity : number
 }
 
+// Sale Invoice type, containing information about the sale after it is submitted to Congressus
+export type SaleInvoiceType = {
+  id : number
+  created : string
+  invoice_source : string
+  invoice_type : string
+  member_id : number
+  price_paid : number  // If the invoice is already paid (i.e. the bank transfer took place) this is the total amount
+  price_unpaid : number  // If the invoice is not paid yet, this is the amount that is to be paid
+  items : SaleInvoiceItemType[]
+}
+
+export type SaleInvoiceItemType = {
+  name : string
+  price : number
+  product_offer_id : number
+  quantity : number
+  sale_invoice_id : number
+}
+
 // User type
 export type MemberType = {
-  id : number;
+  id : number
   username : string
   first_name : string
   last_name : string
@@ -52,11 +72,11 @@ export type MemberType = {
 
 // User status type
 export type MemberStatusType = {
-  archived : boolean,
-  member_from : string,
-  member_to : string | null,
-  name : string,
-  status_id : number,
+  archived : boolean
+  member_from : string
+  member_to : string | null
+  name : string
+  status_id : number
 }
 
 export const LOCAL_HOST = "http://localhost:8000";  // Host URL of local API
@@ -67,6 +87,7 @@ const HTTP = axios.create({
   baseURL: `${LOCAL_HOST}/${API_VERSION}`,
 });
 
+// Response structure if some error occurred during a request to the API
 export type ErrorType = {
   message : string
   status : number
@@ -117,7 +138,6 @@ export type PingType = {
 
 /**
  * Send a ping to the local API server.
- * @returns {Promise<AxiosResponse<PingType>>}
  */
 export const ping = () : Promise<PingType | ErrorType> => {
   return request<PingType>({url: "/ping"});
@@ -144,4 +164,23 @@ export const getMemberById = (id : number) : Promise<MemberType | ErrorType> => 
  */
 export const getFolders = () : Promise<FolderType[] | ErrorType> => {
   return request<FolderType[]>({url: "/folders"});
+};
+
+/**
+ * Get all items in a folder
+ * @param {number} folderId
+ */
+export const getProducts = (folderId : number) : Promise<ProductType[] | ErrorType> => {
+  return request<ProductType[]>({url: "/products/folder/" + folderId});
+};
+
+export const postSale = (member_id : number, items : SaleItemType[]) : Promise<SaleInvoiceType | ErrorType> => {
+  return request<SaleInvoiceType>({
+    method: "POST",
+    url: "/sales",
+    data: {
+      member_id: member_id,
+      items: items,
+    },
+  });
 };
