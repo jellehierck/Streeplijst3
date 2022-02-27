@@ -8,8 +8,7 @@ export type FolderType = {
   published : boolean
   path : string
   media? : string  // TODO: Add a way to add media to the folders and configure that in some way
-  children? : string[] | null  // TODO: check if this type is correct and/or necessary
-  products? : ProductType[] | null  // TODO: Add a way to add products to folder automatically in API
+  products? : ProductType[]  // TODO: Add a way to add products to folder automatically in API
 }
 
 // Product information
@@ -17,9 +16,9 @@ export type ProductType = {
   id : number
   product_offer_id : number
   name : string
-  description? : string | null
+  description : string | null
   published : boolean
-  media? : string | null   // TODO: Remove returning empty array in Python API
+  media : string | null   // TODO: Remove returning empty array in Python API
   price : number
 }
 
@@ -61,13 +60,12 @@ export type MemberType = {
   username : string
   first_name : string
   last_name : string
-  prefix? : string | null
-  suffix? : string | null
+  prefix : string | null
+  suffix : string | null
   date_of_birth : string
   show_almanac : boolean
   status : MemberStatusType
   // profile_picture? : string  // Removed from Congressus so not used anymore
-  bank_account? : null  // TODO: add bank account information if needed
 }
 
 // User status type
