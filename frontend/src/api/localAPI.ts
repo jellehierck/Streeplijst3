@@ -1,4 +1,4 @@
-import axios, { AxiosRequestConfig, AxiosResponse } from "axios";
+import axios, { AxiosRequestConfig } from "axios";
 
 // Folder information
 export type FolderType = {
@@ -46,7 +46,7 @@ export type MemberType = {
   date_of_birth : string
   show_almanac : boolean
   status : MemberStatusType
-  profile_picture? : string
+  // profile_picture? : string  // Removed from Congressus so not used anymore
   bank_account? : null  // TODO: add bank account information if needed
 }
 
@@ -121,4 +121,27 @@ export type PingType = {
  */
 export const ping = () : Promise<PingType | ErrorType> => {
   return request<PingType>({url: "/ping"});
+};
+
+/**
+ * Get a member by their username (SNumber)
+ * @param {string} username SNumber
+ */
+export const getMemberByUsername = (username : string) : Promise<MemberType | ErrorType> => {
+  return request<MemberType>({url: "/members/username/" + username});
+};
+
+/**
+ * Get a member by their Congressus ID (not SNumber!)
+ * @param {string} id Congressus ID
+ */
+export const getMemberById = (id : number) : Promise<MemberType | ErrorType> => {
+  return request<MemberType>({url: "/members/id/" + id});
+};
+
+/**
+ * Get all Streeplijst folders from the API
+ */
+export const getFolders = () : Promise<FolderType[] | ErrorType> => {
+  return request<FolderType[]>({url: "/folders"});
 };
