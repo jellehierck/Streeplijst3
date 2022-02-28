@@ -7,6 +7,8 @@ const member1 : MemberType = {
   last_name: "het Testaccount",
   date_of_birth: "1940-09-26",
   show_almanac: false,
+  prefix: null,
+  suffix: null,
   status: {
     archived: false,
     member_from: "2019-07-28T00:00:00",
@@ -37,7 +39,6 @@ const member2 : MemberType = {
 const members = [member1, member2];
 
 const folder1 : FolderType = {
-  children: [],
   id: 1998,
   name: "Speciaal",
   parent_id: 1989,
@@ -47,7 +48,6 @@ const folder1 : FolderType = {
 };
 
 const folder2 : FolderType = {
-  children: [],
   id: 2464,
   name: "Super Healthy",
   parent_id: 1989,

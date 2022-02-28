@@ -11,8 +11,7 @@ const ForceLogout : React.FC<ForceLogoutProps> = (props) => {
   // component is loaded again
   useEffect(() => {
     if (auth.user) {
-      auth.logout(() => {
-      });
+      auth.logout().then();
     }
   }, []);
 
