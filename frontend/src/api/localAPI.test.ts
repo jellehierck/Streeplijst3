@@ -23,6 +23,8 @@ const testProduct = {
   product_offer_id: 14839,
 };
 
+// Set the timeout to be a little longer than the standard 5000ms
+jest.setTimeout(15000);
 
 test("if a ping is received", () => {
   return ping()
@@ -32,14 +34,7 @@ test("if a ping is received", () => {
 });
 
 test("if a ping is failed (when the server is not running)", () => {
-  return ping()
-    .then(data => {
-      expect(data).toEqual({
-        message: "Network Error",
-        status: 500,
-        statusText: "Unable to reach the local API server. Is it running?",
-      });
-    });
+  return expect(getMemberByUsername(nonexistentMemberUsername)).rejects.toMatchObject({status: 500});
 });
 
 
@@ -62,15 +57,8 @@ test(`if member with username ${testMember.username} can be retrieved`, () => {
 });
 
 const nonexistentMemberUsername = "s0000000";
-test(`if nonexistent member with username ${nonexistentMemberUsername} returns an error`, () => {
-  return getMemberByUsername(nonexistentMemberUsername)
-    .then(data => {  // Wait for the Promise to resolve
-      expect(data).toEqual({  // Match against part of an object
-        message: "Request failed with status code 404",
-        status: 404,
-        statusText: "Not Found",
-      });
-    });
+test(`if nonexistent member with username ${nonexistentMemberUsername} throws an error`, () => {
+  return expect(getMemberByUsername(nonexistentMemberUsername)).rejects.toMatchObject({status: 404});
 });
 
 test(`if member with id ${testMember.id} can be retrieved`, () => {
@@ -165,7 +153,7 @@ const testSaleItems : SaleItemType[] = [
   },
 ];
 test(`if posting a sale of one testProduct for the testUser is successful`, () => {
-  return postSale(testMember.id, testSaleItems)
+  return postSale({member_id: testMember.id, items: testSaleItems})
     .then(data => {  // Wait for the Promise to resolve
       // Test if all required properties are present in the response
       expect(data).toHaveProperty("id");

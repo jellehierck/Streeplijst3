@@ -77,6 +77,19 @@ export type MemberStatusType = {
   status_id : number
 }
 
+export class LocalAPIError extends Error {
+  status : number;
+  statusText : string;
+  rawError? : any;
+
+  constructor(message : string, status : number, statusText : string, rawError? : any) {
+    super(message);
+    this.status = status;
+    this.statusText = statusText;
+    this.rawError = rawError;
+  }
+}
+
 export const LOCAL_HOST = "http://localhost:8000";  // Host URL of local API
 export const API_VERSION = "streeplijst/v30";  // API version used
 
@@ -95,9 +108,9 @@ export type ErrorType = {
 /**
  * Generic request to the Local API.
  * @param config Configuration to pass.
- * @returns {Promise<ErrorType | T>} Promise of the requested data of type T or an error of type ErrorType.
+ * @returns {Promise<ErrorType>} Promise of the requested data of type T.
  */
-const request = <T>(config : AxiosRequestConfig) : Promise<T | ErrorType> => {
+const request = <T>(config : AxiosRequestConfig) : Promise<T> => {
   return HTTP.request<T>(config)
     .then(res => {
       return res.data;  // There is a successful response, return it
@@ -106,28 +119,68 @@ const request = <T>(config : AxiosRequestConfig) : Promise<T | ErrorType> => {
     .catch(err => {  // Some error has occurred
       // Determine the type of error
       if (err.response) {  // The error caused by response with a 4xx or 5xx status code
-        return {
-          message: err.message,
-          status: err.response.status,
-          statusText: err.response.statusText,
-        };
+        throw new LocalAPIError(
+          err.message,
+          err.response.status,
+          err.response.statusText,
+          err,
+        );
 
       } else if (err.request) {  // The error is caused because no response was received from the server in time
-        return {
-          message: err.message,
-          status: 500,
-          statusText: "Unable to reach the local API server. Is it running?",
-        };
+        throw new LocalAPIError(
+          err.message,
+          500,
+          "Unable to reach the local API server. Is it running?",
+          err,
+        );
 
       } else {  // The request was never sent so there is something wrong with the frontend app
-        return {
-          message: "An unknown error occurred in the frontend app.",
-          status: 400,
-          statusText: "An unknown error occurred in the frontend app.",
-        };
+        throw new LocalAPIError(
+          "An unknown error occurred in the frontend app.",
+          400,
+          "An unknown error occurred in the frontend app.",
+          err,
+        );
       }
     });
 };
+
+// /**
+//  * Generic request to the Local API.
+//  * @param config Configuration to pass.
+//  * @returns {Promise<ErrorType | T>} Promise of the requested data of type T or an error of type ErrorType.
+//  */
+// const request = <T>(config : AxiosRequestConfig) : Promise<T | ErrorType> => {
+//   return HTTP.request<T>(config)
+//     .then(res => {
+//       return res.data;  // There is a successful response, return it
+//     })
+//
+//     .catch(err => {  // Some error has occurred
+//       // Determine the type of error
+//       if (err.response) {  // The error caused by response with a 4xx or 5xx status code
+//         return {
+//           message: err.message,
+//           status: err.response.status,
+//           statusText: err.response.statusText,
+//         };
+//
+//       } else if (err.request) {  // The error is caused because no response was received from the server in time
+//         return {
+//           message: err.message,
+//           status: 500,
+//           statusText: "Unable to reach the local API server. Is it running?",
+//         };
+//
+//       } else {  // The request was never sent so there is something wrong with the frontend app
+//         return {
+//           message: "An unknown error occurred in the frontend app.",
+//           status: 400,
+//           statusText: "An unknown error occurred in the frontend app.",
+//         };
+//       }
+//     });
+// };
 
 // Ping information
 export type PingType = {
@@ -137,7 +190,7 @@ export type PingType = {
 /**
  * Send a ping to the local API server.
  */
-export const ping = () : Promise<PingType | ErrorType> => {
+export const ping = () : Promise<PingType> => {
   return request<PingType>({url: "/ping"});
 };
 
@@ -145,7 +198,7 @@ export const ping = () : Promise<PingType | ErrorType> => {
  * Get a member by their username (SNumber)
  * @param {string} username SNumber
  */
-export const getMemberByUsername = (username : string) : Promise<MemberType | ErrorType> => {
+export const getMemberByUsername = (username : string) : Promise<MemberType> => {
   return request<MemberType>({url: "/members/username/" + username});
 };
 
@@ -153,14 +206,14 @@ export const getMemberByUsername = (username : string) : Promise<MemberType | Er
  * Get a member by their Congressus ID (not SNumber!)
  * @param {string} id Congressus ID
  */
-export const getMemberById = (id : number) : Promise<MemberType | ErrorType> => {
+export const getMemberById = (id : number) : Promise<MemberType> => {
   return request<MemberType>({url: "/members/id/" + id});
 };
 
 /**
  * Get all Streeplijst folders from the API
  */
-export const getFolders = () : Promise<FolderType[] | ErrorType> => {
+export const getFolders = () : Promise<FolderType[]> => {
   return request<FolderType[]>({url: "/folders"});
 };
 
@@ -168,17 +221,21 @@ export const getFolders = () : Promise<FolderType[] | ErrorType> => {
  * Get all items in a folder
  * @param {number} folderId
  */
-export const getProducts = (folderId : number) : Promise<ProductType[] | ErrorType> => {
+export const getProducts = (folderId : number) : Promise<ProductType[]> => {
   return request<ProductType[]>({url: "/products/folder/" + folderId});
 };
 
-export const postSale = (member_id : number, items : SaleItemType[]) : Promise<SaleInvoiceType | ErrorType> => {
+/**
+ * Post a sale for a user.
+ * @param sale Sale object to post.
+ */
+export const postSale = (sale : SaleType) : Promise<SaleInvoiceType> => {
   return request<SaleInvoiceType>({
     method: "POST",
     url: "/sales",
     data: {
-      member_id: member_id,
-      items: items,
+      member_id: sale.member_id,
+      items: sale.items,
     },
   });
 };
