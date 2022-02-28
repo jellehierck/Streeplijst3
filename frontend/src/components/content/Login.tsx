@@ -21,9 +21,11 @@ const Login : React.FC<LoginProps> = (props) => {
 
   // Logging in a user
   const login = (username : string) : void => {
+    console.log(`Attempt login for ${username}`);
     // Try to log in the user using the AuthContext
     auth.login(username)
       .then(() => {
+        console.log(`Login successful, redirection to ${props.afterLogin}`);
         navigate(props.afterLogin); // TODO: Add a way to redirect to the last accessed page instead
       })
       .catch(err => {
@@ -47,7 +49,7 @@ const Login : React.FC<LoginProps> = (props) => {
 
   return (
     <ContentContainer>
-      <SNumberPad />
+      <SNumberPad login={login} />
 
       <Button variant="primary"
               onClick={loginFailed}>

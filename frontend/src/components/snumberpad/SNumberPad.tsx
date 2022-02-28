@@ -12,7 +12,9 @@ import "./SNumberPad.css";
 import SNumberPadButton from "./SNumberPadButton";
 
 // Props sent to SNumberPad
-type SNumberPadProps = {}
+type SNumberPadProps = {
+  login : (username : string) => void
+}
 
 // React component
 const SNumberPad : React.FC<SNumberPadProps> = (props) => {
@@ -23,7 +25,8 @@ const SNumberPad : React.FC<SNumberPadProps> = (props) => {
   const handleKeyPress = (event : KeyboardEvent) : void => {
     switch (event.key) {
       case "Enter":
-        // TODO logIn(number)
+        // TODO: Set spinner and block login
+        props.login(sNumber.toString());  // Attempt the login
         sNumber.clear();
         break;
 
@@ -114,7 +117,12 @@ const SNumberPad : React.FC<SNumberPadProps> = (props) => {
         <Col xs={4}>
           {/* Submit button */}
           <Button variant="success"
-                  className="numpad-btn">
+                  className="numpad-btn"
+                  onClick={() => {
+                    // TODO: Set spinner and block login
+                    props.login(sNumber.toString());  // Attempt the login
+                    sNumber.clear();  // Clear the student number
+                  }}>
             <h3 className="text-reset"><FontAwesomeIcon icon={["fas", "paper-plane"]} /></h3>
           </Button>
         </Col>
