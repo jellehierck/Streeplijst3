@@ -1,11 +1,9 @@
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import React, { useEffect, useState } from "react";
+import React, { useEffect } from "react";
 import { Col, Stack } from "react-bootstrap";
 import Button from "react-bootstrap/Button";
 
 import Row from "react-bootstrap/Row";
-import { useNavigate } from "react-router";
-// import { Redirect } from "react-router-dom";
 import { SNumberAction, useSNumber } from "./SNumberContext";
 
 import "./SNumberPad.css";
@@ -21,13 +19,20 @@ const SNumberPad : React.FC<SNumberPadProps> = (props) => {
   // SNumber context
   const sNumber = useSNumber();
 
+  /**
+   * Function is called when the submit button is pressed or the enter key is pressed.
+   */
+  const onSubmit = () => {
+    props.login(sNumber.toString());  // Attempt the login
+    sNumber.clear();
+  };
+
   // Handle a keypress on the input field
   const handleKeyPress = (event : KeyboardEvent) : void => {
     switch (event.key) {
       case "Enter":
         // TODO: Set spinner and block login
-        props.login(sNumber.toString());  // Attempt the login
-        sNumber.clear();
+        onSubmit();
         break;
 
       case "Backspace":
@@ -66,38 +71,6 @@ const SNumberPad : React.FC<SNumberPadProps> = (props) => {
     };
   });
 
-  // const [_, setUser] = useContext(UserContext);
-
-  // To navigate to other links
-  let navigate = useNavigate();
-
-  // restartTimer error and try to fetch the member, if success, load number into localStorage
-  const [loggedIn, setLoggedIn] = useState(
-    Boolean(localStorage.getItem("sNumber")),
-  );
-  // const [errored, setErrored] = useState(false);
-
-  // Log in a user with this SNumberType
-  // function logIn(sNumber : SNumberType) : void {
-  //   setErrored(false);
-  //
-  //   congressus
-  //     .getMemberByUsername(sNumber.prefix + sNumber.number)
-  //     .then((member) => {
-  //       localStorage.setItem("sNumber", sNumber.prefix + sNumber.number);
-  //       setUser(member);
-  //       setLoggedIn(true);
-  //       navigate("/folders");  // Navigate to the folders page
-  //     })
-  //     .catch((e) => {
-  //       // todo this is bad, dont code like this
-  //       setErrored(true);
-  //       // if (e.message === "invalid number") {
-  //       //   setErrored(true); // show scary banner
-  //       // }
-  //     });
-  // }
-
   // Return component
   return (
     <Stack direction="vertical"
@@ -118,11 +91,7 @@ const SNumberPad : React.FC<SNumberPadProps> = (props) => {
           {/* Submit button */}
           <Button variant="success"
                   className="numpad-btn"
-                  onClick={() => {
-                    // TODO: Set spinner and block login
-                    props.login(sNumber.toString());  // Attempt the login
-                    sNumber.clear();  // Clear the student number
-                  }}>
+                  onClick={onSubmit}>
             <h3 className="text-reset"><FontAwesomeIcon icon={["fas", "paper-plane"]} /></h3>
           </Button>
         </Col>
