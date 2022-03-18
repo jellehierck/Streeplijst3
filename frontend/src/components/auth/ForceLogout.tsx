@@ -10,7 +10,7 @@ const ForceLogout : React.FC<ForceLogoutProps> = (props) => {
   // If a user is logged in, log them out. useEffect is used to make sure this only triggers when the ForceLogout
   // component is loaded again
   useEffect(() => {
-    if (auth.user) {
+    if (auth.loggedInMember) {
       auth.logout();
     }
   }, []);

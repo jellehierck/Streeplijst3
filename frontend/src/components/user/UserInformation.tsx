@@ -7,15 +7,15 @@ type UserInformationProps = {}
 const UserInformation : React.FC<UserInformationProps> = (props) => {
   const auth = useAuth();
 
-  if (auth.user) {
+  if (auth.loggedInMember) {
     return (
       <>
-        <h1>{auth.user.username}</h1>
+        <h1>{auth.loggedInMember.username}</h1>
         <p>Hier komt te staan wat jij in het verleden allemaal gesmikkeld hebt uit de streeplijst</p>
       </>
     );
   } else {  // Return nothing if no user is logged in
-    return <></>
+    return <></>;
   }
 }
 

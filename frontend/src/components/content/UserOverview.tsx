@@ -16,11 +16,11 @@ const UserOverview : React.FC<UserOverviewProps> = (props) => {
 
   // Display buttons if a user is logged in
   const displayButtons = () => {
-    if (auth.user) {
+    if (auth.loggedInMember) {
       return <Button variant="primary"
                      onClick={() => navigate(streeplijstRoutes.folderOverviewPage)}>
         Folders
-      </Button>
+      </Button>;
     }
   }
 

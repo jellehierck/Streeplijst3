@@ -18,6 +18,9 @@ import { AuthContextProvider } from "./components/auth/AuthContext";
 import { SNumberContextProvider } from "./components/snumberpad/SNumberContext";
 import StreeplijstRoutes from "./streeplijst/StreeplijstRoutes";
 
+import QueryTestComponent from "./api/QueryTestComponent";
+import TimedAlert from "./components/alert/TimedAlert";
+
 // Initialize a font-awesome library to use icons easily throughout the project
 // src: https://fontawesome.com/v5.15/how-to-use/on-the-web/using-with/react
 library.add(  // Solid icons
@@ -37,16 +40,16 @@ function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <AlertContextProvider> {/* Context provider for alerts */}
-        {/* <QueryTestComponent /> */}
-        {/* <TimedAlert /> */}
         <AuthContextProvider>  {/* Context provider for authentication of users */}
-          <SNumberContextProvider>
-            {/* <ShoppingCartContextProvider> /!* Context provider for the shopping cart *!/ */}
-            <BrowserRouter> {/* react-router-dom base, enables routing */}
-              <StreeplijstRoutes /> {/* The Streeplijst app, TODO: we could also add the Bierstreeplijst here */}
-            </BrowserRouter>
-            {/* </ShoppingCartContextProvider> */}
-          </SNumberContextProvider>
+          <QueryTestComponent />
+          <TimedAlert />
+          {/* <SNumberContextProvider> */}
+          {/*   /!* <ShoppingCartContextProvider> /!* Context provider for the shopping cart *!/ *!/ */}
+          {/*   <BrowserRouter> /!* react-router-dom base, enables routing *!/ */}
+          {/*     <StreeplijstRoutes /> /!* The Streeplijst app, TODO: we could also add the Bierstreeplijst here *!/ */}
+          {/*   </BrowserRouter> */}
+          {/*   /!* </ShoppingCartContextProvider> *!/ */}
+          {/* </SNumberContextProvider> */}
         </AuthContextProvider>
       </AlertContextProvider>
       <ReactQueryDevtools initialIsOpen={false} />

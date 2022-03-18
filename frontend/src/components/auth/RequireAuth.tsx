@@ -15,10 +15,10 @@ const RequireAuth : React.FC<RequireAuthProps> = (props) => {
   const auth = useAuth();
 
   // If no user is authorized, redirect to the provided redirect url
-  if (!auth.user) {
+  if (!auth.loggedInMember) {
     // TODO: Add a call to the alert footer using AlertContext telling the user they should be logged in
     return <Navigate to={props.redirect}
-                     replace />
+                     replace />;
   } else {  // If a user is authorized, render the wrapped children elements
     return <>
       {props.children}

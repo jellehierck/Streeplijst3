@@ -1,32 +1,25 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 /**
  * Contents of this file are very much inspired from https://github.com/remix-run/react-router/tree/main/examples/auth
  */
-import React, { createContext, useContext } from "react";
+import React, { createContext, useContext, useEffect } from "react";
 import { LocalAPIError, MemberType } from "../../api/localAPI";
 import { useMemberByUsername } from "../../api/localAPIHooks";
 import { useAlert } from "../alert/AlertContext";
 import { unknownErrorAlert, usernameNotFoundAlert } from "../alert/standardAlerts";
 
-// Context type to pass along
-// type AuthContextType = {
-//   user : MemberType | null
-//   login : (username : string, callback : VoidFunction) => void  // Function to call after login
-//   logout : (callback : VoidFunction) => void  // Function to call after logout
-// }
-
 // Context type to pass along with promises
-type AuthContextType = {
+export type AuthContextType = {
   /**
    * Currently logged-in user. If no user is logged in, the user is null.
    */
-  user : MemberType | null
+  loggedInMember : MemberType | null
 
   /**
    * Log in user with the localAPI.
    * @param {MemberType} member User to log in
-   * @param {VoidFunction} onLogin Function to call upon a successul login
    */
-  login : (username : string, onLogin : VoidFunction) => void
+  login : (username : string) => void
 
   /**
    * Logs out the user, setting it to null.
@@ -36,56 +29,77 @@ type AuthContextType = {
 
 // Actual context, store of the current state
 const AuthContext = createContext<AuthContextType>({} as AuthContextType);
+export default AuthContext;
 
 // Custom hook to use the AuthContext
-const useAuth = () : AuthContextType => {
+export const useAuth = () : AuthContextType => {
   return useContext(AuthContext);
 };
 
 // AuthContext provider
-const AuthContextProvider : React.FC = (props) => {
-  const [user, setUser] = React.useState<MemberType | null>(null);
-  const alert = useAlert();
+export const AuthContextProvider : React.FC = (props) => {
+  const alert = useAlert();  // Alert context, used to display an error message on a failed login attempt
 
-  //
-  const useLogin = (username : string, onLogin : VoidFunction) : void => {
-    // Callback function to set the alert upon a failed member error
-    const handleMemberError = (error : LocalAPIError) : void => {
-      switch (error.status) {  // Determine the error type
-        case 404:  // Username not found
-          alert.set(usernameNotFoundAlert(username, error.toString()));  // Set the alert
-          return;
-      }
+  const [loggedInMember, setLoggedInMember] = React.useState<MemberType | null>(null);
+  const [username, setUsername] = React.useState<string>("");
 
-      // All other checks failed, this is an unexpected error so set the alert to an unknown error
-      console.log(error);
-      alert.set(unknownErrorAlert(error.toString()));
-    };
-
-    const options = {
-      onError: handleMemberError,  // Add the default error handler
-    };
-
-    const memberRes = useMemberByUsername(username, options);  // Get the user from the localAPI
-
-    if (memberRes.isSuccess) {  // The attempt was successful
-      setUser(memberRes.data);  // Set user as logged in
-      onLogin();  // Call provided function
-    }
+  // Callback function to set the alert upon a failed member error
+  const onMemberSuccess = (username : string, data : MemberType) : void => {
+    setLoggedInMember(data); // Set user as logged in
+    setUsername("");
+    alert.hide(); // Remove any current alerts
   };
 
+  // Callback function to set the alert upon a failed member error
+  const onMemberError = (username : string, error : LocalAPIError) : void => {
+    setUsername("");
+
+    switch (error.status) {  // Determine the error type
+      case 404:  // Username not found
+        alert.set(usernameNotFoundAlert(username, error.toString()));  // Set the alert
+        return;
+    }
+
+    // All other checks failed, this is an unexpected error so set the alert to an unknown error
+    console.log(error);
+    alert.set(unknownErrorAlert(error.toString()));
+  };
+
+  // Query the member based on the username state (set by login function) and disabled by default
+  const memberRes = useMemberByUsername(username,
+    {
+      onSuccess: onMemberSuccess,
+      onError: onMemberError,
+    },
+    {enabled: false},  // Do not call this query by default, instead call it with refetch (to use with buttons)
+  );
+
+  // Extra trick to make sure the member is only refetched when the username is truthy (not an empty string). This is
+  // needed because we first need a re-render of this component with the new username before react-query uses the
+  // updated username value.
+  useEffect(() => {
+    if (username) {
+      memberRes.refetch();
+    }
+  }, [username]);
+
+  // Login function to log a user in
+  const login = (username : string) => {
+    logout();  // First log out the user
+    setUsername(username);
+    // memberRes.refetch();  // Refresh the call to the API with the new username
+  };
+
+  // Logout function to log a user out
   const logout = () : void => {
-    setUser(null);  // Remove the user, so it is not logged in
+    // setUsername("");  // Disable the username to prevent next username queries
+    setLoggedInMember(null);  // Set the user to null to log it out
+    memberRes.remove();  // Remove query to cancel any current requests
   };
 
   return (
-    <AuthContext.Provider value={{user: user, login: useLogin, logout: logout}}>
+    <AuthContext.Provider value={{loggedInMember: loggedInMember, login: login, logout: logout}}>
       {props.children}
     </AuthContext.Provider>
   );
 };
-
-// Exports
-export default AuthContext;
-export { AuthContextProvider, useAuth };
-export type { AuthContextType };

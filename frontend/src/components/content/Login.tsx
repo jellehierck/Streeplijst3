@@ -19,15 +19,14 @@ const Login : React.FC<LoginProps> = (props) => {
   const login = (username : string) : void => {
     console.log(`Attempt login for ${username}`);
 
-    // Function to call upon successful login
-    const onLogin = () => {
-      console.log(`Login successful, redirection to ${props.afterLogin}`);
-      navigate(props.afterLogin); // TODO: Add a way to redirect to the last accessed page instead?
-    };
-
     // Try to log in the user using the AuthContext
-    auth.login(username, onLogin);
+    auth.login(username);
   };
+
+  if (auth.loggedInMember) {
+    console.log(`Login successful, redirection to ${props.afterLogin}`);
+    navigate(props.afterLogin); // TODO: Add a way to redirect to the last accessed page instead?
+  }
 
   const loginFailed = () => {
     login("s0000000");
