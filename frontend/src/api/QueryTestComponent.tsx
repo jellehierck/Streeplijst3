@@ -1,12 +1,12 @@
 import React from "react";
 
-import { useMemberByUsernameAll, usePing } from "./localAPIHooks";
+import { useMemberByUsername, usePing } from "./localAPIHooks";
 
 type QueryTestComponentProps = {}
 
 // React component
 const QueryTestComponent : React.FC<QueryTestComponentProps> = (props) => {
-  const memberRes = useMemberByUsernameAll("s9999997");
+  const memberRes = useMemberByUsername("s9999997");
 
   const memberDisplay = () => {
     if (memberRes.isLoading) {

@@ -2,7 +2,10 @@
  * Contents of this file are very much inspired from https://github.com/remix-run/react-router/tree/main/examples/auth
  */
 import React, { createContext, useContext } from "react";
-import { getMemberByUsername, MemberType } from "../../api/localAPI";
+import { LocalAPIError, MemberType } from "../../api/localAPI";
+import { useMemberByUsername } from "../../api/localAPIHooks";
+import { useAlert } from "../alert/AlertContext";
+import { unknownErrorAlert, usernameNotFoundAlert } from "../alert/standardAlerts";
 
 // Context type to pass along
 // type AuthContextType = {
@@ -19,17 +22,16 @@ type AuthContextType = {
   user : MemberType | null
 
   /**
-   * Try to log in a user asynchronously. A promise is returned, when the user is successfully logged in its
-   * information is returned. If the login was not successful, the promise is rejected with an error.
-   * @param {string} username Username to try and log in.
+   * Log in user with the localAPI.
+   * @param {MemberType} member User to log in
+   * @param {VoidFunction} onLogin Function to call upon a successul login
    */
-  login : (username : string) => Promise<MemberType>
+  login : (username : string, onLogin : VoidFunction) => void
 
   /**
-   * Logs out the user, setting it null. Returns a promise which will always immediately resolve.
-   * @returns {Promise<void>}
+   * Logs out the user, setting it to null.
    */
-  logout : () => Promise<void>
+  logout : () => void
 }
 
 // Actual context, store of the current state
@@ -43,23 +45,41 @@ const useAuth = () : AuthContextType => {
 // AuthContext provider
 const AuthContextProvider : React.FC = (props) => {
   const [user, setUser] = React.useState<MemberType | null>(null);
+  const alert = useAlert();
 
-  const login = (username : string) : Promise<MemberType> => {
-    return getMemberByUsername(username)
-      .then(member => {
-        setUser(member);  // Set the user
-        return member;  // Return the user
-      });
-    // If the LocalAPI method is rejected, return the rejected Promise
+  //
+  const useLogin = (username : string, onLogin : VoidFunction) : void => {
+    // Callback function to set the alert upon a failed member error
+    const handleMemberError = (error : LocalAPIError) : void => {
+      switch (error.status) {  // Determine the error type
+        case 404:  // Username not found
+          alert.set(usernameNotFoundAlert(username, error.toString()));  // Set the alert
+          return;
+      }
+
+      // All other checks failed, this is an unexpected error so set the alert to an unknown error
+      console.log(error);
+      alert.set(unknownErrorAlert(error.toString()));
+    };
+
+    const options = {
+      onError: handleMemberError,  // Add the default error handler
+    };
+
+    const memberRes = useMemberByUsername(username, options);  // Get the user from the localAPI
+
+    if (memberRes.isSuccess) {  // The attempt was successful
+      setUser(memberRes.data);  // Set user as logged in
+      onLogin();  // Call provided function
+    }
   };
 
-  const logout = () : Promise<void> => {
-    setUser(null);  // Remove the user
-    return Promise.resolve();
+  const logout = () : void => {
+    setUser(null);  // Remove the user, so it is not logged in
   };
 
   return (
-    <AuthContext.Provider value={{user: user, login: login, logout: logout}}>
+    <AuthContext.Provider value={{user: user, login: useLogin, logout: logout}}>
       {props.children}
     </AuthContext.Provider>
   );
