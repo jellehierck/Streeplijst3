@@ -41,15 +41,15 @@ function App() {
     <QueryClientProvider client={queryClient}>
       <AlertContextProvider> {/* Context provider for alerts */}
         <AuthContextProvider>  {/* Context provider for authentication of users */}
-          <QueryTestComponent />
-          <TimedAlert />
-          {/* <SNumberContextProvider> */}
-          {/*   /!* <ShoppingCartContextProvider> /!* Context provider for the shopping cart *!/ *!/ */}
-          {/*   <BrowserRouter> /!* react-router-dom base, enables routing *!/ */}
-          {/*     <StreeplijstRoutes /> /!* The Streeplijst app, TODO: we could also add the Bierstreeplijst here *!/ */}
-          {/*   </BrowserRouter> */}
-          {/*   /!* </ShoppingCartContextProvider> *!/ */}
-          {/* </SNumberContextProvider> */}
+          {/* <QueryTestComponent /> */}
+          {/* <TimedAlert /> */}
+          <SNumberContextProvider>
+            {/* <ShoppingCartContextProvider> /!* Context provider for the shopping cart *!/ */}
+            <BrowserRouter> {/* react-router-dom base, enables routing */}
+              <StreeplijstRoutes /> {/* The Streeplijst app, TODO: we could also add the Bierstreeplijst here */}
+            </BrowserRouter>
+            {/* </ShoppingCartContextProvider> */}
+          </SNumberContextProvider>
         </AuthContextProvider>
       </AlertContextProvider>
       <ReactQueryDevtools initialIsOpen={false} />

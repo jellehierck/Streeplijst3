@@ -18,9 +18,7 @@ const Login : React.FC<LoginProps> = (props) => {
   // Logging in a user
   const login = (username : string) : void => {
     console.log(`Attempt login for ${username}`);
-
-    // Try to log in the user using the AuthContext
-    auth.login(username);
+    auth.login(username); // Try to log in the user using the AuthContext
   };
 
   if (auth.loggedInMember) {
@@ -28,7 +26,7 @@ const Login : React.FC<LoginProps> = (props) => {
     navigate(props.afterLogin); // TODO: Add a way to redirect to the last accessed page instead?
   }
 
-  const loginFailed = () => {
+  const loginToNonExistentUser = () => {
     login("s0000000");
     // alert.set(usernameNotFoundAlert("s1779397"));
   };
@@ -38,7 +36,7 @@ const Login : React.FC<LoginProps> = (props) => {
       <SNumberPad login={login} />
 
       <Button variant="primary"
-              onClick={loginFailed}>
+              onClick={loginToNonExistentUser}>
         Foute login
       </Button>
     </ContentContainer>

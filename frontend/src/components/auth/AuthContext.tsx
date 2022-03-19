@@ -15,6 +15,9 @@ export type AuthContextType = {
    */
   loggedInMember : MemberType | null
 
+  // Whether a user is currently logged in
+  isLoggedIn : boolean
+
   /**
    * Log in user with the localAPI.
    * @param {MemberType} member User to log in
@@ -98,7 +101,12 @@ export const AuthContextProvider : React.FC = (props) => {
   };
 
   return (
-    <AuthContext.Provider value={{loggedInMember: loggedInMember, login: login, logout: logout}}>
+    <AuthContext.Provider value={{
+      loggedInMember: loggedInMember,
+      isLoggedIn: !!loggedInMember,  // True when loggedInMember is not null
+      login: login,
+      logout: logout,
+    }}>
       {props.children}
     </AuthContext.Provider>
   );
