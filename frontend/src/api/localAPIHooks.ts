@@ -1,6 +1,15 @@
-import { useQuery } from "react-query";
-import { UseQueryOptions } from "react-query/types/react/types";
-import { getMemberByUsername, LocalAPIError, MemberType, ping, PingType } from "./localAPI";
+import { useMutation, useQuery } from "react-query";
+import { UseMutationOptions, UseQueryOptions } from "react-query/types/react/types";
+import {
+  getMemberByUsername,
+  LocalAPIError,
+  MemberType,
+  ping,
+  PingType,
+  postSale,
+  SaleInvoiceType,
+  SaleType,
+} from "./localAPI";
 
 // Default configuration for React Query useQuery hook
 export const defaultQueryConfig = {
@@ -15,20 +24,20 @@ export const usePing = () => {
 };
 
 // Callbacks to call upon successful or failed query for a member by username API call
-type MemberByUsernameQueryCallbacks = {
+export type MemberByUsernameQueryCallbacks = {
   /**
    * Called on query success
+   * @param {MemberType} responseData Queried member data
    * @param {string} username Username for which the query was called
-   * @param {MemberType} data Queried data
    */
-  onSuccess? : (username : string, data : MemberType) => void,
+  onSuccess? : (responseData : MemberType, username : string) => void,
 
   /**
    * Called on query failure
-   * @param {string} username Username for which the query was called
    * @param {LocalAPIError} error Returned error object
+   * @param {string} username Username for which the query was called
    */
-  onError? : (username : string, error : LocalAPIError) => void,
+  onError? : (error : LocalAPIError, username : string) => void,
 }
 
 
@@ -46,14 +55,14 @@ export const useMemberByUsername = (
   // Function to pass to the useQuery hook which calls the argument onError function if it is given
   const onQueryError = (err : LocalAPIError) => {
     if (callbacks?.onError) {
-      callbacks.onError(username, err);
+      callbacks.onError(err, username);
     }
   };
 
   // Function to pass to the useQuery hook which calls the argument onError function if it is given
   const onQuerySuccess = (data : MemberType) => {
     if (callbacks?.onSuccess) {
-      callbacks.onSuccess(username, data);
+      callbacks.onSuccess(data, username);
     }
   };
 
@@ -66,4 +75,50 @@ export const useMemberByUsername = (
   };
 
   return useQuery<MemberType, LocalAPIError>(["members", {username: username}], () => getMemberByUsername(username), options);
+};
+
+export type SaleQueryCallbacks = {
+  /**
+   * Called on post success
+   * @param {SaleInvoiceType} responseData Server response
+   * @param {SaleType} sale Sale which was posted
+   */
+  onSuccess? : (responseData : SaleInvoiceType, sale : SaleType) => void,
+
+  /**
+   * Called on post failure
+   * @param {LocalAPIError} error Returned error object
+   * @param {SaleType} sale Sale which was attempted to post
+   */
+  onError? : (error : LocalAPIError, sale : SaleType) => void,
+}
+
+export const usePostSale = (
+  callbacks? : SaleQueryCallbacks,
+  options? : Omit<UseMutationOptions<SaleInvoiceType, LocalAPIError, SaleType>, "mutationKey" | "mutationFn">,
+) => {
+
+  // Function to pass to the useQuery hook which calls the argument onError function if it is given
+  const onQueryError = (err : LocalAPIError, sale : SaleType) => {
+    if (callbacks?.onError) {
+      callbacks.onError(err, sale);
+    }
+  };
+
+  // Function to pass to the useQuery hook which calls the argument onError function if it is given
+  const onQuerySuccess = (data : SaleInvoiceType, sale : SaleType) => {
+    if (callbacks?.onSuccess) {
+      callbacks.onSuccess(data, sale);
+    }
+  };
+
+  // Set options by taking the default and overriding if needed
+  options = {
+    ...defaultQueryConfig,  // First apply the default configuration
+    onError: onQueryError,  // Pass functions to be called on query error or success
+    onSuccess: onQuerySuccess,
+    ...options,  // Add additional options specified in the function arguments, overriding the defaults if needed
+  };
+
+  return useMutation<SaleInvoiceType, LocalAPIError, SaleType>(postSale, options);
 };

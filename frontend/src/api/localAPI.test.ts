@@ -16,15 +16,24 @@ const testFolder = {
 };
 
 /**
- * Test product, this product must have these IDs, be in the testFolder and cost €0.00
+ * Test product 1, this product must have these IDs, be in the testFolder and cost €0.00
  */
-const testProduct = {
+const testProduct1 = {
   id: 13591,
   product_offer_id: 14839,
 };
 
+/**
+ * Test product 2, this product must have these IDs, be in the testFolder and cost €0.00
+ */
+const testProduct2 = {
+  id: 21151,
+  product_offer_id: 23902,
+};
+
 // Set the timeout to be a little longer than the standard 5000ms
-jest.setTimeout(15000);
+const testTimeoutMs = 15000;
+jest.setTimeout(testTimeoutMs);
 
 test("if a ping is received", () => {
   return ping()
@@ -130,15 +139,22 @@ test(`if products from the test folder with id ${testFolder.id} can be retrieved
     });
 });
 
-test(`if products from the test folder with id ${testFolder.id} contain the test product and the test product costs €0`, () => {
+test(`if products from the test folder with id ${testFolder.id} contain the test products and the test products costs €0`, () => {
   return getProducts(testFolder.id)
     .then(data => {
       expect(data).toEqual(
         expect.arrayContaining([  // an array that contains...
           expect.objectContaining({  // an object that contains the following properties
-            id: testProduct.id,  // At least the test product must be present in the response
-            product_offer_id: testProduct.product_offer_id,
+            id: testProduct1.id,  // At least test product 1 must be present in the response
+            product_offer_id: testProduct1.product_offer_id,
             price: 0,  // Expect price to be 0
+            published: true, // Expect it to be published
+          }),
+          expect.objectContaining({  // an object that contains the following properties
+            id: testProduct2.id,  // At least test product 2 must be present in the response
+            product_offer_id: testProduct2.product_offer_id,
+            price: 0,  // Expect price to be 0
+            published: false, // Expect it NOT to be published
           }),
         ]),
       );
@@ -146,14 +162,14 @@ test(`if products from the test folder with id ${testFolder.id} contain the test
 });
 
 // Array of test sale items containing a single testProduct
-const testSaleItems : SaleItemType[] = [
+const singleTestSaleItem : SaleItemType[] = [
   {
-    product_offer_id: testProduct.product_offer_id,
+    product_offer_id: testProduct1.product_offer_id,
     quantity: 1,
   },
 ];
-test(`if posting a sale of one testProduct for the testUser is successful`, () => {
-  return postSale({member_id: testMember.id, items: testSaleItems})
+test(`if posting a sale of a single test product 1 for the testUser is successful`, () => {
+  return postSale({member_id: testMember.id, items: singleTestSaleItem})
     .then(data => {  // Wait for the Promise to resolve
       // Test if all required properties are present in the response
       expect(data).toHaveProperty("id");
@@ -169,7 +185,50 @@ test(`if posting a sale of one testProduct for the testUser is successful`, () =
         expect.objectContaining({  // an object that contains the following properties
           name: expect.any(String),
           price: 0,
-          product_offer_id: testProduct.product_offer_id,
+          product_offer_id: testProduct1.product_offer_id,
+          quantity: 1,
+          sale_invoice_id: expect.any(Number),
+        }),
+      ]));
+    });
+});
+
+// Array of test sale items containing a single testProduct
+const multipleTestSaleItems : SaleItemType[] = [
+  {
+    product_offer_id: testProduct1.product_offer_id,
+    quantity: 2,
+  },
+  {
+    product_offer_id: testProduct2.product_offer_id,
+    quantity: 1,
+  },
+];
+test(`if posting multiple sales of different test products for the testUser is successful`, () => {
+  return postSale({member_id: testMember.id, items: multipleTestSaleItems})
+    .then(data => {  // Wait for the Promise to resolve
+      // Test if all required properties are present in the response
+      expect(data).toHaveProperty("id");
+      expect(data).toHaveProperty("created");
+      expect(data).toHaveProperty("invoice_source", "api");  // Make sure the source is set correctly
+      expect(data).toHaveProperty("invoice_type", "webshop");  // Make sure the type is set correctly
+      expect(data).toHaveProperty("member_id", testMember.id);  // Make sure the member ID is correct
+      expect(data).toHaveProperty("price_paid", 0);  // Make sure the paid price is actually 0
+      expect(data).toHaveProperty("price_unpaid", 0);  // Make sure the unpaid price is actually 0
+
+      // Test if the array of bought items has the right format
+      expect(data).toHaveProperty("items", expect.arrayContaining([  // an array that contains...
+        expect.objectContaining({  // an object that contains the following properties
+          name: expect.any(String),
+          price: 0,
+          product_offer_id: testProduct1.product_offer_id,
+          quantity: 2,
+          sale_invoice_id: expect.any(Number),
+        }),
+        expect.objectContaining({  // an object that contains the following properties
+          name: expect.any(String),
+          price: 0,
+          product_offer_id: testProduct2.product_offer_id,
           quantity: 1,
           sale_invoice_id: expect.any(Number),
         }),

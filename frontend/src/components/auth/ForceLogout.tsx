@@ -13,6 +13,7 @@ const ForceLogout : React.FC<ForceLogoutProps> = (props) => {
     if (auth.loggedInMember) {
       auth.logout();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return <>

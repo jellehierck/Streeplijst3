@@ -36,7 +36,7 @@ const ShoppingCart : React.FC<CartProps> = (props) => {
         </Button>
       </ButtonGroup>
 
-      {/* All ttems in the cart */}
+      {/* All items in the cart */}
       <Stack direction="vertical">
         {cart.items.map(item => {
           return <ItemCard title={item.product.name}>

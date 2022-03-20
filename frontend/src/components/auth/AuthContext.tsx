@@ -6,7 +6,7 @@ import React, { createContext, useContext, useEffect } from "react";
 import { LocalAPIError, MemberType } from "../../api/localAPI";
 import { useMemberByUsername } from "../../api/localAPIHooks";
 import { useAlert } from "../alert/AlertContext";
-import { unknownErrorAlert, usernameNotFoundAlert } from "../alert/standardAlerts";
+import { timeoutAlert, unknownErrorAlert, usernameNotFoundAlert } from "../alert/standardAlerts";
 
 // Context type to pass along with promises
 export type AuthContextType = {
@@ -47,20 +47,22 @@ export const AuthContextProvider : React.FC = (props) => {
   const [username, setUsername] = React.useState<string>("");
 
   // Callback function to set the alert upon a failed member error
-  const onMemberSuccess = (username : string, data : MemberType) : void => {
+  const onMemberSuccess = (data : MemberType, username : string) : void => {
     setLoggedInMember(data); // Set user as logged in
     setUsername("");
     alert.hide(); // Remove any current alerts
   };
 
   // Callback function to set the alert upon a failed member error
-  const onMemberError = (username : string, error : LocalAPIError) : void => {
+  const onMemberError = (error : LocalAPIError, username : string) : void => {
     setUsername("");
 
     switch (error.status) {  // Determine the error type
       case 404:  // Username not found
         alert.set(usernameNotFoundAlert(username, error.toString()));  // Set the alert
         return;
+      case 408:  // Request timeout
+        alert.set(timeoutAlert(error.toString()));  // Set alert
     }
 
     // All other checks failed, this is an unexpected error so set the alert to an unknown error

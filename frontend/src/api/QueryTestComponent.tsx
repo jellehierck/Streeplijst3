@@ -1,26 +1,49 @@
 import React from "react";
 import { Button } from "react-bootstrap";
+import { useAlert } from "../components/alert/AlertContext";
+import {
+  saleSuccessfulAlert,
+  timeoutAlert,
+  unknownErrorAlert,
+  usernameNotFoundAlert,
+  validationErrorAlert,
+} from "../components/alert/standardAlerts";
+
 import { useAuth } from "../components/auth/AuthContext";
 
-import { useMemberByUsername, usePing } from "./localAPIHooks";
+import { LocalAPIError, SaleInvoiceType, SaleItemType, SaleType } from "./localAPI";
+import { usePing, usePostSale } from "./localAPIHooks";
+
+/**
+ * Test member data. This assumes a test member with the following ID and username exists on Congressus
+ */
+const testMember = {
+  id: 347980,
+  username: "s9999999",
+};
+
+/**
+ * Test product 1, this product must have these IDs, be in the testFolder and cost €0.00
+ */
+const testProduct1 = {
+  id: 13591,
+  product_offer_id: 14839,
+};
+
+/**
+ * Test product 2, this product must have these IDs, be in the testFolder and cost €0.00
+ */
+const testProduct2 = {
+  id: 21151,
+  product_offer_id: 23902,
+};
 
 type QueryTestComponentProps = {}
 
 // React component
 const QueryTestComponent : React.FC<QueryTestComponentProps> = (props) => {
-  // const memberRes = useMemberByUsername("s9999997");
-  //
-  // const memberDisplay = () => {
-  //   if (memberRes.isLoading) {
-  //     return <span>Loading...</span>;
-  //   }
-  //
-  //   if (memberRes.data) {
-  //     return <span>First name: {memberRes.data.first_name}</span>;
-  //   }
-  // };
-
   const auth = useAuth();
+  const alert = useAlert();
 
   // Logging in a user
   const login = (username : string) : void => {
@@ -53,10 +76,66 @@ const QueryTestComponent : React.FC<QueryTestComponentProps> = (props) => {
     }
   };
 
+  // Array of test sale items containing a single testProduct
+  const multipleTestSaleItems : SaleItemType[] = [
+    {
+      product_offer_id: testProduct1.product_offer_id,
+      quantity: 2,
+    },
+    {
+      product_offer_id: testProduct2.product_offer_id,
+      quantity: 1,
+    },
+  ];
+
+  const onPostSuccess = (dataResponse : SaleInvoiceType, sale : SaleType) => {
+    // console.log("Post success!");
+    // console.log(dataResponse);
+    alert.set(saleSuccessfulAlert());  // Set the alert
+  };
+
+  const onPostError = (error : LocalAPIError, sale : SaleType) => {
+    // console.log("Post failure!");
+    // console.log(error.message);
+
+    switch (error.status) {  // Determine the error type
+      case 400:  // Validation error
+        alert.set(validationErrorAlert(error.toString()));  // Set the alert
+        return;
+      case 408:  // Request timeout
+        alert.set(timeoutAlert(error.toString()));  // Set alert
+    }
+
+  };
+
+  const saleMutation = usePostSale({onError: onPostError, onSuccess: onPostSuccess});
+
+  // Post a sale to the local API with the currently logged in member
+  const onPostButtonClick = () => {
+    if (auth.loggedInMember) {  // Only attempt this if a user is logged in
+      saleMutation.mutate({  // Post the sale by performing the mutation
+        // member_id: 0,
+        member_id: auth.loggedInMember.id,
+        items: multipleTestSaleItems,
+      });
+    } else {  // A post was attempted without a logged in user, this should never happen
+      console.error("Post button clicked without a logged in user");
+      alert.set({
+        display: {
+          heading: "Post attempted without logged in user",
+          message: "Please report this.",
+          variant: "danger",
+        },
+        timeout: 10000,
+      });
+    }
+  };
+
   return (
     <>
       {pingDisplay()}
       <hr />
+
       <Button variant="primary"
               onClick={() => login("s0000000")}>
         Foute login
@@ -75,6 +154,12 @@ const QueryTestComponent : React.FC<QueryTestComponentProps> = (props) => {
         logout
       </Button>
       {memberDisplay()}
+      <hr />
+
+      <Button variant="primary"
+              onClick={onPostButtonClick}>
+        post sales
+      </Button>
     </>
   );
 };
