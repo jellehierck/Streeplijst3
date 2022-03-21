@@ -57,13 +57,6 @@ const ShoppingCart : React.FC<CartProps> = (props) => {
     }
   };
 
-  React.useEffect(() => {
-    if (!auth.isLoggedIn) {
-      cart.empty();
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [auth.isLoggedIn]);
-
   return <>
     {/* Top display */}
     <ButtonGroup className="d-flex">
