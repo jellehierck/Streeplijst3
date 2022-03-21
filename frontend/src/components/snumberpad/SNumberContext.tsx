@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useReducer } from "react";
+import React from "react";
 
 // Max SNumberType length
 const MAX_SNUMBER_LENGTH = 7;
@@ -8,7 +8,10 @@ const SNumberPrefix = ["s", "m", "x"] as const;
 
 // SNumberType number contents
 type SNumberType = {
+  // Current prefix
   prefix : typeof SNumberPrefix[number];
+
+  // Current numerical part of the sNumber
   number : string;
 };
 
@@ -19,7 +22,7 @@ const initialSNumber : SNumberType = {
 };
 
 const enum SNumberAction {
-  ADD = "add",
+  ADD = "ADD",
   REMOVE = "REMOVE",
   SET = "SET",
   CLEAR = "CLEAR",
@@ -139,16 +142,16 @@ type SNumberContextType = {
 }
 
 // Store to keep track of SNumberType number, basically the storage of the context
-const SNumberContext = createContext<SNumberContextType>({} as SNumberContextType);
+const SNumberContext = React.createContext<SNumberContextType>({} as SNumberContextType);
 
 // Custom hook as shorthand to use the SNumberContext
 const useSNumber = () => {
-  return useContext(SNumberContext);
+  return React.useContext(SNumberContext);
 };
 
 // User context provider
 const SNumberContextProvider : React.FC = (props) => {
-  const [sNumber, sNumberDispatch] = useReducer<React.Reducer<SNumberType, SNumberActionType>>(sNumberReducer, initialSNumber);
+  const [sNumber, sNumberDispatch] = React.useReducer<React.Reducer<SNumberType, SNumberActionType>>(sNumberReducer, initialSNumber);
 
   const add = (nr : number) : void => {
     sNumberDispatch({type: SNumberAction.ADD, nr: nr});

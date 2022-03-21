@@ -1,14 +1,18 @@
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import React from "react";
-
 import Button from "react-bootstrap/Button";
+
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+
 import { SNumberAction, SNumberActionType, SNumberPrefix, useSNumber } from "./SNumberContext";
 
+// Properties
 type SNumberPadButtonProps = {
+
+  // Action to take on button press
   action : SNumberActionType
 }
 
-// React component
+// Button in the SNumberPad
 const SNumberPadButton : React.FC<SNumberPadButtonProps> = (props) => {
   // Use sNumber context
   const sNumber = useSNumber();
