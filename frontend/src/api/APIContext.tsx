@@ -1,27 +1,15 @@
 import React, { createContext, Dispatch, useContext, useState } from "react";
-import { getMemberById, getMemberByUsername, MemberType, ping, PingType } from "./localAPI";
+import { UseQueryResult } from "react-query";
+import { useAlert } from "../components/alert/AlertContext";
+import { timeoutAlert, unknownErrorAlert, usernameNotFoundAlert } from "../components/alert/standardAlerts";
+import { FolderType, getMemberById, getMemberByUsername, LocalAPIError, MemberType, ping, PingType } from "./localAPI";
+import { useFolders } from "./localAPIHooks";
 
 // Context type to pass along
 type APIContextType = {
-  loading : boolean
-  setLoading : Dispatch<boolean>
 
-  /**
-   * Send a ping to the local API server.
-   */
-  ping : () => Promise<PingType>
-
-  /**
-   * Get a member by their username (SNumber)
-   * @param {string} username SNumber
-   */
-  getMemberByUsername : (username : string) => Promise<MemberType>
-
-  /**
-   * Get a member by their Congressus ID (not SNumber!)
-   * @param {string} id Congressus ID
-   */
-  getMemberById : (id : number) => Promise<MemberType>
+  // All folders in the Streeplijst API
+  folderRes : UseQueryResult<FolderType[], LocalAPIError>
 }
 
 // Actual context, store of the current state
@@ -34,15 +22,32 @@ const useAPI = () : APIContextType => {
 
 // React component
 const APIContextProvider : React.FC = (props) => {
-  const [loading, setLoading] = useState<boolean>(false);
+  const alert = useAlert();
+
+  // Callback function to set the alert upon a failed folders request
+  const onFolderError = (error : LocalAPIError) : void => {
+    switch (error.status) {  // Determine the error type
+      case 408:  // Request timeout
+        alert.set(timeoutAlert(error.toString()));  // Set alert
+        break;
+      default:// All other checks failed, this is an unexpected error so set the alert to an unknown error
+        console.log(error);
+        alert.set(unknownErrorAlert(error.toString()));
+    }
+  };
+
+  const folderRes = useFolders(
+    {
+      onError: onFolderError,
+    },
+    {
+      staleTime: 3 * 60 * 60 * 1000,  // Default stale time (time between periodic refetching the data) is 3 hours
+    },
+  );
 
   return (
     <APIContext.Provider value={{
-      loading: loading,
-      setLoading: setLoading,
-      ping: ping,
-      getMemberByUsername: getMemberByUsername,
-      getMemberById: getMemberById,
+      folderRes: folderRes,
     }}>
       {props.children}
     </APIContext.Provider>

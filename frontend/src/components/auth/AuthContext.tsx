@@ -3,8 +3,9 @@
  * Contents of this file are very much inspired from https://github.com/remix-run/react-router/tree/main/examples/auth
  */
 import React, { createContext, useContext, useEffect } from "react";
-import { LocalAPIError, MemberType } from "../../api/localAPI";
-import { useMemberByUsername } from "../../api/localAPIHooks";
+import { UseQueryResult } from "react-query";
+import { FolderType, LocalAPIError, MemberType } from "../../api/localAPI";
+import { useFolders, useMemberByUsername } from "../../api/localAPIHooks";
 import { useAlert } from "../alert/AlertContext";
 import { timeoutAlert, unknownErrorAlert, usernameNotFoundAlert } from "../alert/standardAlerts";
 
@@ -18,9 +19,6 @@ export type AuthContextType = {
   // Whether a user is currently logged in
   isLoggedIn : boolean
 
-  // Whether there is currently a query being fetched
-  isFetching : boolean
-
   /**
    * Log in user with the localAPI.
    * @param {MemberType} member User to log in
@@ -31,6 +29,10 @@ export type AuthContextType = {
    * Logs out the user, setting it to null.
    */
   logout : () => void
+
+  // Query repsonse for members
+  memberRes : UseQueryResult<MemberType, LocalAPIError>
+
 }
 
 // Actual context, store of the current state
@@ -58,19 +60,18 @@ export const AuthContextProvider : React.FC = (props) => {
 
   // Callback function to set the alert upon a failed member error
   const onMemberError = (error : LocalAPIError, username : string) : void => {
-    setUsername("");
-
+    setUsername("");  // Reset the username
     switch (error.status) {  // Determine the error type
       case 404:  // Username not found
         alert.set(usernameNotFoundAlert(username, error.toString()));  // Set the alert
-        return;
+        break;
       case 408:  // Request timeout
         alert.set(timeoutAlert(error.toString()));  // Set alert
+        break;
+      default:// All other checks failed, this is an unexpected error so set the alert to an unknown error
+        console.log(error);
+        alert.set(unknownErrorAlert(error.toString()));
     }
-
-    // All other checks failed, this is an unexpected error so set the alert to an unknown error
-    console.log(error);
-    alert.set(unknownErrorAlert(error.toString()));
   };
 
   // Query the member based on the username state (set by login function) and disabled by default
@@ -109,9 +110,9 @@ export const AuthContextProvider : React.FC = (props) => {
     <AuthContext.Provider value={{
       loggedInMember: loggedInMember,
       isLoggedIn: !!loggedInMember,  // True when loggedInMember is not null
-      isFetching: memberRes.isFetching,
       login: login,
       logout: logout,
+      memberRes: memberRes,
     }}>
       {props.children}
     </AuthContext.Provider>

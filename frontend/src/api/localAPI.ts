@@ -145,43 +145,6 @@ const request = <T>(config : AxiosRequestConfig) : Promise<T> => {
     });
 };
 
-// /**
-//  * Generic request to the Local API.
-//  * @param config Configuration to pass.
-//  * @returns {Promise<ErrorType | T>} Promise of the requested data of type T or an error of type ErrorType.
-//  */
-// const request = <T>(config : AxiosRequestConfig) : Promise<T | ErrorType> => {
-//   return HTTP.request<T>(config)
-//     .then(res => {
-//       return res.data;  // There is a successful response, return it
-//     })
-//
-//     .catch(err => {  // Some error has occurred
-//       // Determine the type of error
-//       if (err.response) {  // The error caused by response with a 4xx or 5xx status code
-//         return {
-//           message: err.message,
-//           status: err.response.status,
-//           statusText: err.response.statusText,
-//         };
-//
-//       } else if (err.request) {  // The error is caused because no response was received from the server in time
-//         return {
-//           message: err.message,
-//           status: 500,
-//           statusText: "Unable to reach the local API server. Is it running?",
-//         };
-//
-//       } else {  // The request was never sent so there is something wrong with the frontend app
-//         return {
-//           message: "An unknown error occurred in the frontend app.",
-//           status: 400,
-//           statusText: "An unknown error occurred in the frontend app.",
-//         };
-//       }
-//     });
-// };
-
 // Ping information
 export type PingType = {
   message : string

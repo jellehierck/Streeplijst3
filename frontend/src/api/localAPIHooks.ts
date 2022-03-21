@@ -1,6 +1,7 @@
 import { useMutation, useQuery } from "react-query";
 import { UseMutationOptions, UseQueryOptions } from "react-query/types/react/types";
 import {
+  FolderType, getFolders,
   getMemberByUsername,
   LocalAPIError,
   MemberType,
@@ -42,7 +43,7 @@ export type MemberByUsernameQueryCallbacks = {
 
 
 /**
- * Custom hook to request a member by username from the local API. Sets a TimedAlert when the response is an error.
+ * Custom hook to request a member by username from the local API.
  * @param username Username to find the member for
  * @param callbacks Callbacks to call on query success or failure
  * @param options Optional extra options to pass to the query
@@ -75,6 +76,56 @@ export const useMemberByUsername = (
   };
 
   return useQuery<MemberType, LocalAPIError>(["members", {username: username}], () => getMemberByUsername(username), options);
+};
+
+// Callbacks to call upon successful or failed query for all folders from the Congressus API
+export type FoldersQueryCallback = {
+  /**
+   * Called on query success
+   * @param {FolderType[]} responseData Queried folders
+   */
+  onSuccess? : (responseData : FolderType[]) => void,
+
+  /**
+   * Called on query failure
+   * @param {LocalAPIError} error Returned error object
+   */
+  onError? : (error : LocalAPIError) => void,
+}
+
+
+/**
+ * Custom hook to request all folders from the local API.
+ * @param callbacks Callbacks to call on query success or failure
+ * @param options Optional extra options to pass to the query
+ */
+export const useFolders = (
+  callbacks? : FoldersQueryCallback,
+  options? : Omit<UseQueryOptions<FolderType[], LocalAPIError>, "queryKey" | "queryFn">,
+) => {
+  // Function to pass to the useQuery hook which calls the argument onError function if it is given
+  const onQueryError = (err : LocalAPIError) => {
+    if (callbacks?.onError) {
+      callbacks.onError(err);
+    }
+  };
+
+  // Function to pass to the useQuery hook which calls the argument onError function if it is given
+  const onQuerySuccess = (data : FolderType[]) => {
+    if (callbacks?.onSuccess) {
+      callbacks.onSuccess(data);
+    }
+  };
+
+  // Set options by taking the default and overriding if needed
+  options = {
+    ...defaultQueryConfig,  // First apply the default configuration
+    onError: onQueryError,  // Pass functions to be called on query error or success
+    onSuccess: onQuerySuccess,
+    ...options,  // Add additional options specified in the function arguments, overriding the defaults if needed
+  };
+
+  return useQuery<FolderType[], LocalAPIError>(["folders"], () => getFolders(), options);
 };
 
 export type SaleQueryCallbacks = {

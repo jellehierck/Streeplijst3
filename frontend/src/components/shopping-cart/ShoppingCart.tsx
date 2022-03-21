@@ -8,7 +8,12 @@ import LocalAPIRequestButton from "../../api/LocalAPIRequestButton";
 import streeplijstRouteConfig from "../../streeplijst/streeplijstRouteConfig";
 import StreeplijstRoutes from "../../streeplijst/StreeplijstRoutes";
 import { useAlert } from "../alert/AlertContext";
-import { saleSuccessfulAlert, timeoutAlert, validationErrorAlert } from "../alert/standardAlerts";
+import {
+  saleSuccessfulAlert,
+  timeoutAlert, unknownErrorAlert,
+  usernameNotFoundAlert,
+  validationErrorAlert,
+} from "../alert/standardAlerts";
 import { useAuth } from "../auth/AuthContext";
 import ItemCard from "../products/ItemCard";
 import ProductControlButtonGroup from "./ProductControlButtonGroup";
@@ -37,11 +42,14 @@ const ShoppingCart : React.FC<CartProps> = (props) => {
     switch (error.status) {  // Determine the error type
       case 400:  // Validation error
         alert.set(validationErrorAlert(error.toString()));  // Set the alert
-        return;
+        break;
       case 408:  // Request timeout
         alert.set(timeoutAlert(error.toString()));  // Set alert
+        break;
+      default: // All other checks failed, this is an unexpected error so set the alert to an unknown error
+        console.log(error);
+        alert.set(unknownErrorAlert(error.toString()));
     }
-
   };
 
   // Get the sale mutation, a react-query hook which sets up a post request but only posts after calling .mutate()

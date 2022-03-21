@@ -14,7 +14,6 @@ import SNumberPadButton from "./SNumberPadButton";
 // Props sent to SNumberPad
 type SNumberPadProps = {
   login : (username : string) => void,
-  // requestResult : RequestResultType
 }
 
 // React component
@@ -96,7 +95,7 @@ const SNumberPad : React.FC<SNumberPadProps> = (props) => {
           <LocalAPIRequestButton variant="success"
                                  className="numpad-btn"
                                  onClick={onSubmit}
-                                 loading={auth.isFetching}>
+                                 loading={auth.memberRes.isFetching}>
             <h3 className="text-reset">
               <FontAwesomeIcon icon={["fas", "paper-plane"]} />
             </h3>

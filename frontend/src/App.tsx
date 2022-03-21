@@ -3,6 +3,7 @@ import React from "react";
 import { QueryClient, QueryClientProvider } from "react-query";
 import { ReactQueryDevtools } from "react-query/devtools";
 import { BrowserRouter } from "react-router-dom";
+import { APIContextProvider } from "./api/APIContext";
 
 import { AlertContextProvider } from "./components/alert/AlertContext";
 import { AuthContextProvider } from "./components/auth/AuthContext";
@@ -45,15 +46,17 @@ function App() {
     <QueryClientProvider client={queryClient}>
       <AlertContextProvider> {/* Context provider for alerts */}
         <AuthContextProvider>  {/* Context provider for authentication of users */}
-          {/* <QueryTestComponent /> */}
-          {/* <TimedAlert /> */}
-          <SNumberContextProvider>
-            <ShoppingCartContextProvider> {/* Context provider for the shopping cart */}
-              <BrowserRouter> {/* react-router-dom base, enables routing */}
-                <StreeplijstRoutes /> {/* The Streeplijst app, TODO: we could also add the Bierstreeplijst here */}
-              </BrowserRouter>
-            </ShoppingCartContextProvider>
-          </SNumberContextProvider>
+          <APIContextProvider>
+            {/* <QueryTestComponent /> */}
+            {/* <TimedAlert /> */}
+            <SNumberContextProvider>
+              <ShoppingCartContextProvider> {/* Context provider for the shopping cart */}
+                <BrowserRouter> {/* react-router-dom base, enables routing */}
+                  <StreeplijstRoutes /> {/* The Streeplijst app, TODO: we could also add the Bierstreeplijst here */}
+                </BrowserRouter>
+              </ShoppingCartContextProvider>
+            </SNumberContextProvider>
+          </APIContextProvider>
         </AuthContextProvider>
       </AlertContextProvider>
       <ReactQueryDevtools initialIsOpen={false} />
