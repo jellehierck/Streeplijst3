@@ -1,9 +1,12 @@
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import React from "react";
 import { Button, ButtonGroup, Stack } from "react-bootstrap";
+import { useNavigate } from "react-router-dom";
 import { LocalAPIError, SaleInvoiceType, SaleType } from "../../api/localAPI";
 import { usePostSale } from "../../api/localAPIHooks";
 import LocalAPIRequestButton from "../../api/LocalAPIRequestButton";
+import streeplijstRouteConfig from "../../streeplijst/streeplijstRouteConfig";
+import StreeplijstRoutes from "../../streeplijst/StreeplijstRoutes";
 import { useAlert } from "../alert/AlertContext";
 import { saleSuccessfulAlert, timeoutAlert, validationErrorAlert } from "../alert/standardAlerts";
 import { useAuth } from "../auth/AuthContext";
@@ -18,6 +21,7 @@ const ShoppingCart : React.FC<CartProps> = (props) => {
   const cart = useShoppingCart();
   const alert = useAlert();
   const auth = useAuth();
+  const navigate = useNavigate();
 
   // Store boolean to indicate whether the cart is currently empty
   const cartEmpty = cart.items.length === 0;
@@ -25,6 +29,7 @@ const ShoppingCart : React.FC<CartProps> = (props) => {
   // Function to fire on a sale post success
   const onPostSuccess = (dataResponse : SaleInvoiceType, sale : SaleType) => {
     alert.set(saleSuccessfulAlert());  // Set the alert
+    navigate(streeplijstRouteConfig.onCheckout);
   };
 
   // Function to fire on a sale post error
