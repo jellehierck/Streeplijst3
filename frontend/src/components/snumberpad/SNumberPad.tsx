@@ -7,7 +7,7 @@ import Row from "react-bootstrap/Row";
 import LocalAPIRequestButton from "../../api/LocalAPIRequestButton";
 import useEventListener from "../../hooks/useEventListener";
 import { useAuth } from "../auth/AuthContext";
-import { SNumberAction, useSNumber } from "./SNumberContext";
+import { SNumberAction, SNumberContextProvider, useSNumber } from "./SNumberContext";
 
 import "./SNumberPad.css";
 import SNumberPadButton from "./SNumberPadButton";
@@ -72,7 +72,7 @@ const SNumberPad : React.FC<SNumberPadProps> = (props) => {
   );
 
   // Return component
-  return (
+  return <SNumberContextProvider> {/* Context provider for SNumber */}
     <Stack direction="vertical"
            gap={0}
            className="mx-auto numpad-width">
@@ -130,7 +130,7 @@ const SNumberPad : React.FC<SNumberPadProps> = (props) => {
         <Col> <SNumberPadButton action={{type: SNumberAction.REMOVE}} /> </Col>
       </Row>
     </Stack>
-  );
+  </SNumberContextProvider>;
 };
 
 // Exports
