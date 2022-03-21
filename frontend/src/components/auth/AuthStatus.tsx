@@ -9,7 +9,7 @@ const AuthStatus : React.FC<AuthStatusType> = (props) => {
   let auth = useAuth();
 
   // If the user is not logged in, display a message
-  if (!auth.user) {
+  if (!auth.loggedInMember) {
     return (
       <p className="my-auto">
         You are not logged in.
@@ -19,7 +19,7 @@ const AuthStatus : React.FC<AuthStatusType> = (props) => {
   } else {  // If the user is logged in, display their name and a logout button
     return (
       <p className="my-auto">
-        Welcome {auth.user.username}!
+        Welcome {auth.loggedInMember.username}!
       </p>
     );
   }

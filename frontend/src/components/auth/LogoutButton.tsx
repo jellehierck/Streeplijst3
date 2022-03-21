@@ -11,9 +11,15 @@ const LogoutButton : React.FC<LogoutButtonProps> = (props) => {
   const navigate = useNavigate();
   const auth = useAuth();
 
+  // Function on button click
+  const onClick = () : void => {
+    auth.logout();
+    navigate(streeplijstRouteConfig.afterLogout);
+  };
+
   return (
     <Button variant="outline-primary"
-            onClick={() => auth.logout().then(() => navigate(streeplijstRouteConfig.afterLogout))}>
+            onClick={() => onClick()}>
       Log out
     </Button>
   );
