@@ -20,7 +20,7 @@ type APIContextType = {
 
 // Default time for which the data is considered fresh and should not be fetched again (to make the app fast), since
 // data on the API changes almost never
-const defaultFreshTime = 3 * 60 * 60 * 1000;  // 3 hours
+const defaultFreshTime = 3 * 60 * 60 * 1000;  // 3 hours TODO: See what influence this has on performance/stability
 
 // Actual context, store of the current state
 const APIContext = createContext<APIContextType>({} as APIContextType);
