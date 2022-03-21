@@ -21,14 +21,15 @@ const Login : React.FC<LoginProps> = (props) => {
     auth.login(username); // Try to log in the user using the AuthContext
   };
 
-  if (auth.loggedInMember) {
-    console.log(`Login successful, redirection to ${props.afterLogin}`);
-    navigate(props.afterLogin); // TODO: Add a way to redirect to the last accessed page instead?
-  }
+  React.useEffect(() => {
+    if (auth.loggedInMember) {
+      console.log(`Login successful, redirection to ${props.afterLogin}`);
+      navigate(props.afterLogin); // TODO: Add a way to redirect to the last accessed page instead?
+    }
+  }, [auth.loggedInMember, navigate, props.afterLogin]);
 
   const loginToNonExistentUser = () => {
     login("s0000000");
-    // alert.set(usernameNotFoundAlert("s1779397"));
   };
 
   return (

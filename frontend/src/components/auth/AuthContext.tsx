@@ -18,6 +18,9 @@ export type AuthContextType = {
   // Whether a user is currently logged in
   isLoggedIn : boolean
 
+  // Whether there is currently a query being fetched
+  isFetching : boolean
+
   /**
    * Log in user with the localAPI.
    * @param {MemberType} member User to log in
@@ -106,6 +109,7 @@ export const AuthContextProvider : React.FC = (props) => {
     <AuthContext.Provider value={{
       loggedInMember: loggedInMember,
       isLoggedIn: !!loggedInMember,  // True when loggedInMember is not null
+      isFetching: memberRes.isFetching,
       login: login,
       logout: logout,
     }}>

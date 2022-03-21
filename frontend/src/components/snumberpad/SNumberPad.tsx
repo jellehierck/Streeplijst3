@@ -4,6 +4,8 @@ import { Col, Stack } from "react-bootstrap";
 import Button from "react-bootstrap/Button";
 
 import Row from "react-bootstrap/Row";
+import LocalAPIRequestButton from "../../api/LocalAPIRequestButton";
+import { useAuth } from "../auth/AuthContext";
 import { SNumberAction, useSNumber } from "./SNumberContext";
 
 import "./SNumberPad.css";
@@ -11,13 +13,15 @@ import SNumberPadButton from "./SNumberPadButton";
 
 // Props sent to SNumberPad
 type SNumberPadProps = {
-  login : (username : string) => void
+  login : (username : string) => void,
+  // requestResult : RequestResultType
 }
 
 // React component
 const SNumberPad : React.FC<SNumberPadProps> = (props) => {
   // SNumber context
   const sNumber = useSNumber();
+  const auth = useAuth();
 
   /**
    * Function is called when the submit button is pressed or the enter key is pressed.
@@ -89,11 +93,14 @@ const SNumberPad : React.FC<SNumberPadProps> = (props) => {
         </Col>
         <Col xs={4}>
           {/* Submit button */}
-          <Button variant="success"
-                  className="numpad-btn"
-                  onClick={onSubmit}>
-            <h3 className="text-reset"><FontAwesomeIcon icon={["fas", "paper-plane"]} /></h3>
-          </Button>
+          <LocalAPIRequestButton variant="success"
+                                 className="numpad-btn"
+                                 onClick={onSubmit}
+                                 loading={auth.isFetching}>
+            <h3 className="text-reset">
+              <FontAwesomeIcon icon={["fas", "paper-plane"]} />
+            </h3>
+          </LocalAPIRequestButton>
         </Col>
       </Row>
 

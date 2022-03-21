@@ -1,39 +1,50 @@
 import React, { createContext, useContext, useReducer } from "react";
-import { ProductType } from "../../api/localAPI";
+import { ProductType, SaleItemType } from "../../api/localAPI";
 
 // Action names
-const enum ShoppingCartAction {
+export const enum ShoppingCartAction {
   ADD = "ADD",
   REMOVE = "REMOVE",
   EMPTY = "EMPTY"
 }
 
 // Actions to take on state
-type ShoppingCartActionType = { type : ShoppingCartAction.ADD, product : ProductType, quantity : number }
+export type ShoppingCartActionType = { type : ShoppingCartAction.ADD, product : ProductType, quantity : number }
   | { type : ShoppingCartAction.REMOVE, product : ProductType }
   | { type : ShoppingCartAction.EMPTY }
 
 // Items in a shopping cart
-type  ShoppingCartItem = {
+export type  ShoppingCartItemType = {
   product : ProductType
   quantity : number,
 };
 
-// State type
-type ShoppingCartStateType = ShoppingCartItem[]
+/**
+ * Converts an array of shopping cart items to sale items
+ * @param {ShoppingCartItemType[]} shoppingCartItems
+ * @returns {SaleItemType[]}
+ */
+export const shoppingCartItemsToSaleItems = (shoppingCartItems : ShoppingCartItemType[]) : SaleItemType[] => {
+  return shoppingCartItems.map(shoppingCartItem => {
+    return {
+      product_offer_id: shoppingCartItem.product.product_offer_id,
+      quantity: shoppingCartItem.quantity,
+    };
+  });
+};
 
+// State type
+export type ShoppingCartStateType = ShoppingCartItemType[]
 
 // Initial ShoppingCart state
-const initialShoppingCartState : ShoppingCartItem[] = [];
+const initialShoppingCartState : ShoppingCartItemType[] = [];
 
 /**
- *
+ * Shopping cart reducer function, basically takes the current cart state and performs an action on it
  * @param currItems
  * @param action
  */
-const ShoppingCartReducer = (currItems : ShoppingCartStateType, action : ShoppingCartActionType) : ShoppingCartStateType => {
-
-
+export const ShoppingCartReducer = (currItems : ShoppingCartStateType, action : ShoppingCartActionType) : ShoppingCartStateType => {
   // Take the action
   switch (action.type) {
     // When an item is added
@@ -104,56 +115,71 @@ const ShoppingCartReducer = (currItems : ShoppingCartStateType, action : Shoppin
 };
 
 // Context type to pass along
-type ShoppingCartContextType = {
+export type ShoppingCartContextType = {
+  // Current cart contents
   items : ShoppingCartStateType
-  add : (product : ProductType, quantity : number) => void
-  remove : (product : ProductType) => void
-  empty : () => void
-  getQuantity : (product : ProductType) => number
-  getTotal : () => number
-}
 
-// Actual context, store of the current state
-const ShoppingCartContext = createContext<ShoppingCartContextType>({} as ShoppingCartContextType);
-
-// Custom hook to use the ShoppingCartContext
-const useShoppingCart = () : ShoppingCartContextType => {
-  return useContext(ShoppingCartContext);
-};
-
-// React component
-const ShoppingCartContextProvider : React.FC = (props) => {
-  const [items, cartItemsDispatch] = useReducer<React.Reducer<ShoppingCartStateType, ShoppingCartActionType>>(ShoppingCartReducer, initialShoppingCartState);
+  // The current cart contents as SaleItems
+  saleItems : SaleItemType[]
 
   /**
    * Add items to the cart.
    * @param {ProductType} product Product to add
    * @param {number} quantity Quantity, defaults to 1
    */
-  const add = (product : ProductType, quantity : number = 1) : void => {
-    cartItemsDispatch({type: ShoppingCartAction.ADD, product: product, quantity: quantity});
-  };
+  add : (product : ProductType, quantity : number) => void
 
   /**
    * Remove item from the cart
    * @param {ProductType} product
    */
-  const remove = (product : ProductType) : void => {
-    cartItemsDispatch({type: ShoppingCartAction.REMOVE, product: product});
-  };
+  remove : (product : ProductType) => void
 
   /**
    * Empty the shopping cart
    */
-  const empty = () : void => {
-    cartItemsDispatch({type: ShoppingCartAction.EMPTY});
-  };
+  empty : () => void
 
   /**
    * Return the quantity of an item in the shopping cart. If the item is not in the shopping cart, returns 0
    * @param {ProductType} product Product to get the quantity for.
    * @returns {number}
    */
+  getQuantity : (product : ProductType) => number
+
+  /**
+   * Get the total amount in the cart at this point.
+   * @returns {number} Total amount in this cart
+   */
+  getTotal : () => number,
+
+}
+
+// Actual context, store of the current state
+const ShoppingCartContext = createContext<ShoppingCartContextType>({} as ShoppingCartContextType);
+export default ShoppingCartContext;
+
+// Custom hook to use the ShoppingCartContext
+export const useShoppingCart = () : ShoppingCartContextType => {
+  return useContext(ShoppingCartContext);
+};
+
+// React component
+export const ShoppingCartContextProvider : React.FC = (props) => {
+  const [items, cartItemsDispatch] = useReducer<React.Reducer<ShoppingCartStateType, ShoppingCartActionType>>(ShoppingCartReducer, initialShoppingCartState);
+
+  const add = (product : ProductType, quantity : number = 1) : void => {
+    cartItemsDispatch({type: ShoppingCartAction.ADD, product: product, quantity: quantity});
+  };
+
+  const remove = (product : ProductType) : void => {
+    cartItemsDispatch({type: ShoppingCartAction.REMOVE, product: product});
+  };
+
+  const empty = () : void => {
+    cartItemsDispatch({type: ShoppingCartAction.EMPTY});
+  };
+
   const getQuantity = (product : ProductType) : number => {
     const existingItem = items.find(item => item.product.id === product.id);  // Find the item if it exists
 
@@ -164,10 +190,6 @@ const ShoppingCartContextProvider : React.FC = (props) => {
     }
   };
 
-  /**
-   * Get the total amount in the cart at this point.
-   * @returns {number} Total amount in this cart
-   */
   const getTotal = () : number => {
     let total = 0;
     items.forEach(item => {
@@ -180,6 +202,7 @@ const ShoppingCartContextProvider : React.FC = (props) => {
     <ShoppingCartContext.Provider
       value={{
         items: items,
+        saleItems: shoppingCartItemsToSaleItems(items),
         add: add,
         remove: remove,
         empty: empty,
@@ -190,8 +213,3 @@ const ShoppingCartContextProvider : React.FC = (props) => {
     </ShoppingCartContext.Provider>
   );
 };
-
-// Exports
-export default ShoppingCartContext;
-export { ShoppingCartContextProvider, useShoppingCart, ShoppingCartAction };
-export type { ShoppingCartStateType, ShoppingCartContextType, ShoppingCartActionType };
