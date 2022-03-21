@@ -1,19 +1,18 @@
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import React from "react";
-import { Button, ButtonGroup, Stack } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
+
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { Button, ButtonGroup, Stack } from "react-bootstrap";
+
 import { useAPI } from "../../api/APIContext";
-import { LocalAPIError, SaleInvoiceType, SaleType } from "../../api/localAPI";
-import { usePostSale } from "../../api/localAPIHooks";
+import { useAlert } from "../alert/AlertContext";
+import { useAuth } from "../auth/AuthContext";
+import { useShoppingCart } from "./ShoppingCartContext";
+
 import LocalAPIRequestButton from "../../api/LocalAPIRequestButton";
 import streeplijstRouteConfig from "../../streeplijst/streeplijstRouteConfig";
-import StreeplijstRoutes from "../../streeplijst/StreeplijstRoutes";
-import { useAlert } from "../alert/AlertContext";
-
-import { useAuth } from "../auth/AuthContext";
 import ItemCard from "../products/ItemCard";
 import ProductControlButtonGroup from "./ProductControlButtonGroup";
-import { useShoppingCart } from "./ShoppingCartContext";
 
 type CartProps = {}
 
