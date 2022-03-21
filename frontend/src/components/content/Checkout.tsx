@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React from "react";
 import { Stack } from "react-bootstrap";
 import Button from "react-bootstrap/Button";
 import useTimeout from "../../hooks/useTimeout";
@@ -6,7 +6,7 @@ import LogoutButton from "../auth/LogoutButton";
 
 import { ContentContainer } from "../layout/Layout";
 import TimedProgressBar from "../progress-bar/TimedProgressBar";
-import UserInformation from "../user/UserInformation";
+import UserInformation from "../user-information/UserInformation";
 
 type CheckoutProps = {
   // Optional time until redirect, if set to null the redirect is canceled

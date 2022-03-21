@@ -5,7 +5,7 @@ import { streeplijstRoutes } from "../../streeplijst/streeplijstRouteConfig";
 import { useAuth } from "../auth/AuthContext";
 import AuthStatus from "../auth/AuthStatus";
 import { ContentContainer } from "../layout/Layout";
-import UserInformation from "../user/UserInformation";
+import UserInformation from "../user-information/UserInformation";
 
 type UserOverviewProps = {}
 
