@@ -12,14 +12,14 @@ const AuthStatus : React.FC<AuthStatusType> = (props) => {
   if (!auth.loggedInMember) {
     return (
       <p className="my-auto">
-        You are not logged in.
+        Niet ingelogd
       </p>
     );
 
   } else {  // If the user is logged in, display their name and a logout button
     return (
       <p className="my-auto">
-        Welcome {auth.loggedInMember.username}!
+        Welkom {auth.loggedInMember.first_name}!
       </p>
     );
   }

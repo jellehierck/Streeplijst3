@@ -29,6 +29,7 @@ const ShoppingCart : React.FC<CartProps> = (props) => {
 
   // Function which is fired after the sale post is successful
   const onSaleSuccess = () => {
+    cart.empty();  // Empty the cart
     navigate(streeplijstRouteConfig.onCheckout);
   };
 
@@ -55,6 +56,13 @@ const ShoppingCart : React.FC<CartProps> = (props) => {
       });
     }
   };
+
+  React.useEffect(() => {
+    if (!auth.isLoggedIn) {
+      cart.empty();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [auth.isLoggedIn]);
 
   return <>
     {/* Top display */}

@@ -41,25 +41,33 @@ const Checkout : React.FC<CheckoutProps> = ({
   useTimeout(onTimeout, timeUntilRedirect);
 
   return <ContentContainer>
-    <p>Je hebt betaald</p>
-    <UserInformation />
-    <LogoutButton />
-
-    <Stack direction="horizontal"
-           gap={3}
-           className="w-100">
-      <Button onClick={stopTimeout}
-              variant="outline-primary">
-        Stop automatisch uitloggen
-      </Button>
-      <TimedProgressBar timeout={timeUntilRedirect}
-                        onTimeout={onTimeout}
-                        stopped={timeoutStopped}
-                        className="w-100"
-                        labelAs="h5"
-                        style={{height: "3em"}}
-                        variant="primary" />
+    <Stack direction="vertical"
+           gap={3}>
+      <Stack direction="horizontal"
+             gap={3}
+             className="w-100">
+        <h5 className="m-auto">Je wordt uitgelogd over:</h5>
+        <TimedProgressBar timeout={timeUntilRedirect}
+                          onTimeout={onTimeout}
+                          stopped={timeoutStopped}
+                          className="w-100"
+                          labelAs="h5"
+                          style={{height: "3em"}}
+                          variant="primary" />
+        <Button onClick={stopTimeout}
+                variant="outline-primary"
+                className="py-1">
+          Stop automatisch uitloggen
+        </Button>
+      </Stack>
+      <LogoutButton variant="outline-info">
+        <h4 className="text-reset m-1">Nu uitloggen</h4>
+      </LogoutButton>
     </Stack>
+
+    <UserInformation />
+
+
   </ContentContainer>;
 };
 
