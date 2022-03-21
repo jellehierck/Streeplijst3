@@ -1,9 +1,20 @@
 import React, { createContext, useContext, useState } from "react";
-import { UseQueryResult } from "react-query";
+import { UseMutationResult, UseQueryResult } from "react-query";
+import { useNavigate } from "react-router-dom";
 import { useAlert } from "../components/alert/AlertContext";
-import { timeoutAlert, unknownErrorAlert } from "../components/alert/standardAlerts";
-import { FolderType, LocalAPIError, ProductType } from "./localAPI";
-import { useFolders, useProducts } from "./localAPIHooks";
+import {
+  saleSuccessfulAlert,
+  timeoutAlert,
+  unknownErrorAlert,
+  validationErrorAlert,
+} from "../components/alert/standardAlerts";
+import streeplijstRouteConfig from "../streeplijst/streeplijstRouteConfig";
+import { FolderType, LocalAPIError, ProductType, SaleInvoiceType, SaleType } from "./localAPI";
+import { useFolders, usePostSale, useProducts } from "./localAPIHooks";
+
+// Default time for which queried data is considered fresh and should not be fetched again (to make the app fast), since
+// data on the API changes almost never
+const defaultFreshTime = 3 * 60 * 60 * 1000;  // 3 hours TODO: See what influence this has on performance/stability
 
 // Context type to pass along
 type APIContextType = {
@@ -11,16 +22,25 @@ type APIContextType = {
   folderRes : UseQueryResult<FolderType[], LocalAPIError>
 
   /**
-   * Function to select a folder so that the products in that folder are loaded.
+   * Select a folder so that the products in that folder are loaded.
    * @param folderId Folder ID to get the products for
    * @returns React-query result for the products in a folder
    */
   getProductsInFolder : (folderId : number) => UseQueryResult<ProductType[], LocalAPIError>
-}
 
-// Default time for which the data is considered fresh and should not be fetched again (to make the app fast), since
-// data on the API changes almost never
-const defaultFreshTime = 3 * 60 * 60 * 1000;  // 3 hours TODO: See what influence this has on performance/stability
+  /**
+   * Post a sale to the local API. On success or failure, an alert is set after which optional onSuccess or onError
+   * functions are called.
+   * @param sale Sale to post
+   * @param onSuccess Function to call on mutation success, after the alert is set
+   * @param onError Function to call on mutation error, after the alert is set
+   * @returns the saleMutation object
+   */
+  postSaleToAPI(sale : SaleType, onSuccess? : VoidFunction, onError? : VoidFunction) : void
+
+  // Sale Mutation object which has information about the mutation state
+  saleMutation : UseMutationResult<SaleInvoiceType, LocalAPIError, SaleType>
+}
 
 // Actual context, store of the current state
 const APIContext = createContext<APIContextType>({} as APIContextType);
@@ -99,10 +119,35 @@ const APIContextProvider : React.FC = (props) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currFolderId]);
 
+  // Function to fire on a sale post error
+  const onPostError = (error : LocalAPIError, sale : SaleType) => {
+    switch (error.status) {  // Determine the error type
+      case 400:  // Validation error
+        alert.set(validationErrorAlert(error.toString()));  // Set the alert
+        break;
+      case 408:  // Request timeout
+        alert.set(timeoutAlert(error.toString()));  // Set alert
+        break;
+      default: // All other checks failed, this is an unexpected error so set the alert to an unknown error
+        console.log(error);
+        alert.set(unknownErrorAlert(error.toString()));
+    }
+  };
+
+  // Get the sale mutation, a react-query hook which sets up a post request but only posts after calling .mutate()
+  const saleMutation = usePostSale({onError: onPostError});
+
+  // Function which will post a sale to the API
+  const postSaleToAPI = (sale : SaleType, onSuccess? : VoidFunction, onError? : VoidFunction) : void => {
+    saleMutation.mutate(sale, {onError: onError, onSuccess: onSuccess});
+  };
+
   return (
     <APIContext.Provider value={{
       folderRes: folderRes,
       getProductsInFolder: getProductsInFolder,
+      postSaleToAPI: postSaleToAPI,
+      saleMutation: saleMutation,
     }}>
       {props.children}
     </APIContext.Provider>

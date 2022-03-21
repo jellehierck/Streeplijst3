@@ -2,18 +2,14 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import React from "react";
 import { Button, ButtonGroup, Stack } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
+import { useAPI } from "../../api/APIContext";
 import { LocalAPIError, SaleInvoiceType, SaleType } from "../../api/localAPI";
 import { usePostSale } from "../../api/localAPIHooks";
 import LocalAPIRequestButton from "../../api/LocalAPIRequestButton";
 import streeplijstRouteConfig from "../../streeplijst/streeplijstRouteConfig";
 import StreeplijstRoutes from "../../streeplijst/StreeplijstRoutes";
 import { useAlert } from "../alert/AlertContext";
-import {
-  saleSuccessfulAlert,
-  timeoutAlert, unknownErrorAlert,
-  usernameNotFoundAlert,
-  validationErrorAlert,
-} from "../alert/standardAlerts";
+
 import { useAuth } from "../auth/AuthContext";
 import ItemCard from "../products/ItemCard";
 import ProductControlButtonGroup from "./ProductControlButtonGroup";
@@ -26,43 +22,28 @@ const ShoppingCart : React.FC<CartProps> = (props) => {
   const cart = useShoppingCart();
   const alert = useAlert();
   const auth = useAuth();
+  const api = useAPI();
   const navigate = useNavigate();
 
   // Store boolean to indicate whether the cart is currently empty
   const cartEmpty = cart.items.length === 0;
 
-  // Function to fire on a sale post success
-  const onPostSuccess = (dataResponse : SaleInvoiceType, sale : SaleType) => {
-    alert.set(saleSuccessfulAlert());  // Set the alert
+  // Function which is fired after the sale post is successful
+  const onSaleSuccess = () => {
     navigate(streeplijstRouteConfig.onCheckout);
   };
-
-  // Function to fire on a sale post error
-  const onPostError = (error : LocalAPIError, sale : SaleType) => {
-    switch (error.status) {  // Determine the error type
-      case 400:  // Validation error
-        alert.set(validationErrorAlert(error.toString()));  // Set the alert
-        break;
-      case 408:  // Request timeout
-        alert.set(timeoutAlert(error.toString()));  // Set alert
-        break;
-      default: // All other checks failed, this is an unexpected error so set the alert to an unknown error
-        console.log(error);
-        alert.set(unknownErrorAlert(error.toString()));
-    }
-  };
-
-  // Get the sale mutation, a react-query hook which sets up a post request but only posts after calling .mutate()
-  const saleMutation = usePostSale({onError: onPostError, onSuccess: onPostSuccess});
 
   // Post a sale to the local API with the currently logged in member
   const onCheckoutButtonClick = () => {
     if (auth.loggedInMember) {  // Only attempt this if a user is logged in
-      saleMutation.mutate({  // Post the sale by performing the mutation
-        // member_id: 0,
-        member_id: auth.loggedInMember.id,
-        items: cart.saleItems,
-      });
+      api.postSaleToAPI(
+        {  // Post the sale by performing the mutation
+          // member_id: 0,
+          member_id: auth.loggedInMember.id,
+          items: cart.saleItems,
+        },
+        onSaleSuccess,  // Call this function on a successful sale post
+      );
     } else {  // A post was attempted without a logged in user, this should never happen
       console.error("Post button clicked without a logged in user");
       alert.set({
@@ -71,7 +52,7 @@ const ShoppingCart : React.FC<CartProps> = (props) => {
           message: "Please report this.",
           variant: "danger",
         },
-        timeout: 10000,
+        timeout: 5 * 60 * 1000,
       });
     }
   };
@@ -111,7 +92,7 @@ const ShoppingCart : React.FC<CartProps> = (props) => {
                            disabled={cartEmpty}
                            size="lg"
                            onClick={() => onCheckoutButtonClick()}
-                           loading={saleMutation.isLoading}  // Pass the mutation to show spinner when loading
+                           loading={api.saleMutation.isLoading}  // Pass the mutation to show spinner when loading
                            className="w-100">
       <h3 className="mb-auto text-reset">
         <FontAwesomeIcon icon={["fas", "shopping-cart"]} /> €{cart.getTotal().toFixed(2)}
