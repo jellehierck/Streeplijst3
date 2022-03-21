@@ -63,7 +63,13 @@ const SNumberPad : React.FC<SNumberPadProps> = (props) => {
   };
 
   // Use the custom event listener hook to listen to key presses in a correct way
-  useEventListener("keydown", handleKeyPress);
+  useEventListener(
+    "keydown",
+    handleKeyPress,
+    () => {
+      sNumber.clear();
+    },
+  );
 
   // Return component
   return (

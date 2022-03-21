@@ -1,18 +1,29 @@
 import { RefObject, useEffect, useLayoutEffect, useRef } from "react";
 
+
 /**
  * Use an event handler. Source: https://usehooks-ts.com/react-hook/use-event-listener
  * @param eventName Event name to use
  * @param handler Handler function to call when the even fires
+ * @param onCleanup Optional function which is called when the component containing this hook is unmounted
  */
 function useEventListener<K extends keyof WindowEventMap>(
   eventName : K,
   handler : (event : WindowEventMap[K]) => void,
+  onCleanup? : VoidFunction,
 ) : void
-function useEventListener<K extends keyof HTMLElementEventMap,
-  T extends HTMLElement = HTMLDivElement>(
+
+/**
+ * Use an event handler. Source: https://usehooks-ts.com/react-hook/use-event-listener
+ * @param eventName Event name to use
+ * @param handler Handler function to call when the even fires
+ * @param element Listening object
+ * @param onCleanup Function which is called when the component containing this hook is unmounted
+ */
+function useEventListener<K extends keyof HTMLElementEventMap, T extends HTMLElement = HTMLDivElement>(
   eventName : K,
   handler : (event : HTMLElementEventMap[K]) => void,
+  onCleanup : VoidFunction,
   element : RefObject<T>,
 ) : void
 
@@ -20,13 +31,15 @@ function useEventListener<K extends keyof HTMLElementEventMap,
  * Use an event handler. Source: https://usehooks-ts.com/react-hook/use-event-listener
  * @param eventName Event name to use
  * @param handler Handler function to call when the even fires
- * @param element Listening target
+ * @param onCleanup Optional function which is called when the component containing this hook is unmounted
+ * @param element Listening object
  */
 function useEventListener<KW extends keyof WindowEventMap, KH extends keyof HTMLElementEventMap, T extends HTMLElement | void = void>(
   eventName : KW | KH,
   handler : (event : WindowEventMap[KW] | HTMLElementEventMap[KH] | Event) => void,
+  onCleanup? : VoidFunction,
   element? : RefObject<T>,
-) {
+) : void {
   // Create a ref that stores handler
   const savedHandler = useRef(handler);
 
@@ -36,7 +49,7 @@ function useEventListener<KW extends keyof WindowEventMap, KH extends keyof HTML
 
   useEffect(() => {
     // Define the listening target
-    const targetElement : T | Window = element?.current || window;
+    const targetElement : Window = window;
     if (!(targetElement && targetElement.addEventListener)) {
       return;
     }
@@ -49,7 +62,12 @@ function useEventListener<KW extends keyof WindowEventMap, KH extends keyof HTML
     // Remove event listener on cleanup
     return () => {
       targetElement.removeEventListener(eventName, eventListener);
+      if (onCleanup) {
+        onCleanup();
+      }
     };
+
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [eventName, element]);
 }
 
