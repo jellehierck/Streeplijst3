@@ -2,12 +2,12 @@ import { useMutation, useQuery } from "react-query";
 import { UseMutationOptions, UseQueryOptions } from "react-query/types/react/types";
 import {
   FolderType, getFolders,
-  getMemberByUsername,
+  getMemberByUsername, getProducts,
   LocalAPIError,
   MemberType,
   ping,
   PingType,
-  postSale,
+  postSale, ProductType,
   SaleInvoiceType,
   SaleType,
 } from "./localAPI";
@@ -126,6 +126,60 @@ export const useFolders = (
   };
 
   return useQuery<FolderType[], LocalAPIError>(["folders"], () => getFolders(), options);
+};
+
+// Callbacks to call upon successful or failed query for all folders from the Congressus API
+export type ProductsQueryCallback = {
+  /**
+   * Called on query success
+   * @param responseData Queried folders
+   * @param folderId Folder ID for which products were requested
+   */
+  onSuccess? : (responseData : ProductType[], folderId : number) => void,
+
+  /**
+   * Called on query failure
+   * @param error Returned error object
+   * @param folder Folder ID for which products were requested
+   */
+  onError? : (error : LocalAPIError, folderId : number) => void,
+}
+
+
+/**
+ * Custom hook to request all folders from the local API.
+ * @param folderId Folder ID to get products for
+ * @param callbacks Callbacks to call on query success or failure
+ * @param options Optional extra options to pass to the query
+ */
+export const useProducts = (
+  folderId : number,
+  callbacks? : ProductsQueryCallback,
+  options? : Omit<UseQueryOptions<ProductType[], LocalAPIError>, "queryKey" | "queryFn">,
+) => {
+  // Function to pass to the useQuery hook which calls the argument onError function if it is given
+  const onQueryError = (err : LocalAPIError) => {
+    if (callbacks?.onError) {
+      callbacks.onError(err, folderId);
+    }
+  };
+
+  // Function to pass to the useQuery hook which calls the argument onError function if it is given
+  const onQuerySuccess = (data : ProductType[]) => {
+    if (callbacks?.onSuccess) {
+      callbacks.onSuccess(data, folderId);
+    }
+  };
+
+  // Set options by taking the default and overriding if needed
+  options = {
+    ...defaultQueryConfig,  // First apply the default configuration
+    onError: onQueryError,  // Pass functions to be called on query error or success
+    onSuccess: onQuerySuccess,
+    ...options,  // Add additional options specified in the function arguments, overriding the defaults if needed
+  };
+
+  return useQuery<ProductType[], LocalAPIError>(["products", {folder: folderId}], () => getProducts(folderId), options);
 };
 
 export type SaleQueryCallbacks = {

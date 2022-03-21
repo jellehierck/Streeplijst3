@@ -1,6 +1,7 @@
 import React from "react";
 import { useParams } from "react-router-dom";
-import { productsSpeciaal } from "../../api/apiDummyData";
+import { useAPI } from "../../api/APIContext";
+
 import { ContentContainer } from "../layout/Layout";
 import ItemCardGrid from "../products/ItemCardGrid";
 import ProductCard from "../products/ProductCard";
@@ -15,22 +16,45 @@ type FolderIdType = {
 
 // React component
 const FolderProducts : React.FC<FolderProductsProps> = (props) => {
-  const params = useParams<FolderIdType>();
+  const params = useParams<FolderIdType>();  // Get the folder ID from the URL
+  const api = useAPI();
 
-  // Create list of product cards
-  const listProductCards = () => {
-    return productsSpeciaal.map((product) => {
-      return <ProductCard product={product}
-                          key={product.id} />;
-    });
-  };
+  if (params.folderId) {
+    const folderId = parseInt(params.folderId);  // Convert folder ID from URL to integer
 
-  return (
-    <ContentContainer sidebarContent={<ShoppingCart />}>
-      <p>Folder id: {params.folderId}</p>
-      <ItemCardGrid cards={listProductCards()} />
-    </ContentContainer>
-  );
+    const productsRes = api.getProductsInFolder(folderId);  // Get the contents of the current folder
+
+    if (productsRes.isLoading) {  // Data is being loaded now
+      return <ContentContainer sidebarContent={<ShoppingCart />}>
+        <div>Products loading...</div>
+      </ContentContainer>;
+    }
+
+    if (productsRes.error) {  // Some error occurred
+      return <ContentContainer sidebarContent={<ShoppingCart />}>
+        <div>{`Error while getting products in folder with ID ${folderId}`}</div>
+        <div>{productsRes.error}</div>
+      </ContentContainer>;
+    }
+
+    if (productsRes.data) {  // Data is ready
+      // Create list of product cards
+      const listProductCards = () => {
+        return productsRes.data.map((product) => {
+          return <ProductCard product={product}
+                              key={product.id} />;
+        });
+      };
+
+      return <ContentContainer sidebarContent={<ShoppingCart />}>
+        <p>Folder id: {params.folderId}</p>
+        <ItemCardGrid cards={listProductCards()} />
+      </ContentContainer>;
+    }
+  }
+
+  return <></>;
+
 };
 
 

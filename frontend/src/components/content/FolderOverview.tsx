@@ -49,7 +49,6 @@ const FolderOverview : React.FC<FolderOverviewProps> = (props) => {
     );
   }
 
-
   return <></>;
 
 };
