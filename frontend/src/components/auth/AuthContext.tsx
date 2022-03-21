@@ -51,16 +51,16 @@ export const AuthContextProvider : React.FC = (props) => {
   const [loggedInMember, setLoggedInMember] = React.useState<MemberType | null>(null);
   const [username, setUsername] = React.useState<string>("");
 
-  // Callback function to set the alert upon a failed member error
+  // Callback on successful member query
   const onMemberSuccess = (data : MemberType, username : string) : void => {
     setLoggedInMember(data); // Set user as logged in
-    setUsername("");
     alert.hide(); // Remove any current alerts
+    // setUsername("");  // Reset the username
   };
 
-  // Callback function to set the alert upon a failed member error
+  // When the function has an error, display the error
   const onMemberError = (error : LocalAPIError, username : string) : void => {
-    setUsername("");  // Reset the username
+    // setUsername("");  // Reset the username
     switch (error.status) {  // Determine the error type
       case 404:  // Username not found
         alert.set(usernameNotFoundAlert(username, error.toString()));  // Set the alert
@@ -80,28 +80,38 @@ export const AuthContextProvider : React.FC = (props) => {
       onSuccess: onMemberSuccess,
       onError: onMemberError,
     },
-    {enabled: false},  // Do not call this query by default, instead call it with refetch (to use with buttons)
+    {
+      enabled: false, // Do not call this query by default, instead call it with refetch (to use with buttons)
+      staleTime: 0,
+      cacheTime: 0,
+    },
   );
+
+  // When there is data in the member query result, log in a member
+  // if (memberRes.data) {
+  //   setLoggedInMember(memberRes.data); // Set user as logged in
+  //   setUsername("");  // Reset the username as we do not want this to be fetched again
+  //   alert.hide(); // Remove any current alerts
+  // }
 
   // Extra trick to make sure the member is only refetched when the username is truthy (not an empty string). This is
   // needed because we first need a re-render of this component with the new username before react-query uses the
   // updated username value.
   useEffect(() => {
     if (username) {
-      memberRes.refetch();
+      memberRes.refetch({cancelRefetch: true}); // Refetch again while canceling any previous requests
     }
   }, [username]);
 
   // Login function to log a user in
   const login = (username : string) => {
-    logout();  // First log out the user
+    // setLoggedInMember(null);  // Set the user to null to log it out
     setUsername(username);
-    // memberRes.refetch();  // Refresh the call to the API with the new username
   };
 
   // Logout function to log a user out
   const logout = () : void => {
-    // setUsername("");  // Disable the username to prevent next username queries
+    setUsername("");
     setLoggedInMember(null);  // Set the user to null to log it out
     memberRes.remove();  // Remove query to cancel any current requests
   };

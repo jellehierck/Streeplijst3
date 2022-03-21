@@ -1,10 +1,11 @@
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import React, { useEffect } from "react";
+import React from "react";
 import { Col, Stack } from "react-bootstrap";
 import Button from "react-bootstrap/Button";
 
 import Row from "react-bootstrap/Row";
 import LocalAPIRequestButton from "../../api/LocalAPIRequestButton";
+import useEventListener from "../../hooks/useEventListener";
 import { useAuth } from "../auth/AuthContext";
 import { SNumberAction, useSNumber } from "./SNumberContext";
 
@@ -22,19 +23,15 @@ const SNumberPad : React.FC<SNumberPadProps> = (props) => {
   const sNumber = useSNumber();
   const auth = useAuth();
 
-  /**
-   * Function is called when the submit button is pressed or the enter key is pressed.
-   */
-  const onSubmit = () => {
+  // Function is called when the submit button is pressed or the enter key is pressed.
+  const onSubmit = React.useCallback(() => {
     props.login(sNumber.toString());  // Attempt the login
-    sNumber.clear();
-  };
+  }, [props, sNumber]);
 
   // Handle a keypress on the input field
   const handleKeyPress = (event : KeyboardEvent) : void => {
     switch (event.key) {
       case "Enter":
-        // TODO: Set spinner and block login
         onSubmit();
         break;
 
@@ -53,7 +50,7 @@ const SNumberPad : React.FC<SNumberPadProps> = (props) => {
       case "8":
       case "9":
       case "0":
-        sNumber.add(+event.key);  // Convert string to number using unary operator (+)
+        sNumber.add(parseInt(event.key));
         break;
 
       // One of the prefix keys is pressed
@@ -65,14 +62,8 @@ const SNumberPad : React.FC<SNumberPadProps> = (props) => {
     }
   };
 
-  // Use the Effect to bind any keypresses to the s number field
-  useEffect(() => {
-    document.addEventListener("keydown", handleKeyPress);
-
-    return function cleanup() {  // Unregister the event listener when this component is unloaded
-      document.removeEventListener("keydown", handleKeyPress);
-    };
-  });
+  // Use the custom event listener hook to listen to key presses in a correct way
+  useEventListener("keydown", handleKeyPress);
 
   // Return component
   return (

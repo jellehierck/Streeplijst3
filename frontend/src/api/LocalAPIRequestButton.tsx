@@ -9,17 +9,21 @@ interface LocalAPIRequestButtonProps extends ButtonProps {
 }
 
 // Button meant for react-query requests (queries or mutations) which is disabled when the request is active
-const LocalAPIRequestButton : React.FC<LocalAPIRequestButtonProps> = (props) => {
+const LocalAPIRequestButton : React.FC<LocalAPIRequestButtonProps> = ({
+  loading,
+  children,
+  ...buttonProps
+}) => {
   // Determine whether the linked react-query request is loading
-  if (!props.loading) {  // If not loading, display the button as is
-    return <Button {...props} /* Destructure all properties to pass all to the Button */ >
-      {props.children}
+  if (!loading) {  // If not loading, display the button as is
+    return <Button {...buttonProps} /* Destructure all properties to pass all to the Button */ >
+      {children}
     </Button>;
 
   } else { // If loading, display the button as disabled and with a loading spinner
-    return <Button {...props} // Destructure all properties to pass all to the Button
+    return <Button {...buttonProps} // Destructure all properties to pass all to the Button
                    disabled={true} /* Force disable on the button */ >
-      {props.children}
+      {children}
 
       {/* Also add a spinning animation */}
       <Spinner
