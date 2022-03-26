@@ -1,6 +1,5 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
-
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { Button, ButtonGroup, Stack } from "react-bootstrap";
 
@@ -16,8 +15,8 @@ import ProductControlButtonGroup from "./ProductControlButtonGroup";
 
 type CartProps = {}
 
-// React component
-const ShoppingCart : React.FC<CartProps> = (props) => {
+// Shopping cart meant to be displayed in a side bar, will hold the currently selected items
+const ShoppingCart : React.FC<CartProps> = () => {
   const cart = useShoppingCart();
   const alert = useAlert();
   const auth = useAuth();
@@ -100,7 +99,6 @@ const ShoppingCart : React.FC<CartProps> = (props) => {
     </LocalAPIRequestButton>
   </>;
 };
-
 
 // Exports
 export default ShoppingCart;

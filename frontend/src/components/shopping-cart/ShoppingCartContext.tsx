@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useReducer } from "react";
+import React from "react";
 import { ProductType, SaleItemType } from "../../api/localAPI";
 
 // Action names
@@ -156,17 +156,17 @@ export type ShoppingCartContextType = {
 }
 
 // Actual context, store of the current state
-const ShoppingCartContext = createContext<ShoppingCartContextType>({} as ShoppingCartContextType);
+const ShoppingCartContext = React.createContext<ShoppingCartContextType>({} as ShoppingCartContextType);
 export default ShoppingCartContext;
 
 // Custom hook to use the ShoppingCartContext
 export const useShoppingCart = () : ShoppingCartContextType => {
-  return useContext(ShoppingCartContext);
+  return React.useContext(ShoppingCartContext);
 };
 
-// React component
+// Shopping cart context provider, exposes shopping cart information and functions
 export const ShoppingCartContextProvider : React.FC = (props) => {
-  const [items, cartItemsDispatch] = useReducer<React.Reducer<ShoppingCartStateType, ShoppingCartActionType>>(ShoppingCartReducer, initialShoppingCartState);
+  const [items, cartItemsDispatch] = React.useReducer<React.Reducer<ShoppingCartStateType, ShoppingCartActionType>>(ShoppingCartReducer, initialShoppingCartState);
 
   const add = (product : ProductType, quantity : number = 1) : void => {
     cartItemsDispatch({type: ShoppingCartAction.ADD, product: product, quantity: quantity});

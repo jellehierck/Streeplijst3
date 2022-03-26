@@ -1,6 +1,7 @@
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import React from "react";
-import { Button, ButtonGroup } from "react-bootstrap";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import Button from "react-bootstrap/Button";
+import ButtonGroup from "react-bootstrap/ButtonGroup";
 
 import { ProductType } from "../../api/localAPI";
 import { useShoppingCart } from "./ShoppingCartContext";
@@ -13,9 +14,6 @@ type ProductControlProps = {
  * Display price and quantity information for a product in the shopping cart, as well as buttons to increase/decrease
  * the quantity.
  * @param {ProductType} props.product Product to display for.
- * @param {number} props.quantity Quantity of the product to display.
- * @returns {JSX.Element}
- * @constructor
  */
 const ProductControlButtonGroup : React.FC<ProductControlProps> = (props) => {
   const cart = useShoppingCart();
