@@ -1,32 +1,34 @@
 import React from "react";
-import { Button } from "react-bootstrap";
+import { Button, Stack } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
-import { streeplijstRoutes } from "../../streeplijst/streeplijstRouteConfig";
 
 import { ContentContainer } from "../layout/Layout";
 
+import { streeplijstRoutes } from "../../streeplijst/streeplijstRouteConfig";
+
 type HomeProps = {}
 
-// React component
-const Home : React.FC<HomeProps> = (props) => {
+// Home page, quite empty only to serve as a placeholder for now
+const Home : React.FC<HomeProps> = () => {
   const navigate = useNavigate();
 
   return (
     <ContentContainer>
-      <p>Streeplijst Home</p>
+      <Stack>
+        <Button variant="outline-success"
+                onClick={() => navigate(streeplijstRoutes.loginPage)}
+                size="lg">
+          <h1 className="text-reset">Naar de streeplijst</h1>
+        </Button>
+      </Stack>
 
-      <Button variant="primary"
-              onClick={() => navigate(streeplijstRoutes.loginPage)}>
-        Login
-      </Button>
-
-      <Button variant="primary"
-              onClick={() => navigate(streeplijstRoutes.userOverviewPage)}>
-        User info
-      </Button>
+      {/* <Button variant="primary" */}
+      {/*         onClick={() => navigate(streeplijstRoutes.userOverviewPage)}> */}
+      {/*   User info */}
+      {/* </Button> */}
     </ContentContainer>
   );
-}
+};
 
 
 // Exports

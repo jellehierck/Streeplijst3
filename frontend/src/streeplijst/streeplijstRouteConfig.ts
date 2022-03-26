@@ -1,14 +1,14 @@
-const streeplijstRoutes = {
+export const streeplijstRoutes = {
   loginPage: "/login",
   userOverviewPage: "/user",
   folderOverviewPage: "/folders",
   folderProductsPage: "/folders/:folderId",
-  checkoutPage: "/checkout"
-}
+  checkoutPage: "/checkout",
+};
 
 // Configuration of streeplijstRoutes
 const streeplijstRouteConfig = {
-  startPage: streeplijstRoutes.loginPage,  // Page to go to after the checkout page is left
+  startPage: streeplijstRoutes.loginPage,  // Initial page to load
   afterLogout: streeplijstRoutes.loginPage,  // Page to go to after logout
   afterLogin: streeplijstRoutes.folderOverviewPage,  // Page to go to after login
   onFolderSelect: streeplijstRoutes.folderProductsPage,  // Page to go to after selecting a folder
@@ -17,4 +17,3 @@ const streeplijstRouteConfig = {
 };
 
 export default streeplijstRouteConfig;
-export { streeplijstRoutes };

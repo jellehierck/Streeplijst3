@@ -1,5 +1,6 @@
 import React from "react";
-import { Route, Routes } from "react-router-dom"
+import { Route, Routes } from "react-router-dom";
+
 import ForceLogout from "../components/auth/ForceLogout";
 import RequireAuth from "../components/auth/RequireAuth";
 import Checkout from "../components/content/Checkout";
@@ -14,11 +15,11 @@ import streeplijstRouteConfig, { streeplijstRoutes } from "./streeplijstRouteCon
 
 type StreeplijstRoutesProps = {}
 
-// React component
-const StreeplijstRoutes : React.FC<StreeplijstRoutesProps> = (props) => {
+// Streeplijst routes wrapper for react-router-dom to create pages and handle routing
+const StreeplijstRoutes : React.FC<StreeplijstRoutesProps> = () => {
   return (
     <Routes>
-      <Route path="/" element={<StreeplijstLayout afterLogout={streeplijstRouteConfig.afterLogout} />}>
+      <Route path="/" element={<StreeplijstLayout />}>
         {/* Home page, currently not used but could contain some fun information or navigation */}
         <Route index  // Index: this is the default page to go to
                element={<Home />} />
@@ -56,8 +57,7 @@ const StreeplijstRoutes : React.FC<StreeplijstRoutesProps> = (props) => {
       </Route>
     </Routes>
   );
-}
-
+};
 
 // Exports
 export default StreeplijstRoutes;

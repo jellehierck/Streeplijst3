@@ -1,16 +1,12 @@
 import React from "react";
-import { Stack } from "react-bootstrap"
+import { Stack } from "react-bootstrap";
 
 import AuthStatus from "../components/auth/AuthStatus";
 import LogoutButton from "../components/auth/LogoutButton";
 import Navigation from "../components/navigation/Navigation";
 
-// Props
-type StreeplijstHeaderProps = {
-  afterLogout : string
-}
-// React component
-const StreeplijstHeader : React.FC<StreeplijstHeaderProps> = (props) => {
+// Header for the streeplijst, containing a navigation header and information about the logged in user
+const StreeplijstHeader = () => {
   return (
     <Stack direction="horizontal"
            gap={3}>
@@ -21,7 +17,7 @@ const StreeplijstHeader : React.FC<StreeplijstHeaderProps> = (props) => {
       <LogoutButton />
     </Stack>
   );
-}
+};
 
 // Exports
 export default StreeplijstHeader;
