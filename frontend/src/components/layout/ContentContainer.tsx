@@ -15,7 +15,9 @@ type ContentContainerProps = {
 const ContentContainer : React.FC<ContentContainerProps> = (props) => {
 
   if (props.sidebarContent) {
-    return <Container style={{height: "calc(100% - 60px)"}}>
+    return <Container style={{height: "calc(100% - 60px)"}}
+                      className="pb-3"
+    >
       <Row>
         <Col xs={9}>
           {/* <main style={{background: "pink"}}> */}
