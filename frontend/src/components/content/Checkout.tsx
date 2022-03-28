@@ -8,7 +8,7 @@ import useTimeout from "../../hooks/useTimeout";
 import { useAlert } from "../alert/AlertContext";
 import { useAuth } from "../auth/AuthContext";
 
-import streeplijstRouteConfig from "../../streeplijst/streeplijstRouteConfig";
+import streeplijstConfig from "../../streeplijst/streeplijstConfig";
 import { autoLogoutAlert } from "../alert/standardAlerts";
 
 import LogoutButton from "../auth/LogoutButton";
@@ -36,7 +36,7 @@ const Checkout : React.FC<CheckoutProps> = ({
   const onRedirect = () => {
     console.log("Timeout fired, redirecting...");
     auth.logout();
-    navigate(streeplijstRouteConfig.afterLogout);
+    navigate(streeplijstConfig.routes.afterLogout);
     alert.set(autoLogoutAlert());
   };
 

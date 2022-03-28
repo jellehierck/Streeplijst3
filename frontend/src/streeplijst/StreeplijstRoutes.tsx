@@ -11,7 +11,7 @@ import Login from "../components/content/Login";
 import UserOverview from "../components/content/UserOverview";
 import StreeplijstLayout from "./StreeplijstLayout";
 
-import streeplijstRouteConfig, { streeplijstRoutes } from "./streeplijstRouteConfig";
+import streeplijstConfig, { routeConfig } from "./streeplijstConfig";
 
 type StreeplijstRoutesProps = {}
 
@@ -25,32 +25,32 @@ const StreeplijstRoutes : React.FC<StreeplijstRoutesProps> = () => {
                element={<Home />} />
 
         {/* Login page, first page users should see */}
-        <Route path={streeplijstRoutes.loginPage}
+        <Route path={routeConfig.loginPage}
                element={<ForceLogout>
-                 <Login afterLogin={streeplijstRouteConfig.afterLogin} />
+                 <Login afterLogin={streeplijstConfig.routes.afterLogin} />
                </ForceLogout>} />
 
         {/* User page, displays details and history of a user */}
-        <Route path={streeplijstRoutes.userOverviewPage}
-               element={<RequireAuth redirect={streeplijstRouteConfig.requireAuthRedirect}>
+        <Route path={routeConfig.userOverviewPage}
+               element={<RequireAuth redirect={streeplijstConfig.routes.requireAuthRedirect}>
                  <UserOverview />
                </RequireAuth>} />
 
         {/* Folders page, displays overview of all folders */}
-        <Route path={streeplijstRoutes.folderOverviewPage}
-               element={<RequireAuth redirect={streeplijstRouteConfig.requireAuthRedirect}>
+        <Route path={routeConfig.folderOverviewPage}
+               element={<RequireAuth redirect={streeplijstConfig.routes.requireAuthRedirect}>
                  <FolderOverview />
                </RequireAuth>} />
 
         {/* Products inside folder, users can select products here */}
-        <Route path={streeplijstRoutes.folderProductsPage}
-               element={<RequireAuth redirect={streeplijstRouteConfig.requireAuthRedirect}>
+        <Route path={routeConfig.folderProductsPage}
+               element={<RequireAuth redirect={streeplijstConfig.routes.requireAuthRedirect}>
                  <FolderProducts />
                </RequireAuth>} />
 
         {/* Checkout page, where users are redirect after buying their products */}
-        <Route path={streeplijstRoutes.checkoutPage}
-               element={<RequireAuth redirect={streeplijstRouteConfig.requireAuthRedirect}>
+        <Route path={routeConfig.checkoutPage}
+               element={<RequireAuth redirect={streeplijstConfig.routes.requireAuthRedirect}>
                  <Checkout />
                </RequireAuth>} />
 

@@ -10,11 +10,11 @@ const StreeplijstHeader = () => {
   return (
     <Stack direction="horizontal"
            gap={3}>
-      <Navigation />
+      <Navigation buttonProps={{size: "lg"}} />
       <div className="ms-auto">
         <AuthStatus />
       </div>
-      <LogoutButton />
+      <LogoutButton size="lg" />
     </Stack>
   );
 };

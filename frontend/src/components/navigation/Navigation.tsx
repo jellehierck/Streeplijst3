@@ -2,12 +2,12 @@ import React from "react";
 import { NavLink, useNavigate } from "react-router-dom";
 import useBreadcrumbs, { BreadcrumbComponentType, BreadcrumbsRoute } from "use-react-router-breadcrumbs";
 import Breadcrumb from "react-bootstrap/Breadcrumb";
-import Button from "react-bootstrap/Button";
+import Button, { ButtonProps } from "react-bootstrap/Button";
 import Stack from "react-bootstrap/Stack";
 
 import { useAPI } from "../../api/APIContext";
 
-import { streeplijstRoutes } from "../../streeplijst/streeplijstRouteConfig";
+import { routeConfig } from "../../streeplijst/streeplijstConfig";
 
 // Render a breadcrumb for a folder
 const FolderNameBreadcrumb : BreadcrumbComponentType = ({match} : any) => {
@@ -33,25 +33,29 @@ const FolderNameBreadcrumb : BreadcrumbComponentType = ({match} : any) => {
 // TODO: replace test breadcrumbs with something less hardcoded
 const routes : BreadcrumbsRoute[] = [
   {
-    path: streeplijstRoutes.folderProductsPage, breadcrumb: FolderNameBreadcrumb,
+    path: routeConfig.folderProductsPage, breadcrumb: FolderNameBreadcrumb,
   },
 ];
 
 
-type NavigationProps = {}
+type NavigationProps = {
+  buttonProps? : ButtonProps,
+}
 
 // Navigation component, show a small navigation bar
-const Navigation : React.FC<NavigationProps> = (props) => {
+const Navigation : React.FC<NavigationProps> = ({
+  buttonProps,// Extract all button props
+}) => {
   const navigate = useNavigate();
   const breadcrumbs = useBreadcrumbs(routes);
 
   // Create an array of react-bootstrap Breadcrumbs.Item elements to nicely display the current
   const createBreadcrumbs = () : JSX.Element[] => {
     return breadcrumbs.map(({match, breadcrumb}) => {
-        return <Breadcrumb.Item key={match.pathname}
-                                linkAs={NavLink}  // Render as a react-router-dom NavLink to get the nice routing
-                                linkProps={{to: match.pathname}}  // Pass the url to the NavLink element
-        >
+      return <Breadcrumb.Item key={match.pathname}
+                              linkAs={NavLink}  // Render as a react-router-dom NavLink to get the nice routing
+                              linkProps={{to: match.pathname}}  // Pass the url to the NavLink element
+      >
           {breadcrumb}
         </Breadcrumb.Item>;
       },
@@ -63,7 +67,8 @@ const Navigation : React.FC<NavigationProps> = (props) => {
            gap={3}>
       {/* Back button to go back one page in the history stack */}
       <Button onClick={() => navigate(-1)}
-              variant="outline-primary">
+              variant="outline-primary"
+              {...buttonProps}>
         Back
       </Button>
 

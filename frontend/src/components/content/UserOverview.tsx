@@ -1,7 +1,7 @@
 import React from "react";
 import { Button } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
-import { streeplijstRoutes } from "../../streeplijst/streeplijstRouteConfig";
+import { routeConfig } from "../../streeplijst/streeplijstConfig";
 import { useAuth } from "../auth/AuthContext";
 import AuthStatus from "../auth/AuthStatus";
 import { ContentContainer } from "../layout/Layout";
@@ -18,7 +18,7 @@ const UserOverview : React.FC<UserOverviewProps> = (props) => {
   const displayButtons = () => {
     if (auth.loggedInMember) {
       return <Button variant="primary"
-                     onClick={() => navigate(streeplijstRoutes.folderOverviewPage)}>
+                     onClick={() => navigate(routeConfig.folderOverviewPage)}>
         Folders
       </Button>;
     }

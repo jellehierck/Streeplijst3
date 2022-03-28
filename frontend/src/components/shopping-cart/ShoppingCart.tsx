@@ -9,7 +9,7 @@ import { useAuth } from "../auth/AuthContext";
 import { useShoppingCart } from "./ShoppingCartContext";
 
 import LocalAPIRequestButton from "../../api/LocalAPIRequestButton";
-import streeplijstRouteConfig from "../../streeplijst/streeplijstRouteConfig";
+import streeplijstConfig from "../../streeplijst/streeplijstConfig";
 import ItemCard from "../products/ItemCard";
 import ProductControlButtonGroup from "./ProductControlButtonGroup";
 
@@ -29,7 +29,7 @@ const ShoppingCart : React.FC<CartProps> = () => {
   // Function which is fired after the sale post is successful
   const onSaleSuccess = () => {
     cart.empty();  // Empty the cart
-    navigate(streeplijstRouteConfig.onCheckout);
+    navigate(streeplijstConfig.routes.onCheckout);
   };
 
   // Post a sale to the local API with the currently logged in member

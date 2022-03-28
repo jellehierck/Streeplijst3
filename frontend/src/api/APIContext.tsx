@@ -8,7 +8,7 @@ import {
   unknownErrorAlert,
   validationErrorAlert,
 } from "../components/alert/standardAlerts";
-import streeplijstRouteConfig from "../streeplijst/streeplijstRouteConfig";
+import streeplijstConfig from "../streeplijst/streeplijstConfig";
 import { FolderType, LocalAPIError, ProductType, SaleInvoiceType, SaleType } from "./localAPI";
 import { useFolders, usePostSale, useProducts } from "./localAPIHooks";
 

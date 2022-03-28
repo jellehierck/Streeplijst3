@@ -35,11 +35,6 @@ const Login : React.FC<LoginProps> = (props) => {
   return (
     <ContentContainer>
       <SNumberPad login={login} />
-
-      <Button variant="primary"
-              onClick={loginToNonExistentUser}>
-        Foute login
-      </Button>
     </ContentContainer>
   );
 };

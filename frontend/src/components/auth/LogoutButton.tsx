@@ -2,7 +2,7 @@ import React from "react";
 import { Button } from "react-bootstrap";
 import { ButtonProps } from "react-bootstrap/Button";
 import { useNavigate } from "react-router-dom";
-import streeplijstRouteConfig from "../../streeplijst/streeplijstRouteConfig";
+import streeplijstConfig from "../../streeplijst/streeplijstConfig";
 import { useAuth } from "./AuthContext";
 
 interface LogoutButtonProps extends ButtonProps {
@@ -12,7 +12,7 @@ interface LogoutButtonProps extends ButtonProps {
 
 // Logout button which will logout the user and redirect to the afterLogout URL
 const LogoutButton : React.FC<LogoutButtonProps> = ({
-  afterLogout = streeplijstRouteConfig.afterLogout,  // Defaults to the configuration
+  afterLogout = streeplijstConfig.routes.afterLogout,  // Defaults to the configuration
   children,
   ...buttonProps// Other button props
 }) => {

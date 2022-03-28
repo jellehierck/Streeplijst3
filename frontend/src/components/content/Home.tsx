@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom";
 
 import { ContentContainer } from "../layout/Layout";
 
-import { streeplijstRoutes } from "../../streeplijst/streeplijstRouteConfig";
+import { routeConfig } from "../../streeplijst/streeplijstConfig";
 
 type HomeProps = {}
 
@@ -16,7 +16,7 @@ const Home : React.FC<HomeProps> = () => {
     <ContentContainer>
       <Stack>
         <Button variant="outline-success"
-                onClick={() => navigate(streeplijstRoutes.loginPage)}
+                onClick={() => navigate(routeConfig.loginPage)}
                 size="lg">
           <h1 className="text-reset">Naar de streeplijst</h1>
         </Button>
