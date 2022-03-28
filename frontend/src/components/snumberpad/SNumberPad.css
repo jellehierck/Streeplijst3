@@ -1,0 +1,18 @@
+:root {
+    /*--numpad-btn-size: 15vh;*/
+    --numpad-btn-size: 110px;
+}
+
+.numpad-width {
+    width: calc(3 * var(--numpad-btn-size));
+}
+
+.numpad-display {
+    width: calc(2 * var(--numpad-btn-size));
+    height: var(--numpad-btn-size);
+}
+
+.numpad-btn {
+    width: var(--numpad-btn-size);
+    height: var(--numpad-btn-size);
+}
