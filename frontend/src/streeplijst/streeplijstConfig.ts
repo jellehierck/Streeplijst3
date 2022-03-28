@@ -92,7 +92,7 @@ const streeplijstConfig = {
   },
 
   // Image in case no media is returned by API
-  missingMedia: "https://www.paradoks.utwente.nl/_media/1074043/3130935d80cd4be7a331ed4a4c57d0c7/view",
+  missingMedia: "https://www.paradoks.utwente.nl/_media/1694726/31e7dbcb1c6242cd9cd7083e4d9ce22f/view",
 
   // Additional hardcoded folder configuration
   folders: folderConfig,

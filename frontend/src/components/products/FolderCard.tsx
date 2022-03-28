@@ -8,6 +8,7 @@ import ItemCard from "./ItemCard";
 type FolderProps = {
   folder : FolderType
   onClick : VoidFunction
+  media? : string
 }
 
 /**
@@ -16,27 +17,8 @@ type FolderProps = {
  * @param props.onClick Function to call on clicking the card
  */
 const FolderCard : React.FC<FolderProps> = (props) => {
-
-  // Choose which media to render
-  const media = () => {
-    if (props.folder.media) {  // If the folder in the props has media on it, show that
-      return props.folder.media;
-    }
-
-    // The passed folder prop does not have media, try to find is in the configuration
-    const configMedia = streeplijstConfig.folders.find(folderConfig => folderConfig.id === props.folder.id);
-    if (configMedia?.media) {  // If the media exists in the config, show that
-      return configMedia.media;
-    }
-
-    console.log(configMedia);
-
-    // All other checks failed, show the missing media instead
-    return streeplijstConfig.missingMedia;
-  };
-
   return <ItemCard title={props.folder.name}
-                   media={media()}
+                   media={props.media}
                    onClick={() => props.onClick()} />;
 };
 

@@ -52,10 +52,9 @@ const Navigation : React.FC<NavigationProps> = ({
   // Create an array of react-bootstrap Breadcrumbs.Item elements to nicely display the current
   const createBreadcrumbs = () : JSX.Element[] => {
     return breadcrumbs.map(({match, breadcrumb}) => {
-      return <Breadcrumb.Item key={match.pathname}
-                              linkAs={NavLink}  // Render as a react-router-dom NavLink to get the nice routing
-                              linkProps={{to: match.pathname}}  // Pass the url to the NavLink element
-      >
+        return <Breadcrumb.Item linkAs={NavLink}  // Render as a react-router-dom NavLink to get the nice routing
+                                linkProps={{to: match.pathname}}  // Pass the url to the NavLink element
+                                key={match.pathname}>
           {breadcrumb}
         </Breadcrumb.Item>;
       },
