@@ -22,11 +22,6 @@ const folderConfig : FolderConfigType[] = [
     media: "https://www.paradoks.utwente.nl/_media/1694492/1700e2912b05473f913c60f54e07d9f4/view",
   },
   {
-    name: "Lunch",
-    id: 1994,
-    media: "",
-  },
-  {
     name: "Repen",
     id: 1997,
     media: "https://www.paradoks.utwente.nl/_media/889900/c3a652eaf43546d594fe27bf9c288a08/view",
@@ -50,6 +45,16 @@ const folderConfig : FolderConfigType[] = [
     name: "Healthy",
     id: 1993,
     media: "https://www.paradoks.utwente.nl/_media/889906/447f0d874bcb48479b43dede97149183/view",
+  },
+  {
+    name: "Lunch",
+    id: 1994,
+    media: "https://www.paradoks.utwente.nl/_media/889938/a1be36b57e9d4cd4aba77a0a169ad8ed/view",
+  },
+  {
+    name: "Speciaal",
+    id: 1998,
+    media: "https://www.paradoks.utwente.nl/_media/889910/63b78b80f2224dff8c46bfb8456d0bc8/view",
   },
   {
     name: "Super Healthy",

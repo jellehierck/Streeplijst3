@@ -2,7 +2,7 @@ import React from "react";
 import { Col, Row } from "react-bootstrap";
 
 type ItemCardGridProps = {
-  cards : JSX.Element[]
+  cards : (JSX.Element | null)[]
 }
 
 // React component
@@ -10,9 +10,13 @@ const ItemCardGrid : React.FC<ItemCardGridProps> = (props) => {
 
   // Get a list of all card components passed
   const cards = props.cards.map((card, index) => {
-    return <Col key={index}>
-      {card}
-    </Col>;
+    if (card) {
+      return <Col key={index}>
+        {card}
+      </Col>;
+    } else {
+      return null;
+    }
   });
 
   return (

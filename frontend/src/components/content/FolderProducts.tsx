@@ -41,8 +41,12 @@ const FolderProducts : React.FC<FolderProductsProps> = (props) => {
       // Create list of product cards
       const listProductCards = () => {
         return productsRes.data.map((product) => {
-          return <ProductCard product={product}
-                              key={product.id} />;
+          if (product.published) {  // Product is published so it should be displayed
+            return <ProductCard product={product}
+                                key={product.id} />;
+          } else { // Folder is not published and should not be displayed
+            return null; // Return nothing
+          }
         });
       };
 
