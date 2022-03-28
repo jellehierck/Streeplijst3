@@ -62,6 +62,19 @@ export const saleSuccessfulAlert = () : AlertStateType => {
 };
 
 /**
+ * Displays a message if a user is logged out automatically
+ */
+export const autoLogoutAlert = () : AlertStateType => {
+  return {
+    display: {
+      message: "Je bent automatisch uitgelogd",
+      variant: "info",
+    },
+    timeout: 5000,  // 10 seconds
+  };
+};
+
+/**
  * Display an unknown error.
  * @param {string} rawError Raw error message
  */

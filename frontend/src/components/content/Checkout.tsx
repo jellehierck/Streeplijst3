@@ -1,9 +1,17 @@
 import React from "react";
-import { Stack } from "react-bootstrap";
+import { useNavigate } from "react-router-dom";
+import Stack from "react-bootstrap/Stack";
 import Button from "react-bootstrap/Button";
-import useTimeout from "../../hooks/useTimeout";
-import LogoutButton from "../auth/LogoutButton";
 
+import useTimeout from "../../hooks/useTimeout";
+
+import { useAlert } from "../alert/AlertContext";
+import { useAuth } from "../auth/AuthContext";
+
+import streeplijstRouteConfig from "../../streeplijst/streeplijstRouteConfig";
+import { autoLogoutAlert } from "../alert/standardAlerts";
+
+import LogoutButton from "../auth/LogoutButton";
 import { ContentContainer } from "../layout/Layout";
 import TimedProgressBar from "../progress-bar/TimedProgressBar";
 import UserInformation from "../user-information/UserInformation";
@@ -20,10 +28,16 @@ const Checkout : React.FC<CheckoutProps> = ({
   timeUntilRedirect = defaultTimeout,  // Default timeout is 15 seconds
 }) => {
   const [timeoutStopped, setTimeoutStopped] = React.useState<boolean>(false);
+  const navigate = useNavigate();
+  const auth = useAuth();
+  const alert = useAlert();
 
   // Function to fire upon redirect
   const onRedirect = () => {
     console.log("Timeout fired, redirecting...");
+    auth.logout();
+    navigate(streeplijstRouteConfig.afterLogout);
+    alert.set(autoLogoutAlert());
   };
 
   // Function to fire when the timeout is finished
