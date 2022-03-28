@@ -77,65 +77,63 @@ const SNumberPadFrame : React.FC<SNumberPadFrameProps> = (props) => {
   );
 
   // Return component
-  return <SNumberContextProvider> {/* Context provider for SNumber */}
-    <Stack direction="vertical"
-           gap={0}
-           className="mx-auto numpad-width">
+  return <Stack direction="vertical"
+                gap={0}
+                className="mx-auto numpad-width">
 
-      {/* Top row is current s number display and submit button */}
-      <Row className="g-0 numpad-row">
-        <Col xs={8}>
-          {/* Display of the current s number */}
-          <Button variant="outline-secondary"
-                  className="numpad-row-height numpad-display text-start"
-                  disabled>
-            <h2>{sNumber.toString()}</h2>
-          </Button>
-        </Col>
-        <Col xs={4}>
-          {/* Submit button */}
-          <LocalAPIRequestButton variant="success"
-                                 className="numpad-btn"
-                                 onClick={onSubmit}
-                                 loading={auth.memberRes.isFetching}>
-            <h3 className="text-reset">
-              <FontAwesomeIcon icon={["fas", "paper-plane"]} />
-            </h3>
-          </LocalAPIRequestButton>
-        </Col>
-      </Row>
+    {/* Top row is current s number display and submit button */}
+    <Row className="g-0 numpad-row">
+      <Col xs={8}>
+        {/* Display of the current s number */}
+        <Button variant="outline-secondary"
+                className="numpad-row-height numpad-display text-start"
+                disabled>
+          <h2>{sNumber.toString()}</h2>
+        </Button>
+      </Col>
+      <Col xs={4}>
+        {/* Submit button */}
+        <LocalAPIRequestButton variant="success"
+                               className="numpad-btn"
+                               onClick={onSubmit}
+                               loading={auth.memberRes.isFetching}>
+          <h3 className="text-reset">
+            <FontAwesomeIcon icon={["fas", "paper-plane"]} />
+          </h3>
+        </LocalAPIRequestButton>
+      </Col>
+    </Row>
 
-      {/* Rows of numbers */}
-      <Row xs={3}
-           className="g-0">
-        <Col> <SNumberPadButton action={{type: SNumberAction.ADD, nr: 1}} /> </Col>
-        <Col> <SNumberPadButton action={{type: SNumberAction.ADD, nr: 2}} /> </Col>
-        <Col> <SNumberPadButton action={{type: SNumberAction.ADD, nr: 3}} /> </Col>
-      </Row>
+    {/* Rows of numbers */}
+    <Row xs={3}
+         className="g-0">
+      <Col> <SNumberPadButton action={{type: SNumberAction.ADD, nr: 1}} /> </Col>
+      <Col> <SNumberPadButton action={{type: SNumberAction.ADD, nr: 2}} /> </Col>
+      <Col> <SNumberPadButton action={{type: SNumberAction.ADD, nr: 3}} /> </Col>
+    </Row>
 
-      <Row xs={3}
-           className="g-0">
-        <Col> <SNumberPadButton action={{type: SNumberAction.ADD, nr: 4}} /> </Col>
-        <Col> <SNumberPadButton action={{type: SNumberAction.ADD, nr: 5}} /> </Col>
-        <Col> <SNumberPadButton action={{type: SNumberAction.ADD, nr: 6}} /> </Col>
-      </Row>
+    <Row xs={3}
+         className="g-0">
+      <Col> <SNumberPadButton action={{type: SNumberAction.ADD, nr: 4}} /> </Col>
+      <Col> <SNumberPadButton action={{type: SNumberAction.ADD, nr: 5}} /> </Col>
+      <Col> <SNumberPadButton action={{type: SNumberAction.ADD, nr: 6}} /> </Col>
+    </Row>
 
-      <Row xs={3}
-           className="g-0">
-        <Col> <SNumberPadButton action={{type: SNumberAction.ADD, nr: 7}} /> </Col>
-        <Col> <SNumberPadButton action={{type: SNumberAction.ADD, nr: 8}} /> </Col>
-        <Col> <SNumberPadButton action={{type: SNumberAction.ADD, nr: 9}} /> </Col>
-      </Row>
+    <Row xs={3}
+         className="g-0">
+      <Col> <SNumberPadButton action={{type: SNumberAction.ADD, nr: 7}} /> </Col>
+      <Col> <SNumberPadButton action={{type: SNumberAction.ADD, nr: 8}} /> </Col>
+      <Col> <SNumberPadButton action={{type: SNumberAction.ADD, nr: 9}} /> </Col>
+    </Row>
 
-      {/* Row with additional controls */}
-      <Row xs={3}
-           className="g-0">
-        <Col> <SNumberPadButton action={{type: SNumberAction.TOGGLE_PREFIX}} /> </Col>
-        <Col> <SNumberPadButton action={{type: SNumberAction.ADD, nr: 0}} /> </Col>
-        <Col> <SNumberPadButton action={{type: SNumberAction.REMOVE}} /> </Col>
-      </Row>
-    </Stack>
-  </SNumberContextProvider>;
+    {/* Row with additional controls */}
+    <Row xs={3}
+         className="g-0">
+      <Col> <SNumberPadButton action={{type: SNumberAction.TOGGLE_PREFIX}} /> </Col>
+      <Col> <SNumberPadButton action={{type: SNumberAction.ADD, nr: 0}} /> </Col>
+      <Col> <SNumberPadButton action={{type: SNumberAction.REMOVE}} /> </Col>
+    </Row>
+  </Stack>;
 };
 
 // Exports
