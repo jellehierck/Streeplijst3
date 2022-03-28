@@ -47,7 +47,6 @@ const FolderProducts : React.FC<FolderProductsProps> = (props) => {
       };
 
       return <ContentContainer sidebarContent={<ShoppingCart />}>
-        <p>Folder id: {params.folderId}</p>
         <ItemCardGrid cards={listProductCards()} />
       </ContentContainer>;
     }

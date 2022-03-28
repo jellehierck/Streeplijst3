@@ -1,19 +1,28 @@
 import React from "react";
-import { Breadcrumb, Button, Stack } from "react-bootstrap";
-import { NavLink, useLocation, useNavigate } from "react-router-dom";
+import { NavLink, useNavigate } from "react-router-dom";
 import useBreadcrumbs, { BreadcrumbComponentType, BreadcrumbsRoute } from "use-react-router-breadcrumbs";
-import { folders } from "../../api/apiDummyData";
+import Breadcrumb from "react-bootstrap/Breadcrumb";
+import Button from "react-bootstrap/Button";
+import Stack from "react-bootstrap/Stack";
+
+import { useAPI } from "../../api/APIContext";
+
 import { streeplijstRoutes } from "../../streeplijst/streeplijstRouteConfig";
 
 // Render a breadcrumb for a folder
 const FolderNameBreadcrumb : BreadcrumbComponentType = ({match} : any) => {
+  const api = useAPI();
 
   // Check if the folderId exists and create a breadcrumb if that is the case
   if (match.params.folderId) {
-    const folderId = match.params.folderId;  // Get the folder ID
-    const folder = folders.find((folder) => folder.id === parseInt(folderId, 10));
-    if (folder) {
-      return <span>{folder.name}</span>;
+    if (api.folderRes?.data) {  // If there is data now
+      const folderId = match.params.folderId;  // Get the folder ID
+
+      // Look for the folder in the current folders list
+      const folder = api.folderRes.data.find((folder) => folder.id === parseInt(folderId, 10));
+      if (folder) {  // If a match was found, show it
+        return <span>{folder.name}</span>;
+      }
     }
   }
 
@@ -31,9 +40,8 @@ const routes : BreadcrumbsRoute[] = [
 
 type NavigationProps = {}
 
-// React component
+// Navigation component, show a small navigation bar
 const Navigation : React.FC<NavigationProps> = (props) => {
-  const location = useLocation();
   const navigate = useNavigate();
   const breadcrumbs = useBreadcrumbs(routes);
 
