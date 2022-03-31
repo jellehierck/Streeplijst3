@@ -135,9 +135,9 @@ def sales_by_username(req: Request, version: str, username: str = None) -> Respo
     :param username: Username to search for.
     """
     if version == ApiV30.API_VERSION:
-        return api_v30_obj.get_sales(username=username, req=req)
+        return api_v30_obj.get_sales_by_username(username=username, req=req)
     if version == ApiV20.API_VERSION:
-        return api_v20_obj.get_sales(username=username, req=req)
+        return api_v20_obj.get_sales_by_username(username=username, req=req)
     else:
         return Response(data={'message': f"API version {version} not recognized"}, status=status.HTTP_404_NOT_FOUND)
 
