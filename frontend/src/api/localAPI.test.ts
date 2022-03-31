@@ -210,6 +210,8 @@ test(`if posting multiple sales of different test products for the testUser is s
       // Test if all required properties are present in the response
       expect(data).toHaveProperty("id");
       expect(data).toHaveProperty("created");
+      expect(data).toHaveProperty("modified");
+      expect(data).toHaveProperty("invoice_status");
       expect(data).toHaveProperty("invoice_source", "api");  // Make sure the source is set correctly
       expect(data).toHaveProperty("invoice_type", "webshop");  // Make sure the type is set correctly
       expect(data).toHaveProperty("member_id", testMember.id);  // Make sure the member ID is correct
