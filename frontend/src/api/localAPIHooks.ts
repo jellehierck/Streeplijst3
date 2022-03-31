@@ -9,7 +9,7 @@ import {
   PingType,
   postSale, ProductType,
   SaleInvoiceType,
-  SaleType,
+  SalePostType,
 } from "./localAPI";
 
 // Default configuration for React Query useQuery hook
@@ -186,32 +186,32 @@ export type SaleQueryCallbacks = {
   /**
    * Called on post success
    * @param {SaleInvoiceType} responseData Server response
-   * @param {SaleType} sale Sale which was posted
+   * @param {SalePostType} sale Sale which was posted
    */
-  onSuccess? : (responseData : SaleInvoiceType, sale : SaleType) => void,
+  onSuccess? : (responseData : SaleInvoiceType, sale : SalePostType) => void,
 
   /**
    * Called on post failure
    * @param {LocalAPIError} error Returned error object
-   * @param {SaleType} sale Sale which was attempted to post
+   * @param {SalePostType} sale Sale which was attempted to post
    */
-  onError? : (error : LocalAPIError, sale : SaleType) => void,
+  onError? : (error : LocalAPIError, sale : SalePostType) => void,
 }
 
 export const usePostSale = (
   callbacks? : SaleQueryCallbacks,
-  options? : Omit<UseMutationOptions<SaleInvoiceType, LocalAPIError, SaleType>, "mutationKey" | "mutationFn">,
+  options? : Omit<UseMutationOptions<SaleInvoiceType, LocalAPIError, SalePostType>, "mutationKey" | "mutationFn">,
 ) => {
 
   // Function to pass to the useQuery hook which calls the argument onError function if it is given
-  const onQueryError = (err : LocalAPIError, sale : SaleType) => {
+  const onQueryError = (err : LocalAPIError, sale : SalePostType) => {
     if (callbacks?.onError) {
       callbacks.onError(err, sale);
     }
   };
 
   // Function to pass to the useQuery hook which calls the argument onError function if it is given
-  const onQuerySuccess = (data : SaleInvoiceType, sale : SaleType) => {
+  const onQuerySuccess = (data : SaleInvoiceType, sale : SalePostType) => {
     if (callbacks?.onSuccess) {
       callbacks.onSuccess(data, sale);
     }
@@ -225,5 +225,5 @@ export const usePostSale = (
     ...options,  // Add additional options specified in the function arguments, overriding the defaults if needed
   };
 
-  return useMutation<SaleInvoiceType, LocalAPIError, SaleType>(postSale, options);
+  return useMutation<SaleInvoiceType, LocalAPIError, SalePostType>(postSale, options);
 };

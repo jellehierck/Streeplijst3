@@ -22,8 +22,8 @@ export type ProductType = {
   price : number
 }
 
-// Sale information
-export type SaleType = {
+// Sale Post information
+export type SalePostType = {
   member_id : number
   items : SaleItemType[]
 }
@@ -37,13 +37,15 @@ export type  SaleItemType = {
 // Sale Invoice type, containing information about the sale after it is submitted to Congressus
 export type SaleInvoiceType = {
   id : number
-  created : string
-  invoice_source : string
-  invoice_type : string
   member_id : number
+  items : SaleInvoiceItemType[]
   price_paid : number  // If the invoice is already paid (i.e. the bank transfer took place) this is the total amount
   price_unpaid : number  // If the invoice is not paid yet, this is the amount that is to be paid
-  items : SaleInvoiceItemType[]
+  invoice_date : string
+  invoice_source : string
+  invoice_type : string
+  created : string
+  modified : string
 }
 
 export type SaleInvoiceItemType = {
@@ -192,7 +194,7 @@ export const getProducts = (folderId : number) : Promise<ProductType[]> => {
  * Post a sale for a user.
  * @param sale Sale object to post.
  */
-export const postSale = (sale : SaleType) : Promise<SaleInvoiceType> => {
+export const postSale = (sale : SalePostType) : Promise<SaleInvoiceType> => {
   return request<SaleInvoiceType>({
     method: "POST",
     url: "/sales",
@@ -200,5 +202,38 @@ export const postSale = (sale : SaleType) : Promise<SaleInvoiceType> => {
       member_id: sale.member_id,
       items: sale.items,
     },
+  });
+};
+
+type GetSaleInvoiceFilterType = {
+  username? : string[]
+  member_id? : number[]
+  invoice_status? : string
+  invoice_type? : string
+  period_filter? : string
+  product_offer_id? : number[]
+  order? : string
+}
+
+/**
+ * Get sale invoices for a user and optional additional filters.
+ * @param username Username to get the user for
+ * @param filters Optional filters to pass to the request
+ */
+export const getSalesByUsername = (username : string, filters? : GetSaleInvoiceFilterType) : Promise<SaleInvoiceType> => {
+  return request<SaleInvoiceType>({
+    url: "/sales/" + username,
+    data: filters,
+  });
+};
+
+/**
+ * Get sale invoices based on filters.
+ * @param filters Filters to pass to the request
+ */
+export const getSales = (filters : GetSaleInvoiceFilterType) : Promise<SaleInvoiceType> => {
+  return request<SaleInvoiceType>({
+    url: "/sales",
+    data: filters,
   });
 };

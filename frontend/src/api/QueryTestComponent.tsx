@@ -12,7 +12,7 @@ import {
 import { useAuth } from "../components/auth/AuthContext";
 import TimedProgressBar from "../components/progress-bar/TimedProgressBar";
 
-import { LocalAPIError, SaleInvoiceType, SaleItemType, SaleType } from "./localAPI";
+import { LocalAPIError, SaleInvoiceType, SaleItemType, SalePostType } from "./localAPI";
 import { usePing, usePostSale } from "./localAPIHooks";
 
 /**
@@ -89,13 +89,13 @@ const QueryTestComponent : React.FC<QueryTestComponentProps> = (props) => {
   //   },
   // ];
   //
-  // const onPostSuccess = (dataResponse : SaleInvoiceType, sale : SaleType) => {
+  // const onPostSuccess = (dataResponse : SaleInvoiceType, sale : SalePostType) => {
   //   // console.log("Post success!");
   //   // console.log(dataResponse);
   //   alert.set(saleSuccessfulAlert());  // Set the alert
   // };
   //
-  // const onPostError = (error : LocalAPIError, sale : SaleType) => {
+  // const onPostError = (error : LocalAPIError, sale : SalePostType) => {
   //   // console.log("Post failure!");
   //   // console.log(error.message);
   //

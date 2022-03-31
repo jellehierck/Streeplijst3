@@ -9,7 +9,7 @@ import {
   validationErrorAlert,
 } from "../components/alert/standardAlerts";
 import streeplijstConfig from "../streeplijst/streeplijstConfig";
-import { FolderType, LocalAPIError, ProductType, SaleInvoiceType, SaleType } from "./localAPI";
+import { FolderType, LocalAPIError, ProductType, SaleInvoiceType, SalePostType } from "./localAPI";
 import { useFolders, usePostSale, useProducts } from "./localAPIHooks";
 
 // Default time for which queried data is considered fresh and should not be fetched again (to make the app fast), since
@@ -36,10 +36,10 @@ type APIContextType = {
    * @param onError Function to call on mutation error, after the alert is set
    * @returns the saleMutation object
    */
-  postSaleToAPI(sale : SaleType, onSuccess? : VoidFunction, onError? : VoidFunction) : void
+  postSaleToAPI(sale : SalePostType, onSuccess? : VoidFunction, onError? : VoidFunction) : void
 
   // Sale Mutation object which has information about the mutation state
-  saleMutation : UseMutationResult<SaleInvoiceType, LocalAPIError, SaleType>
+  saleMutation : UseMutationResult<SaleInvoiceType, LocalAPIError, SalePostType>
 }
 
 // Actual context, store of the current state
@@ -120,7 +120,7 @@ const APIContextProvider : React.FC = (props) => {
   }, [currFolderId]);
 
   // Function to fire on a sale post error
-  const onPostError = (error : LocalAPIError, sale : SaleType) => {
+  const onPostError = (error : LocalAPIError, sale : SalePostType) => {
     switch (error.status) {  // Determine the error type
       case 400:  // Validation error
         alert.set(validationErrorAlert(error.toString()));  // Set the alert
@@ -138,7 +138,7 @@ const APIContextProvider : React.FC = (props) => {
   const saleMutation = usePostSale({onError: onPostError});
 
   // Function which will post a sale to the API
-  const postSaleToAPI = (sale : SaleType, onSuccess? : VoidFunction, onError? : VoidFunction) : void => {
+  const postSaleToAPI = (sale : SalePostType, onSuccess? : VoidFunction, onError? : VoidFunction) : void => {
     saleMutation.mutate(sale, {onError: onError, onSuccess: onSuccess});
   };
 
