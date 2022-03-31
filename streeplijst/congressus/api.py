@@ -97,15 +97,33 @@ class ApiBase:
                               period_filter: str = None, product_offer_id: List[str] = None, order: str = None,
                               req: Request = None) -> Response:
         """
-        Get sales for a specific user
+        Get sales for a specific user.
 
-        :param username:
-        :param invoice_status:
-        :param invoice_type:
-        :param product_offer_id:
-        :param period_filter:
-        :param order:
-        :param req: Original request.
+        :param username: Username to filter by user
+        :param invoice_status: Filter by invoice status string
+        :param invoice_type: Filter by invoice type, defaults to "webshop"
+        :param product_offer_id: Filter by product based on product_offer_id
+        :param period_filter: Filter by period, defaults to 1 year back
+        :param order: Optional order string
+        :param req: Original request (not used currently)
+        """
+        pass
+
+    @abc.abstractmethod
+    def get_sales(self, usernames: List[str] = None, member_ids: List[int] = None, invoice_status: str = None,
+                  invoice_type: str = None, period_filter: str = None, product_offer_id: List[str] = None,
+                  order: str = None, req: Request = None) -> Response:
+        """
+        Get sales with some parameters.
+
+        :param usernames: List of usernames to filter by user
+        :param member_ids: List of member IDs to filter by user
+        :param invoice_status: Filter by invoice status string
+        :param invoice_type: Filter by invoice type, defaults to "webshop"
+        :param product_offer_id: Filter by product based on product_offer_id
+        :param period_filter: Filter by period, defaults to 1 year back
+        :param order: Optional order string
+        :param req: Original request (not used currently)
         """
         pass
 
@@ -224,28 +242,33 @@ class ApiV30(ApiBase):
         else:  # Response status indicated a failure
             return res  # Return result with failure information
 
-    def get_sales_by_username(self, username: str, invoice_status: str = None, invoice_type: str = None,
-                              period_filter: str = None, product_offer_id: List[str] = None, order: str = None,
-                              req: Request = None) -> Response:
-        # message_data = {'message': f"Not supported in local API {self.version} (yet)"}
-        # return Response(data=message_data, status=status.HTTP_403_FORBIDDEN)
+    def get_sales(self, usernames: List[str] = None, member_ids: List[int] = None, invoice_status: str = None,
+                  invoice_type: str = None, period_filter: str = None, product_offer_id: List[str] = None,
+                  order: str = None, req: Request = None) -> Response:
+        if usernames:  # If usernames are given, iterate all usernames and convert them to member IDs
+            for username in usernames:
+                member_ids.append(self._member_username_to_id(username))
 
         if not invoice_type:  # If invoice type is not given, use the default
             invoice_type = self.DEFAULT_INVOICE_TYPE
+
         if not period_filter:  # If the period is not given, use the default
             curr_date = datetime.date.today()  # Get current date
             period_time = curr_date - self.DEFAULT_INVOICE_PERIOD_FILTER  # Go back default time
             period_filter = period_time.strftime("%Y-%m-%d")  # Convert to string in specific format
 
-        member_id = self._member_username_to_id(username)  # First convert the username to a member ID
-        params = {  # Store the request parameters in the format required by Congressus
-            "member_id": member_id,  # User id (not username)
+        params = dict()  # Create a parameters dict to hold all request parameters
+        if req:  # If a request was passed in, initialize params with the request data
+            params = req.query_params.copy()  # Copy the existing params to a mutable copy
+
+        params.update({  # Store additional request parameters in the format required by Congressus
+            "member_id": member_ids,  # User ids (not username)
             "invoice_status": invoice_status,  # Optional filter for invoice status
-            "invoice_type": invoice_type,  # Type of invoice TODO: Make this configurable, not hardcoded?
+            "invoice_type": invoice_type,  # Type of invoice
             "period_filter": period_filter,  # Period filter to request
             "product_offer_id": product_offer_id,  # List of items
             "order": order
-        }
+        })
 
         # Make request
         res = self._congressus_api_call_pagination(method='get',
@@ -259,11 +282,18 @@ class ApiV30(ApiBase):
         else:  # Response status indicated a failure
             return res  # Return result with failure information
 
+    def get_sales_by_username(self, username: str, invoice_status: str = None, invoice_type: str = None,
+                              period_filter: str = None, product_offer_id: List[str] = None, order: str = None,
+                              req: Request = None) -> Response:
+        member_id = self._member_username_to_id(username)  # First convert username to member ID
+        return self.get_sales(member_ids=[member_id], invoice_status=invoice_status, invoice_type=invoice_type,
+                              period_filter=period_filter, product_offer_id=product_offer_id, order=order, req=req)
+
     def post_sale(self, member_id: int, items, req: Request = None):
         payload = {  # Store the sales parameters in the format required by Congressus
             "member_id": member_id,  # User id (not username)
             "items": items,  # List of items
-            "invoice_type": "webshop"  # Type of invoice so we can filter TODO: Make this configurable, not hardcoded?
+            "invoice_type": self.DEFAULT_INVOICE_TYPE  # Type of invoice so we can filter
         }
         res = self._congressus_api_call_single(method='post',
                                                url_endpoint='/sale-invoices',
@@ -453,7 +483,7 @@ class ApiV30(ApiBase):
 
     def _strip_sales_data(self, raw_sales_data: dict) -> dict:
         keys_to_transfer = [
-            'id'  # ID of this invoice
+            'id',  # ID of this invoice
             'member_id',  # Member ID this invoice is related to
             'items',  # Array of items in this invoice
             'price_paid',  # Paid amount in euros
@@ -587,6 +617,16 @@ class ApiV20(ApiBase):
         #
         # else:  # Status indicated a failure
         #     return res
+
+    def get_sales(self, usernames: List[str] = None, member_ids: List[int] = None, invoice_status: str = None,
+                  invoice_type: str = None, period_filter: str = None, product_offer_id: List[str] = None,
+                  order: str = None, req: Request = None) -> Response:
+        # Getting sales using the API v20 is not supported (it gives unexpected results and queries don't work)
+        message_data = {
+            'message': f"This action is not supported in Congressus API {self.version}, "
+                       f"use local API {ApiV30.API_VERSION} instead."
+        }
+        return Response(data=message_data, status=status.HTTP_403_FORBIDDEN)
 
     def post_sale(self, member_id: int, items, req: Request = None):
         """

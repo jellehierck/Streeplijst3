@@ -93,7 +93,7 @@ def products(req: Request, version: str, ) -> Response:
 
 
 @api_view(['GET'])
-def products_by_folder_id(req: Request, version:str, folder_id: int) -> Response:
+def products_by_folder_id(req: Request, version: str, folder_id: int) -> Response:
     """
     Get all products in a specific folder.
 
@@ -142,18 +142,32 @@ def sales_by_username(req: Request, version: str, username: str = None) -> Respo
         return Response(data={'message': f"API version {version} not recognized"}, status=status.HTTP_404_NOT_FOUND)
 
 
-@api_view(['POST'])
+@api_view(['GET', 'POST'])
 def sales(req: Request, version: str) -> Response:
     if version == ApiV30.API_VERSION:
-        member_id = req.data['member_id']
-        items = req.data['items']
-        return api_v30_obj.post_sale(member_id=member_id, items=items, req=req)
+        if req.method == 'POST':
+            member_id = req.data['member_id']
+            items = req.data['items']
+            return api_v30_obj.post_sale(member_id=member_id, items=items, req=req)
+        elif req.method == 'GET':
+            return api_v30_obj.get_sales(req=req)
+
     if version == ApiV20.API_VERSION:
-        member_id = req.data['member_id']
-        items = req.data['items']
-        return api_v20_obj.post_sale(member_id=member_id, items=items, req=req)
+        if req.method == 'POST':
+            member_id = req.data['member_id']
+            items = req.data['items']
+            return api_v20_obj.post_sale(member_id=member_id, items=items, req=req)
+        elif req.method == 'GET':
+            return api_v20_obj.get_sales(req=req)
     else:
         return Response(data={'message': f"API version {version} not recognized"}, status=status.HTTP_404_NOT_FOUND)
+
+    return Response(
+        data={
+            'message': "Request was not recognized, likely because of a non-matching API version or an illegal request"
+                       "method (post, get, etc)"
+        },
+        status=status.HTTP_404_NOT_FOUND)
 
     # member_id = req.data['member_id']
     # # product_offer_id = req.data['product_offer_id']
