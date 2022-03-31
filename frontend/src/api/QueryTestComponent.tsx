@@ -13,7 +13,7 @@ import { useAuth } from "../components/auth/AuthContext";
 import TimedProgressBar from "../components/progress-bar/TimedProgressBar";
 
 import { LocalAPIError, SaleInvoiceType, SaleItemType, SalePostType } from "./localAPI";
-import { usePing, usePostSale } from "./localAPIHooks";
+import { usePing, usePostSale, useSalesByUsername } from "./localAPIHooks";
 
 /**
  * Test member data. This assumes a test member with the following ID and username exists on Congressus
@@ -164,47 +164,52 @@ const QueryTestComponent : React.FC<QueryTestComponentProps> = (props) => {
   //   </>
   // );
 
-  const [timeoutStopped, setTimeoutStopped] = React.useState<boolean>(false);
+  // const [timeoutStopped, setTimeoutStopped] = React.useState<boolean>(false);
+  //
+  // // Function to fire upon redirect
+  // const onRedirect = () => {
+  //   stopTimeout();
+  //   console.log("Timeout fired, redirecting...");
+  // };
+  //
+  // // Function to fire when the timeout is finished
+  // const onTimeout = () => {
+  //   console.log("Checkout timeout fired");
+  //   onRedirect();
+  // };
+  //
+  // // Function which cancels the timeout
+  // const stopTimeout = () => {
+  //   setTimeoutStopped(true);
+  // };
+  //
+  // const continueTimeout = () => {
+  //   setTimeoutStopped(false);
+  // };
+  //
+  // return <>
+  //   <Button onClick={stopTimeout}>
+  //     Stop
+  //   </Button>
+  //   <Button onClick={continueTimeout}>
+  //     Continue
+  //   </Button>
+  //   <Button onClick={onRedirect}>
+  //     Redirect
+  //   </Button>
+  //   <TimedProgressBar timeout={10000}
+  //                     onTimeout={onTimeout}
+  //                     stopped={timeoutStopped}
+  //                     variant="danger" />
+  // </>;
 
-  // Function to fire upon redirect
-  const onRedirect = () => {
-    stopTimeout();
-    console.log("Timeout fired, redirecting...");
-  };
+  const saleInvoices = useSalesByUsername(testMember.username);
 
-  // Function to fire when the timeout is finished
-  const onTimeout = () => {
-    console.log("Checkout timeout fired");
-    onRedirect();
-  };
+  if (saleInvoices.data) {
+    console.log(saleInvoices.data);
+  }
 
-  // Function which cancels the timeout
-  const stopTimeout = () => {
-    setTimeoutStopped(true);
-  };
-
-  const continueTimeout = () => {
-    setTimeoutStopped(false);
-  };
-
-  return <>
-    <Button onClick={stopTimeout}>
-      Stop
-    </Button>
-    <Button onClick={continueTimeout}>
-      Continue
-    </Button>
-    <Button onClick={onRedirect}>
-      Redirect
-    </Button>
-    <TimedProgressBar timeout={10000}
-                      onTimeout={onTimeout}
-                      stopped={timeoutStopped}
-                      variant="danger" />
-  </>;
-
-
-  // return <></>;
+  return <></>;
 };
 
 
