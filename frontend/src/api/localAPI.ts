@@ -205,7 +205,7 @@ export const postSale = (sale : SalePostType) : Promise<SaleInvoiceType> => {
   });
 };
 
-type GetSaleInvoiceFilterType = {
+export type SaleInvoiceFilterType = {
   username? : string[]
   member_id? : number[]
   invoice_status? : string
@@ -220,8 +220,8 @@ type GetSaleInvoiceFilterType = {
  * @param username Username to get the user for
  * @param filters Optional filters to pass to the request
  */
-export const getSalesByUsername = (username : string, filters? : GetSaleInvoiceFilterType) : Promise<SaleInvoiceType> => {
-  return request<SaleInvoiceType>({
+export const getSalesByUsername = (username : string, filters? : SaleInvoiceFilterType) : Promise<SaleInvoiceType[]> => {
+  return request<SaleInvoiceType[]>({
     url: "/sales/" + username,
     data: filters,
   });
@@ -231,8 +231,8 @@ export const getSalesByUsername = (username : string, filters? : GetSaleInvoiceF
  * Get sale invoices based on filters.
  * @param filters Filters to pass to the request
  */
-export const getSales = (filters : GetSaleInvoiceFilterType) : Promise<SaleInvoiceType> => {
-  return request<SaleInvoiceType>({
+export const getSales = (filters : SaleInvoiceFilterType) : Promise<SaleInvoiceType[]> => {
+  return request<SaleInvoiceType[]>({
     url: "/sales",
     data: filters,
   });
