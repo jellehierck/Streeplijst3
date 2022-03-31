@@ -1,4 +1,13 @@
-import { getFolders, getMemberById, getMemberByUsername, getProducts, ping, postSale, SaleItemType } from "./localAPI";
+import {
+  getFolders,
+  getMemberById,
+  getMemberByUsername,
+  getProducts,
+  getSalesByUsername,
+  ping,
+  postSale,
+  SaleItemType,
+} from "./localAPI";
 
 /**
  * Test member data. This assumes a test member with the following ID and username exists on Congressus
@@ -235,6 +244,36 @@ test(`if posting multiple sales of different test products for the testUser is s
           sale_invoice_id: expect.any(Number),
         }),
       ]));
+    });
+});
+
+test(`if getting the previous sales for the test user is successful`, () => {
+  return getSalesByUsername(testMember.username)
+    .then(data => {
+      expect(data).toEqual(  // Expect an object which is...
+        expect.arrayContaining([  // an array that contains...
+          expect.objectContaining({  // an object that contains the following properties
+            id: expect.any(Number),
+            created: expect.any(String),
+            modified: expect.any(String),
+            invoice_status: expect.any(String),
+            invoice_source: "api",
+            invoice_type: "webshop",
+            member_id: testMember.id,
+            price_paid: expect.any(Number),
+            price_unpaid: expect.any(Number),
+            items: expect.arrayContaining([  // an array that contains...
+              expect.objectContaining({  // an object that contains the following properties
+                name: expect.any(String),
+                price: expect.any(Number),
+                product_offer_id: expect.any(Number),
+                quantity: expect.any(Number),
+                sale_invoice_id: expect.any(Number),
+              }),
+            ]),
+          }),
+        ]),
+      );
     });
 });
 
