@@ -52,13 +52,25 @@ const QueryTestComponent : React.FC<QueryTestComponentProps> = (props) => {
       })),
     }));
 
-    console.log(saleSummaries);
+    saleSummaries.sort((a, b) => {
+      const aDate = new Date(a.date);
+      const bDate = new Date(b.date);
+      const result = bDate.getDate() - aDate.getDate();  // We want to have the highest date first, so we do b - a
+
+      // If the result is 0, the date is equal, so we need to sort by time instead
+      if (result === 0) {
+        return bDate.getTime() - aDate.getTime();
+      }
+      return result;  // Return the result of the date comparison
+    });
+
+    // console.log(saleSummaries);
 
     return <Layout headerContent={<HeaderContainer />}
                    footerContent={<TimedAlert />}>
       <ContentContainer sidebarContent={<UserInformation />}>
         <Button onClick={() => auth.login("s1779397")}>Log in</Button>
-        <SaleSummariesDropdown saleSummaries={saleSummaries} />;
+        <SaleSummariesDropdown saleSummaries={saleSummaries} />
       </ContentContainer>
     </Layout>;
 
