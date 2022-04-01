@@ -41,17 +41,17 @@ const SaleSummariesDropdown : React.FC<SaleSummariesDropdownProps> = ({
     return <Accordion.Item eventKey={saleSummary.id.toString()}>
       <Accordion.Header>
         <ButtonToolbar className="w-50">
-          <Button variant="secondary"
+          <Button variant="secondary bg-transparent"
                   className="w-50 p-1 text-start"
                   disabled>
             {saleDateString}
           </Button>
-          <Button variant="secondary"
+          <Button variant="secondary bg-transparent"
                   className="w-25 p-1 text-start"
                   disabled>
             {totalQuantityString()}
           </Button>
-          <Button variant="secondary"
+          <Button variant="secondary bg-transparent"
                   className="w-25 p-1 text-end"
                   disabled>
             Total: €{saleSummary.total_price.toFixed(2)}
@@ -66,7 +66,8 @@ const SaleSummariesDropdown : React.FC<SaleSummariesDropdownProps> = ({
 
 
   return (
-    <Accordion alwaysOpen>
+    <Accordion alwaysOpen
+               flush>
       {saleAccordionItems}
     </Accordion>
   );
