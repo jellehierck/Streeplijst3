@@ -1,5 +1,5 @@
 import React from "react";
-import { Accordion, ButtonGroup, ButtonToolbar } from "react-bootstrap";
+import { Accordion, ButtonToolbar } from "react-bootstrap";
 import Button from "react-bootstrap/Button";
 import { SaleSummaryType } from "../../api/QueryTestComponent";
 import ItemCardGrid from "../products/ItemCardGrid";
