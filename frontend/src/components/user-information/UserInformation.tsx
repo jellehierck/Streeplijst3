@@ -15,7 +15,9 @@ const UserInformation : React.FC<UserInformationProps> = (props) => {
     </>;
 
   } else {  // Return nothing if no user is logged in
-    return <></>;
+    return <p>
+      No user logged in
+    </p>;
   }
 };
 
