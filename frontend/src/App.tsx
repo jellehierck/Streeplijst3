@@ -46,11 +46,12 @@ function App() {
         <AuthContextProvider>  {/* Context provider for authentication of users */}
           <APIContextProvider> {/* Context provider for API data except for authentication */}
             <ShoppingCartContextProvider> {/* Context provider for the shopping cart */}
-              <QueryTestComponent />
 
-              {/* <BrowserRouter> /!* react-router-dom base, enables routing *!/ */}
-              {/*   <StreeplijstRoutes /> /!* The Streeplijst app, TODO: we could also add the Bierstreeplijst here *!/ */}
-              {/* </BrowserRouter> */}
+              {/* <QueryTestComponent /> */}
+
+              <BrowserRouter> {/* react-router-dom base, enables routing */}
+                <StreeplijstRoutes /> {/* The Streeplijst app, TODO: we could also add the Bierstreeplijst here */}
+              </BrowserRouter>
             </ShoppingCartContextProvider>
           </APIContextProvider>
         </AuthContextProvider>
