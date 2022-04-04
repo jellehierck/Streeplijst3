@@ -34,16 +34,18 @@ const UserInformation : React.FC<UserInformationProps> = (props) => {
           })),
         }));
 
+        // Sort dates by this custom function
         saleSummaries.sort((a, b) => {
           const aDate = new Date(a.date);
           const bDate = new Date(b.date);
-          const result = bDate.getDate() - aDate.getDate();  // We want to have the highest date first, so we do b - a
 
-          // If the result is 0, the date is equal, so we need to sort by time instead
-          if (result === 0) {
-            return bDate.getTime() - aDate.getTime();
+          if (bDate < aDate) {  // We want to have the latest dates first in the array
+            return -1;  // b is earlier than a
+          } else if (bDate === aDate) {
+            return 0;  // b and a are equal (also in time)
+          } else {
+            return 1;  // b is later than a
           }
-          return result;  // Return the result of the date comparison
         });
 
         return <SaleSummariesDropdown saleSummaries={saleSummaries} />;
