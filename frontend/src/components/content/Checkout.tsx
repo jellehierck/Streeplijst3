@@ -1,4 +1,6 @@
 import React from "react";
+import Button from "react-bootstrap/Button";
+import Stack from "react-bootstrap/Stack";
 import { useNavigate } from "react-router-dom";
 
 import { useAlert } from "../alert/AlertContext";
@@ -21,13 +23,33 @@ const Checkout : React.FC<CheckoutProps> = () => {
 
   // Function to fire when the auto logout timer expires
   const onTimeout = () => {
-    console.log("Redirecting to " + streeplijstConfig.routes.afterLogout);
+    // console.log("Redirecting to " + streeplijstConfig.routes.afterLogout);
     auth.logout();
     navigate(streeplijstConfig.routes.afterLogout);
     alert.set(autoLogoutAlert());
   };
 
-  return <ContentContainer sidebarContent={<AutoLogoutTimer onTimeout={onTimeout} />}>
+  const onBackToProducts = () => {
+    console.log("Redirecting to " + streeplijstConfig.routes.folderOverviewPage);
+    navigate(streeplijstConfig.routes.folderOverviewPage);
+  };
+
+  // Create a stack of sidebar content for the checkout page
+  const checkoutSidebarContent = () => {
+    return <Stack direction="vertical"
+                  gap={5}>
+      <div />
+      {/* Phantom component for adding more space at the top of the sidebar */}
+      <AutoLogoutTimer onTimeout={onTimeout} />
+      <Button onClick={onBackToProducts}
+              variant="success"
+              size="lg">
+        <h4 className="text-reset">Terug naar de streeplijst</h4>
+      </Button>
+    </Stack>;
+  };
+
+  return <ContentContainer sidebarContent={checkoutSidebarContent()}>
     <UserInformation />
   </ContentContainer>;
 };

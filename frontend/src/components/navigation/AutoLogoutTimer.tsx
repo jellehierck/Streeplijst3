@@ -51,9 +51,6 @@ const AutoLogoutTimer : React.FC<AutoLogoutTimerProps> = ({
             variant="outline-primary">
       Stop automatisch uitloggen
     </Button>
-    {/* <LogoutButton variant="outline-info"> */}
-    {/*   <h4 className="text-reset m-1">Nu uitloggen</h4> */}
-    {/* </LogoutButton> */}
   </Stack>;
 };
 
