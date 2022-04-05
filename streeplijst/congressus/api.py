@@ -242,12 +242,12 @@ class ApiV30(ApiBase):
         else:  # Response status indicated a failure
             return res  # Return result with failure information
 
-    def get_sales(self, usernames: List[str] = None, member_ids: List[int] = None, invoice_status: str = None,
+    def get_sales(self, username: List[str] = None, member_id: List[int] = None, invoice_status: str = None,
                   invoice_type: str = None, period_filter: str = None, product_offer_id: List[str] = None,
                   order: str = None, req: Request = None) -> Response:
-        if usernames:  # If usernames are given, iterate all usernames and convert them to member IDs
-            for username in usernames:
-                member_ids.append(self._member_username_to_id(username))
+        if username:  # If usernames are given, iterate all usernames and convert them to member IDs
+            for username in username:
+                member_id.append(self._member_username_to_id(username))
 
         if not invoice_type:  # If invoice type is not given, use the default
             invoice_type = self.DEFAULT_INVOICE_TYPE
@@ -262,7 +262,7 @@ class ApiV30(ApiBase):
             params = req.query_params.copy()  # Copy the existing params to a mutable copy
 
         params.update({  # Store additional request parameters in the format required by Congressus
-            "member_id": member_ids,  # User ids (not username)
+            "member_id": member_id,  # User ids (not username)
             "invoice_status": invoice_status,  # Optional filter for invoice status
             "invoice_type": invoice_type,  # Type of invoice
             "period_filter": period_filter,  # Period filter to request
@@ -286,7 +286,7 @@ class ApiV30(ApiBase):
                               period_filter: str = None, product_offer_id: List[str] = None, order: str = None,
                               req: Request = None) -> Response:
         member_id = self._member_username_to_id(username)  # First convert username to member ID
-        return self.get_sales(member_ids=[member_id], invoice_status=invoice_status, invoice_type=invoice_type,
+        return self.get_sales(member_id=[member_id], invoice_status=invoice_status, invoice_type=invoice_type,
                               period_filter=period_filter, product_offer_id=product_offer_id, order=order, req=req)
 
     def post_sale(self, member_id: int, items, req: Request = None):

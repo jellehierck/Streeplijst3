@@ -1,35 +1,15 @@
-import { getFolders, getMemberById, getMemberByUsername, getProducts, ping, postSale, SaleItemType } from "./localAPI";
+import {
+  getFolders,
+  getMemberById,
+  getMemberByUsername,
+  getProducts,
+  getSalesByUsername,
+  ping,
+  postSale,
+  SaleItemType,
+} from "./localAPI";
 
-/**
- * Test member data. This assumes a test member with the following ID and username exists on Congressus
- */
-const testMember = {
-  id: 347980,
-  username: "s9999999",
-};
-
-/**
- * Test folder data, this folder must contain the testProduct
- */
-const testFolder = {
-  id: 1998,
-};
-
-/**
- * Test product 1, this product must have these IDs, be in the testFolder and cost €0.00
- */
-const testProduct1 = {
-  id: 13591,
-  product_offer_id: 14839,
-};
-
-/**
- * Test product 2, this product must have these IDs, be in the testFolder and cost €0.00
- */
-const testProduct2 = {
-  id: 21151,
-  product_offer_id: 23902,
-};
+import { testMember, testFolder, testProduct1, testProduct2 } from "./localAPI.test.data";
 
 // Set the timeout to be a little longer than the standard 5000ms
 const testTimeoutMs = 15000;
@@ -210,6 +190,8 @@ test(`if posting multiple sales of different test products for the testUser is s
       // Test if all required properties are present in the response
       expect(data).toHaveProperty("id");
       expect(data).toHaveProperty("created");
+      expect(data).toHaveProperty("modified");
+      expect(data).toHaveProperty("invoice_status");
       expect(data).toHaveProperty("invoice_source", "api");  // Make sure the source is set correctly
       expect(data).toHaveProperty("invoice_type", "webshop");  // Make sure the type is set correctly
       expect(data).toHaveProperty("member_id", testMember.id);  // Make sure the member ID is correct
@@ -233,6 +215,36 @@ test(`if posting multiple sales of different test products for the testUser is s
           sale_invoice_id: expect.any(Number),
         }),
       ]));
+    });
+});
+
+test(`if getting the previous sales for the test user is successful`, () => {
+  return getSalesByUsername(testMember.username)
+    .then(data => {
+      expect(data).toEqual(  // Expect an object which is...
+        expect.arrayContaining([  // an array that contains...
+          expect.objectContaining({  // an object that contains the following properties
+            id: expect.any(Number),
+            created: expect.any(String),
+            modified: expect.any(String),
+            invoice_status: expect.any(String),
+            invoice_source: "api",
+            invoice_type: "webshop",
+            member_id: testMember.id,
+            price_paid: expect.any(Number),
+            price_unpaid: expect.any(Number),
+            items: expect.arrayContaining([  // an array that contains...
+              expect.objectContaining({  // an object that contains the following properties
+                name: expect.any(String),
+                price: expect.any(Number),
+                product_offer_id: expect.any(Number),
+                quantity: expect.any(Number),
+                sale_invoice_id: expect.any(Number),
+              }),
+            ]),
+          }),
+        ]),
+      );
     });
 });
 

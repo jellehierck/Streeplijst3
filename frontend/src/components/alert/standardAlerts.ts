@@ -1,4 +1,4 @@
-import { SaleInvoiceType, SaleType } from "../../api/localAPI";
+import { SaleInvoiceType, SalePostType } from "../../api/localAPI";
 import { AlertStateType } from "./AlertContext";
 
 /**

@@ -9,8 +9,9 @@ import {
   validationErrorAlert,
 } from "../components/alert/standardAlerts";
 import streeplijstConfig from "../streeplijst/streeplijstConfig";
-import { FolderType, LocalAPIError, ProductType, SaleInvoiceType, SaleType } from "./localAPI";
-import { useFolders, usePostSale, useProducts } from "./localAPIHooks";
+import { FolderType, LocalAPIError, ProductType, SaleInvoiceType, SalePostType } from "./localAPI";
+import { testMember } from "./localAPI.test.data";
+import { useFolders, usePostSale, useProducts, useSalesByUsername } from "./localAPIHooks";
 
 // Default time for which queried data is considered fresh and should not be fetched again (to make the app fast), since
 // data on the API changes almost never
@@ -23,23 +24,29 @@ type APIContextType = {
 
   /**
    * Select a folder so that the products in that folder are loaded.
-   * @param folderId Folder ID to get the products for
-   * @returns React-query result for the products in a folder
+   * @param {number} folderId Folder ID to get the products for
+   * @returns {UseQueryResult<ProductType[], LocalAPIError>} React-query result for the products in a folder
    */
   getProductsInFolder : (folderId : number) => UseQueryResult<ProductType[], LocalAPIError>
 
   /**
+   * Select all previous sales of a user and return a react-query response
+   * @param {string} username Username to get the sales for
+   * @returns {UseQueryResult<SaleInvoiceType[], LocalAPIError>}
+   */
+  getSalesByUsername : (username : string) => UseQueryResult<SaleInvoiceType[], LocalAPIError>
+
+  /**
    * Post a sale to the local API. On success or failure, an alert is set after which optional onSuccess or onError
    * functions are called.
-   * @param sale Sale to post
-   * @param onSuccess Function to call on mutation success, after the alert is set
-   * @param onError Function to call on mutation error, after the alert is set
-   * @returns the saleMutation object
+   * @param {SalePostType} sale Sale to post
+   * @param {VoidFunction} onSuccess Function to call on mutation success, after the alert is set
+   * @param {VoidFunction} onError Function to call on mutation error, after the alert is set
    */
-  postSaleToAPI(sale : SaleType, onSuccess? : VoidFunction, onError? : VoidFunction) : void
+  postSaleToAPI(sale : SalePostType, onSuccess? : VoidFunction, onError? : VoidFunction) : void
 
   // Sale Mutation object which has information about the mutation state
-  saleMutation : UseMutationResult<SaleInvoiceType, LocalAPIError, SaleType>
+  saleMutation : UseMutationResult<SaleInvoiceType, LocalAPIError, SalePostType>
 }
 
 // Actual context, store of the current state
@@ -53,6 +60,8 @@ const useAPI = () : APIContextType => {
 // React component
 const APIContextProvider : React.FC = (props) => {
   const alert = useAlert();
+
+  /* ---------------------- All folders ---------------------- */
 
   // Callback function to set the alert upon a failed folders request
   const onFolderError = (error : LocalAPIError) : void => {
@@ -74,6 +83,8 @@ const APIContextProvider : React.FC = (props) => {
       staleTime: defaultFreshTime,  // Default stale time (time between periodic refetching the data) is 3 hours
     },
   );
+
+  /* ---------------------- Products by folder ---------------------- */
 
   // Currently selected folder ID, 0 indicates no folder selected
   const [currFolderId, setCurrFolderId] = useState<number>(0);
@@ -119,8 +130,50 @@ const APIContextProvider : React.FC = (props) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currFolderId]);
 
+  /* ---------------------- Sale Invoices by username ---------------------- */
+
+  // Current username, used to fetch sale invoices for a specific user
+  const [currUsername, setCurrUsername] = useState<string>("");
+
+  // Callback function to set the alert upon a failed sale invoices request
+  const onSalesByUsernameError = (error : LocalAPIError, username : string) : void => {
+    switch (error.status) {  // Determine the error type
+      case 408:  // Request timeout
+        alert.set(timeoutAlert(error.toString()));  // Set alert
+        break;
+      default:// All other checks failed, this is an unexpected error so set the alert to an unknown error
+        console.log(error);
+        alert.set(unknownErrorAlert(error.toString()));
+    }
+  };
+
+  // Make the query
+  const saleInvoicesRes = useSalesByUsername(
+    currUsername,
+    {},  // No filters applied for now (could possibly change in the future?
+    {onError: onSalesByUsernameError},
+    {enabled: false},
+  );
+
+  const getSalesByUsername = (username : string) => {
+    setCurrUsername(username);
+    return saleInvoicesRes;
+  };
+
+  // Extra trick to make sure the sale invoices of a user are only refetched when currUsername is not empty. This is
+  // needed because we first need a re-render of this component with the new currUsername before react-query uses the
+  // updated currUsername value.
+  React.useEffect(() => {
+    if (currUsername !== "") {
+      saleInvoicesRes.refetch();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currUsername]);
+
+  /* ---------------------- Post sale ---------------------- */
+
   // Function to fire on a sale post error
-  const onPostError = (error : LocalAPIError, sale : SaleType) => {
+  const onPostError = (error : LocalAPIError, sale : SalePostType) => {
     switch (error.status) {  // Determine the error type
       case 400:  // Validation error
         alert.set(validationErrorAlert(error.toString()));  // Set the alert
@@ -138,7 +191,7 @@ const APIContextProvider : React.FC = (props) => {
   const saleMutation = usePostSale({onError: onPostError});
 
   // Function which will post a sale to the API
-  const postSaleToAPI = (sale : SaleType, onSuccess? : VoidFunction, onError? : VoidFunction) : void => {
+  const postSaleToAPI = (sale : SalePostType, onSuccess? : VoidFunction, onError? : VoidFunction) : void => {
     saleMutation.mutate(sale, {onError: onError, onSuccess: onSuccess});
   };
 
@@ -146,6 +199,7 @@ const APIContextProvider : React.FC = (props) => {
     <APIContext.Provider value={{
       folderRes: folderRes,
       getProductsInFolder: getProductsInFolder,
+      getSalesByUsername: getSalesByUsername,
       postSaleToAPI: postSaleToAPI,
       saleMutation: saleMutation,
     }}>

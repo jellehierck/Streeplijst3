@@ -37,12 +37,13 @@ const TimedProgressBar : React.FC<TimedProgressBarProps> = ({
   const [intervalDelay, setIntervalDelay] = React.useState<number | null>(delay);
 
   // Function which fires after one interval delay
-  const afterDelay = () => {
+  const onIntervalFire = () => {
     if (timeLeft - delay >= 0) {  // Decrement the time left when it is not below 0 yet
       setTimeLeft(timeLeft - delay);
 
     } else {  // Stop the interval when the time left is 0 or lower and call the onTimeout function if it is passed
-      setIntervalDelay(null);
+      setIntervalDelay(null); // Disable the delay
+
       if (onTimeout) {  // If onTimeout is passed, call it
         onTimeout();
       }
@@ -50,16 +51,10 @@ const TimedProgressBar : React.FC<TimedProgressBarProps> = ({
   };
 
   // Set the interval
-  useInterval(afterDelay, intervalDelay);
-
-  // Use an effect to handle updates to the stopped or delay properties
-  React.useEffect(() => {
-    if (stopped) {
-      setIntervalDelay(null);
-    } else {
-      setIntervalDelay(delay);
-    }
-  }, [delay, stopped]);
+  useInterval(
+    onIntervalFire,
+    stopped ? null : intervalDelay,
+  );
 
   // Label to display the amount of seconds left
   const displayLabel = () => {

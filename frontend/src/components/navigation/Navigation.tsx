@@ -68,7 +68,7 @@ const Navigation : React.FC<NavigationProps> = ({
       <Button onClick={() => navigate(-1)}
               variant="outline-primary"
               {...buttonProps}>
-        Back
+        Terug
       </Button>
 
       {/* Breadcrumbs */}

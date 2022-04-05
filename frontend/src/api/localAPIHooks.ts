@@ -1,15 +1,19 @@
 import { useMutation, useQuery } from "react-query";
 import { UseMutationOptions, UseQueryOptions } from "react-query/types/react/types";
 import {
-  FolderType, getFolders,
-  getMemberByUsername, getProducts,
+  FolderType,
+  getFolders,
+  getMemberByUsername,
+  getProducts,
   LocalAPIError,
   MemberType,
   ping,
   PingType,
-  postSale, ProductType,
+  postSale,
+  ProductType,
   SaleInvoiceType,
-  SaleType,
+  SalePostType,
+  getSalesByUsername, SaleInvoiceFilterType,
 } from "./localAPI";
 
 // Default configuration for React Query useQuery hook
@@ -182,36 +186,42 @@ export const useProducts = (
   return useQuery<ProductType[], LocalAPIError>(["products", {folder: folderId}], () => getProducts(folderId), options);
 };
 
-export type SaleQueryCallbacks = {
+export type SalePostQueryCallbacks = {
   /**
    * Called on post success
    * @param {SaleInvoiceType} responseData Server response
-   * @param {SaleType} sale Sale which was posted
+   * @param {SalePostType} sale Sale which was posted
    */
-  onSuccess? : (responseData : SaleInvoiceType, sale : SaleType) => void,
+  onSuccess? : (responseData : SaleInvoiceType, sale : SalePostType) => void,
 
   /**
    * Called on post failure
    * @param {LocalAPIError} error Returned error object
-   * @param {SaleType} sale Sale which was attempted to post
+   * @param {SalePostType} sale Sale which was attempted to post
    */
-  onError? : (error : LocalAPIError, sale : SaleType) => void,
+  onError? : (error : LocalAPIError, sale : SalePostType) => void,
 }
 
+/**
+ * Post a sale to the congressus API, returns a Mutation object with which a sale can actually be posted using the
+ * .mutate(sale) method.
+ * @param callbacks Callbacks to call on query success or failure
+ * @param options Optional extra options to pass to the query
+ */
 export const usePostSale = (
-  callbacks? : SaleQueryCallbacks,
-  options? : Omit<UseMutationOptions<SaleInvoiceType, LocalAPIError, SaleType>, "mutationKey" | "mutationFn">,
+  callbacks? : SalePostQueryCallbacks,
+  options? : Omit<UseMutationOptions<SaleInvoiceType, LocalAPIError, SalePostType>, "mutationKey" | "mutationFn">,
 ) => {
 
   // Function to pass to the useQuery hook which calls the argument onError function if it is given
-  const onQueryError = (err : LocalAPIError, sale : SaleType) => {
+  const onQueryError = (err : LocalAPIError, sale : SalePostType) => {
     if (callbacks?.onError) {
       callbacks.onError(err, sale);
     }
   };
 
   // Function to pass to the useQuery hook which calls the argument onError function if it is given
-  const onQuerySuccess = (data : SaleInvoiceType, sale : SaleType) => {
+  const onQuerySuccess = (data : SaleInvoiceType, sale : SalePostType) => {
     if (callbacks?.onSuccess) {
       callbacks.onSuccess(data, sale);
     }
@@ -225,5 +235,63 @@ export const usePostSale = (
     ...options,  // Add additional options specified in the function arguments, overriding the defaults if needed
   };
 
-  return useMutation<SaleInvoiceType, LocalAPIError, SaleType>(postSale, options);
+  return useMutation<SaleInvoiceType, LocalAPIError, SalePostType>(postSale, options);
+};
+
+// Callbacks to call upon successful or failed query for all folders from the Congressus API
+export type SaleInvoiceQueryCallbacks = {
+  /**
+   * Called on query success
+   * @param {SaleInvoiceType[]} responseData Queried sale invoice data
+   * @param {string} username Username for which the query was called
+   */
+  onSuccess? : (responseData : SaleInvoiceType[], username : string) => void,
+
+  /**
+   * Called on query failure
+   * @param {LocalAPIError} error Returned error object
+   * @param {string} username Username for which the query was called
+   */
+  onError? : (error : LocalAPIError, username : string) => void,
+}
+
+/**
+ * Get sales posted by a user in the past, optionally filtered
+ * @param {string} username The user to retrieve sales for
+ * @param {SaleInvoiceFilterType} filters Optional sale invoice filters to pass to the query
+ * @param callbacks Callbacks to call on query success or failure
+ * @param options Optional extra options to pass to the query
+ */
+export const useSalesByUsername = (
+  username : string,
+  filters? : SaleInvoiceFilterType,
+  callbacks? : SaleInvoiceQueryCallbacks,
+  options? : Omit<UseQueryOptions<SaleInvoiceType[], LocalAPIError>, "queryKey" | "queryFn">,
+) => {
+  // Function to pass to the useQuery hook which calls the argument onError function if it is given
+  const onQueryError = (err : LocalAPIError) => {
+    if (callbacks?.onError) {
+      callbacks.onError(err, username);
+    }
+  };
+
+  // Function to pass to the useQuery hook which calls the argument onError function if it is given
+  const onQuerySuccess = (data : SaleInvoiceType[]) => {
+    if (callbacks?.onSuccess) {
+      callbacks.onSuccess(data, username);
+    }
+  };
+
+  // Set options by taking the default and overriding if needed
+  options = {
+    ...defaultQueryConfig,  // First apply the default configuration
+    onError: onQueryError,  // Pass functions to be called on query error or success
+    onSuccess: onQuerySuccess,
+    ...options,  // Add additional options specified in the function arguments, overriding the defaults if needed
+  };
+
+  return useQuery<SaleInvoiceType[], LocalAPIError>(
+    ["sales", {username: username}],
+    () => getSalesByUsername(username, filters), options,
+  );
 };

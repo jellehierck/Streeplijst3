@@ -83,6 +83,7 @@ export const routeConfig = {
 const streeplijstConfig = {
   // Configuration of routes (where to go after certain actions
   routes: {
+    ...routeConfig,  // Unpack all routes also
     startPage: routeConfig.loginPage,  // Initial page to load
     afterLogout: routeConfig.loginPage,  // Page to go to after logout
     afterLogin: routeConfig.folderOverviewPage,  // Page to go to after login

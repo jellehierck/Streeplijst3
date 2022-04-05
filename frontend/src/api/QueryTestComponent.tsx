@@ -1,213 +1,151 @@
 import React from "react";
 import { Button } from "react-bootstrap";
-import { useAlert } from "../components/alert/AlertContext";
-import {
-  saleSuccessfulAlert,
-  timeoutAlert,
-  unknownErrorAlert,
-  usernameNotFoundAlert,
-  validationErrorAlert,
-} from "../components/alert/standardAlerts";
-
+import { Router as BrowserRouter, Routes } from "react-router-dom";
+import TimedAlert from "../components/alert/TimedAlert";
 import { useAuth } from "../components/auth/AuthContext";
-import TimedProgressBar from "../components/progress-bar/TimedProgressBar";
+import Checkout from "../components/content/Checkout";
+import ContentContainer from "../components/layout/ContentContainer";
+import HeaderContainer from "../components/layout/HeaderContainer";
+import Layout from "../components/layout/Layout";
+import SaleSummariesDropdown from "../components/user-information/SaleSummariesDropdown";
+import UserInformation from "../components/user-information/UserInformation";
+import StreeplijstHeader from "../streeplijst/StreeplijstHeader";
+import { useAPI } from "./APIContext";
 
-import { LocalAPIError, SaleInvoiceType, SaleItemType, SaleType } from "./localAPI";
-import { usePing, usePostSale } from "./localAPIHooks";
+import { useSalesByUsername } from "./localAPIHooks";
 
-/**
- * Test member data. This assumes a test member with the following ID and username exists on Congressus
- */
-const testMember = {
-  id: 347980,
-  username: "s9999999",
-};
+import { testMember, testProduct1, testProduct2 } from "./localAPI.test.data";
 
-/**
- * Test product 1, this product must have these IDs, be in the testFolder and cost €0.00
- */
-const testProduct1 = {
-  id: 13591,
-  product_offer_id: 14839,
-};
+export type ProductSummaryType = {
+  sale_invoice_id : number
+  name : string
+  price : number
+  quantity : number
+  media? : string
+}
 
-/**
- * Test product 2, this product must have these IDs, be in the testFolder and cost €0.00
- */
-const testProduct2 = {
-  id: 21151,
-  product_offer_id: 23902,
-};
+export type SaleSummaryType = {
+  products : ProductSummaryType[]
+  date : string
+  total_price : number
+  id : number
+}
 
 type QueryTestComponentProps = {}
 
 // React component
 const QueryTestComponent : React.FC<QueryTestComponentProps> = (props) => {
   // const auth = useAuth();
-  // const alert = useAlert();
+  // const saleInvoices = useSalesByUsername(testMember.username);
   //
-  // // Logging in a user
-  // const login = (username : string) : void => {
-  //   console.log(`Attempt login for ${username}`);
+  // if (saleInvoices.data) {
   //
-  //   // Try to log in the user using the AuthContext
-  //   auth.login(username);
-  // };
+  //   // Extract a summary of the sale invoice data from the API
+  //   const saleSummaries : SaleSummaryType[] = saleInvoices.data.map(sale => ({
+  //     id: sale.id,
+  //     date: sale.created,
+  //     total_price: sale.price_paid + sale.price_paid,
+  //     products: sale.items.map(item => ({
+  //       sale_invoice_id: item.sale_invoice_id,
+  //       name: item.name,
+  //       price: item.price,
+  //       quantity: item.quantity,
+  //       media: "",  // TODO: add media here?
+  //     })),
+  //   }));
   //
-  // const memberDisplay = () => {
-  //   if (auth.loggedInMember) {
-  //     // console.log(`Login successful, redirection to ${props.afterLogin}`);
-  //     return <span>Logged in user: {auth.loggedInMember.username}</span>;
-  //   }
-  // };
+  //   saleSummaries.sort((a, b) => {
+  //     const aDate = new Date(a.date);
+  //     const bDate = new Date(b.date);
+  //     const result = bDate.getDate() - aDate.getDate();  // We want to have the highest date first, so we do b - a
   //
-  // const pingRes = usePing();
+  //     // If the result is 0, the date is equal, so we need to sort by time instead
+  //     if (result === 0) {
+  //       return bDate.getTime() - aDate.getTime();
+  //     }
+  //     return result;  // Return the result of the date comparison
+  //   });
   //
-  // const pingDisplay = () => {
-  //   if (pingRes.isLoading) {
-  //     return <span>Loading...</span>;
-  //   }
+  //   return <Layout headerContent={<HeaderContainer />}
+  //                  footerContent={<TimedAlert />}>
+  //     <ContentContainer sidebarContent={<UserInformation />}>
+  //       <Button onClick={() => auth.login("s1779397")}>Log in</Button>
+  //       <SaleSummariesDropdown saleSummaries={saleSummaries} />
+  //     </ContentContainer>
+  //   </Layout>;
   //
-  //   if (pingRes.data) {
-  //     return <span>Ping: {pingRes.data.message}</span>;
-  //   }
+  // }
   //
-  //   if (pingRes.error) {
-  //     return <span>Error: {pingRes.error.message}</span>;
-  //   }
-  // };
-  //
-  // // Array of test sale items containing a single testProduct
-  // const multipleTestSaleItems : SaleItemType[] = [
-  //   {
-  //     product_offer_id: testProduct1.product_offer_id,
-  //     quantity: 2,
-  //   },
-  //   {
-  //     product_offer_id: testProduct2.product_offer_id,
-  //     quantity: 1,
-  //   },
-  // ];
-  //
-  // const onPostSuccess = (dataResponse : SaleInvoiceType, sale : SaleType) => {
-  //   // console.log("Post success!");
-  //   // console.log(dataResponse);
-  //   alert.set(saleSuccessfulAlert());  // Set the alert
-  // };
-  //
-  // const onPostError = (error : LocalAPIError, sale : SaleType) => {
-  //   // console.log("Post failure!");
-  //   // console.log(error.message);
-  //
-  //   switch (error.status) {  // Determine the error type
-  //     case 400:  // Validation error
-  //       alert.set(validationErrorAlert(error.toString()));  // Set the alert
-  //       return;
-  //     case 408:  // Request timeout
-  //       alert.set(timeoutAlert(error.toString()));  // Set alert
-  //   }
-  //
-  // };
-  //
-  // const saleMutation = usePostSale({onError: onPostError, onSuccess: onPostSuccess});
-  //
-  // // Post a sale to the local API with the currently logged in member
-  // const onPostButtonClick = () => {
-  //   if (auth.loggedInMember) {  // Only attempt this if a user is logged in
-  //     saleMutation.mutate({  // Post the sale by performing the mutation
-  //       // member_id: 0,
-  //       member_id: auth.loggedInMember.id,
-  //       items: multipleTestSaleItems,
-  //     });
-  //   } else {  // A post was attempted without a logged in user, this should never happen
-  //     console.error("Post button clicked without a logged in user");
-  //     alert.set({
-  //       display: {
-  //         heading: "Post attempted without logged in user",
-  //         message: "Please report this.",
-  //         variant: "danger",
-  //       },
-  //       timeout: 10000,
-  //     });
-  //   }
-  // };
-
-  // return (
-  //   <>
-  //     {pingDisplay()}
-  //     <hr />
-  //
-  //     <Button variant="primary"
-  //             onClick={() => login("s0000000")}>
-  //       Foute login
-  //     </Button>
-  //     <Button variant="primary"
-  //             onClick={() => login("s1779397")}>
-  //       goede login
-  //     </Button>
-  //     <Button variant="primary"
-  //             onClick={() => login("s9999999")}>
-  //       goede login 2
-  //     </Button>
-  //
-  //     <Button variant="primary"
-  //             onClick={() => auth.logout()}>
-  //       logout
-  //     </Button>
-  //     {memberDisplay()}
-  //     <hr />
-  //
-  //     <Button variant="primary"
-  //             onClick={onPostButtonClick}>
-  //       post sales
-  //     </Button>
-  //   </>
-  // );
-
-  const [timeoutStopped, setTimeoutStopped] = React.useState<boolean>(false);
-
-  // Function to fire upon redirect
-  const onRedirect = () => {
-    stopTimeout();
-    console.log("Timeout fired, redirecting...");
-  };
-
-  // Function to fire when the timeout is finished
-  const onTimeout = () => {
-    console.log("Checkout timeout fired");
-    onRedirect();
-  };
-
-  // Function which cancels the timeout
-  const stopTimeout = () => {
-    setTimeoutStopped(true);
-  };
-
-  const continueTimeout = () => {
-    setTimeoutStopped(false);
-  };
-
-  return <>
-    <Button onClick={stopTimeout}>
-      Stop
-    </Button>
-    <Button onClick={continueTimeout}>
-      Continue
-    </Button>
-    <Button onClick={onRedirect}>
-      Redirect
-    </Button>
-    <TimedProgressBar timeout={10000}
-                      onTimeout={onTimeout}
-                      stopped={timeoutStopped}
-                      variant="danger" />
-  </>;
-
-
   // return <></>;
+
+  // const auth = useAuth();
+  // const api = useAPI();
+  //
+  // if (auth.loggedInMember) { // If the user is logged in,
+  //   const salesByUsernameRes = api.getSalesByUsername(auth.loggedInMember.username);
+  //
+  //   const salesDisplay = () => {
+  //     if (salesByUsernameRes.data) {  // If the response is ready
+  //       // Extract a summary of the sale invoice data from the API
+  //       const saleSummaries : SaleSummaryType[] = salesByUsernameRes.data.map(sale => ({
+  //         id: sale.id,
+  //         date: sale.created,
+  //         total_price: sale.price_paid + sale.price_paid,
+  //         products: sale.items.map(item => ({
+  //           sale_invoice_id: item.sale_invoice_id,
+  //           name: item.name,
+  //           price: item.price,
+  //           quantity: item.quantity,
+  //           media: "",  // TODO: add media here?
+  //         })),
+  //       }));
+  //
+  //       saleSummaries.sort((a, b) => {
+  //         const aDate = new Date(a.date);
+  //         const bDate = new Date(b.date);
+  //         const result = bDate.getDate() - aDate.getDate();  // We want to have the latest date first, so we do b - a
+  //
+  //         // If the result is 0, the date is equal, so we need to sort by time instead
+  //         if (result === 0) {
+  //           return bDate.getTime() - aDate.getTime();
+  //         }
+  //         return result;  // Return the result of the date comparison
+  //       });
+  //
+  //       return <SaleSummariesDropdown saleSummaries={saleSummaries} />;
+  //     } else if (salesByUsernameRes.isLoading) {  // If the response is still loading
+  //       return <p>Sales loading...</p>;
+  //     } else {  // Something has gone wrong
+  //       return <>
+  //         <p>Could not get previously bought items</p>;
+  //         <Button onClick={() => salesByUsernameRes.refetch()}>Try again</Button>
+  //       </>;
+  //     }
+  //   };
+  //
+  //   return <>
+  //     <Button onClick={() => auth.logout()}>Log uit</Button>
+  //     <h1>Hallo {auth.loggedInMember.first_name}!</h1>
+  //     {salesDisplay()}
+  //   </>;
+  //
+  // } else {  // Return nothing if no user is logged in
+  //   return <>
+  //     <Button onClick={() => auth.login("s1779397")}>Log in</Button>
+  //     <p> No user logged in </p>
+  //   </>;
+  // }
+
+  const auth = useAuth();
+  return <ContentContainer sidebarContent={<Checkout />}>
+    <>
+      <Button onClick={() => auth.login("s1779397")}>Log in</Button>
+      <Button onClick={() => auth.logout()}>Log uit</Button>
+      <UserInformation />
+    </>
+  </ContentContainer>;
 };
 
 
 // Exports
 export default QueryTestComponent;
-;

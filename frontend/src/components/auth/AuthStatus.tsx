@@ -23,7 +23,7 @@ const AuthStatus : React.FC<AuthStatusType> = (props) => {
       </p>
     );
   }
-}
+};
 
 
 // Exports
