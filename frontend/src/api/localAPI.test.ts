@@ -45,6 +45,24 @@ test(`if member with username ${testMember.username} can be retrieved`, () => {
     });
 });
 
+test(`if member with upper case username ${testMember.username.toUpperCase()} can be retrieved`, () => {
+  return getMemberByUsername(testMember.username.toUpperCase())
+    .then(data => {  // Wait for the Promise to resolve
+      // Test if all required properties are present in the response
+      expect(data).toHaveProperty("id");
+      expect(data).toHaveProperty("username", testMember.username);
+      expect(data).toHaveProperty("first_name");
+      expect(data).toHaveProperty("last_name");
+      expect(data).toHaveProperty("prefix");
+      expect(data).toHaveProperty("suffix");
+      expect(data).toHaveProperty("date_of_birth");
+      expect(data).toHaveProperty("show_almanac");
+      expect(data).toHaveProperty("status");
+      // expect(data).toHaveProperty("profile_picture");  // Removed from Congressus so not used anymore
+      expect(data).toHaveProperty("bank_account");
+    });
+});
+
 const nonexistentMemberUsername = "s0000000";
 test(`if nonexistent member with username ${nonexistentMemberUsername} throws an error`, () => {
   return expect(getMemberByUsername(nonexistentMemberUsername)).rejects.toMatchObject({status: 404});

@@ -432,9 +432,11 @@ class ApiV30(ApiBase):
                                                    url_endpoint='/members/search',
                                                    query_params={'term': username})  # Add a search term
         if status.is_success(res.status_code):  # Request is ok
-            # /search likely returns more than one member, select only the member with the correct username
+            # /search likely returns more than one member, select only the member with the correct username. We convert
+            # username to lowercase first to make sure the case does not matter
             # Source: https://stackoverflow.com/a/7079297
-            correct_member = next((member for member in res.data if member['username'] == username), None)
+            correct_member = next((member for member in res.data if member['username'].lower() == username.lower()),
+                                  None)
             if correct_member:  # An exact match for the username was found
                 # A call to /search gives a simplified user overview, we need to request all user data and return that
                 return correct_member['id']
