@@ -54,7 +54,7 @@ const SaleSummariesDropdown : React.FC<SaleSummariesDropdownProps> = ({
           <Button variant="secondary bg-transparent"
                   className="w-25 p-1 text-end"
                   disabled>
-            Total: €{saleSummary.total_price.toFixed(2)}
+            €{saleSummary.total_price.toFixed(2)}
           </Button>
         </ButtonToolbar>
       </Accordion.Header>
