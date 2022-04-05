@@ -50,7 +50,7 @@ const UserInformation : React.FC<UserInformationProps> = (props) => {
         const saleSummaries : SaleSummaryType[] = salesByUsernameRes.data.map(sale => ({
           id: sale.id,
           date: sale.created,
-          total_price: sale.price_paid + sale.price_paid,
+          total_price: sale.price_paid + sale.price_unpaid,
           products: sale.items.map(item => ({
             sale_invoice_id: item.sale_invoice_id,
             name: item.name,
