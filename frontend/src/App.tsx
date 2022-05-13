@@ -1,7 +1,9 @@
 import React from "react";
 
 import { QueryClient, QueryClientProvider } from "react-query";
+import { createWebStoragePersistor } from "react-query/createWebStoragePersistor-experimental";
 import { ReactQueryDevtools } from "react-query/devtools";
+import { persistQueryClient } from "react-query/persistQueryClient-experimental";
 import { BrowserRouter } from "react-router-dom";
 import { APIContextProvider } from "./api/APIContext";
 
@@ -36,7 +38,24 @@ library.add(  // Solid icons
   faPaperPlane,
 );
 
-const queryClient = new QueryClient();
+const defaultOfflineCacheTime = 1000 * 60 * 60 * 24 * 30;  // Default offline storage time (30 days)
+
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      cacheTime: defaultOfflineCacheTime,
+    },
+  },
+});
+
+// Store offline cache in local window (browser)
+const localStoragePersistor = createWebStoragePersistor({storage: window.localStorage});
+
+// Persist the query client in the local window
+persistQueryClient({
+  queryClient: queryClient,
+  persistor: localStoragePersistor,
+});
 
 function App() {
 
