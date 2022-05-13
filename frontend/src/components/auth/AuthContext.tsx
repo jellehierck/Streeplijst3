@@ -4,8 +4,8 @@
  */
 import React, { createContext, useContext, useEffect } from "react";
 import { UseQueryResult } from "react-query";
-import { FolderType, LocalAPIError, MemberType } from "../../api/localAPI";
-import { useFolders, useMemberByUsername } from "../../api/localAPIHooks";
+import { LocalAPIError, MemberType } from "../../api/localAPI";
+import { useMemberByUsername } from "../../api/localAPIHooks";
 import { useAlert } from "../alert/AlertContext";
 import { timeoutAlert, unknownErrorAlert, usernameNotFoundAlert } from "../alert/standardAlerts";
 
@@ -82,8 +82,8 @@ export const AuthContextProvider : React.FC = (props) => {
     },
     {
       enabled: false, // Do not call this query by default, instead call it with refetch (to use with buttons)
-      staleTime: 0,
-      cacheTime: 0,
+      // staleTime: 0,
+      // cacheTime: 0,
     },
   );
 
