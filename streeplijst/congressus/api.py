@@ -343,7 +343,8 @@ class ApiV30(ApiBase):
                 return Response(data=curr_res_data,  # Return the current response data
                                 status=curr_res.status_code,  # Copy the status code
                                 )
-            except requests.exceptions.Timeout:  # If the request timed out
+            except (requests.exceptions.Timeout,
+                    requests.exceptions.ConnectionError):  # If the request timed out or no connection could be made, try again
                 retries += 1  # Increment the number of retries
 
         # If the number of retries is exceeded, return a response with an error code
@@ -420,7 +421,8 @@ class ApiV30(ApiBase):
                     retries = 0  # Reset number of retries
                     curr_page += 1  # Increment the current page
 
-            except requests.exceptions.Timeout:  # If the request timed out, return an error
+            except (requests.exceptions.Timeout,
+                    requests.exceptions.ConnectionError):  # If the request timed out or no connection could be made, try again
                 retries += 1  # Increment number of retries
 
         # If the while loop is exited, at some point there were too many timeouts and an error should be returned
