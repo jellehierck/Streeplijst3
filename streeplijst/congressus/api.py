@@ -1,7 +1,7 @@
 import abc  # Abstract Base Class package
 import datetime
 import os
-from typing import Dict, List
+from typing import Dict, List, Tuple
 
 import requests
 from rest_framework import status
@@ -114,7 +114,8 @@ class ApiBase:
                   invoice_type: str = None, period_filter: str = None, product_offer_id: List[str] = None,
                   order: str = None, req: Request = None) -> Response:
         """
-        Get sales with some parameters.
+        Get sales with some parameters. If a user is searched by username but is not found, sales will not be obtained
+        for that user.
 
         :param usernames: List of usernames to filter by user
         :param member_ids: List of member IDs to filter by user
@@ -137,10 +138,10 @@ class ApiBase:
         pass
 
     @abc.abstractmethod
-    def _member_username_to_id(self, username: str) -> int:
+    def _member_username_to_id(self, username: str) -> Tuple[int, Response]:
         """
         Convert a member username to a member id by searching for the member username on Congressus API. Returns 0 if
-        the username could not be found.
+        the username could not be found. Always returns the raw Response too.
         """
         pass
 
@@ -207,10 +208,9 @@ class ApiV30(ApiBase):
             return res
 
     def get_member_by_username(self, username: str, req: Request = None) -> Response:
-        member_id = self._member_username_to_id(username=username)  # Get member ID
+        member_id, member_id_res = self._member_username_to_id(username=username)  # Get member ID
         if member_id == 0:  # No user was found
-            error_data = {'message': f"No user found for {username}"}
-            return Response(data=error_data, status=status.HTTP_404_NOT_FOUND)
+            return member_id_res  # Return the response message
 
         else:  # A user was found, get details of that user
             return self.get_member_by_id(id=member_id, req=req)
@@ -242,12 +242,14 @@ class ApiV30(ApiBase):
         else:  # Response status indicated a failure
             return res  # Return result with failure information
 
-    def get_sales(self, username: List[str] = None, member_id: List[int] = None, invoice_status: str = None,
+    def get_sales(self, usernames: List[str] = None, member_ids: List[int] = None, invoice_status: str = None,
                   invoice_type: str = None, period_filter: str = None, product_offer_id: List[str] = None,
                   order: str = None, req: Request = None) -> Response:
-        if username:  # If usernames are given, iterate all usernames and convert them to member IDs
-            for username in username:
-                member_id.append(self._member_username_to_id(username))
+        if usernames:  # If usernames are given, iterate all usernames and convert them to member IDs
+            for username in usernames:
+                id, _ = self._member_username_to_id(username)  # Get user ID from username
+                if id != 0:  # If the username search did not yield a user ID (ID is set to zero), ignore it
+                    member_ids.append(id)
 
         if not invoice_type:  # If invoice type is not given, use the default
             invoice_type = self.DEFAULT_INVOICE_TYPE
@@ -262,7 +264,7 @@ class ApiV30(ApiBase):
             params = req.query_params.copy()  # Copy the existing params to a mutable copy
 
         params.update({  # Store additional request parameters in the format required by Congressus
-            "member_id": member_id,  # User ids (not username)
+            "member_id": member_ids,  # User ids (not usernames)
             "invoice_status": invoice_status,  # Optional filter for invoice status
             "invoice_type": invoice_type,  # Type of invoice
             "period_filter": period_filter,  # Period filter to request
@@ -285,8 +287,9 @@ class ApiV30(ApiBase):
     def get_sales_by_username(self, username: str, invoice_status: str = None, invoice_type: str = None,
                               period_filter: str = None, product_offer_id: List[str] = None, order: str = None,
                               req: Request = None) -> Response:
-        member_id = self._member_username_to_id(username)  # First convert username to member ID
-        return self.get_sales(member_id=[member_id], invoice_status=invoice_status, invoice_type=invoice_type,
+        member_id, member_id_res = self._member_username_to_id(username)  # First convert username to member ID
+
+        return self.get_sales(member_ids=[member_id], invoice_status=invoice_status, invoice_type=invoice_type,
                               period_filter=period_filter, product_offer_id=product_offer_id, order=order, req=req)
 
     def post_sale(self, member_id: int, items, req: Request = None):
@@ -343,7 +346,8 @@ class ApiV30(ApiBase):
                 return Response(data=curr_res_data,  # Return the current response data
                                 status=curr_res.status_code,  # Copy the status code
                                 )
-            except requests.exceptions.Timeout:  # If the request timed out
+            except (requests.exceptions.Timeout,
+                    requests.exceptions.ConnectionError):  # If the request timed out or no connection could be made, try again
                 retries += 1  # Increment the number of retries
 
         # If the number of retries is exceeded, return a response with an error code
@@ -420,13 +424,14 @@ class ApiV30(ApiBase):
                     retries = 0  # Reset number of retries
                     curr_page += 1  # Increment the current page
 
-            except requests.exceptions.Timeout:  # If the request timed out, return an error
+            except (requests.exceptions.Timeout,
+                    requests.exceptions.ConnectionError):  # If the request timed out or no connection could be made, try again
                 retries += 1  # Increment number of retries
 
         # If the while loop is exited, at some point there were too many timeouts and an error should be returned
         return Response(data={"error": "Request timeout"}, status=status.HTTP_408_REQUEST_TIMEOUT)
 
-    def _member_username_to_id(self, username: str) -> int:
+    def _member_username_to_id(self, username: str) -> Tuple[int, Response]:
         # Make API call with pagination as we have to perform a search
         res = self._congressus_api_call_pagination(method='get',
                                                    url_endpoint='/members/search',
@@ -439,13 +444,14 @@ class ApiV30(ApiBase):
                                   None)
             if correct_member:  # An exact match for the username was found
                 # A call to /search gives a simplified user overview, we need to request all user data and return that
-                return correct_member['id']
+                return correct_member['id'], res
 
-            else:  # No exact match for the username was found, return an error
-                return 0
+            else:  # No exact match for the username was found
+                error_data = {'message': f"No user found for {username}"}
+                return 0, Response(data=error_data, status=status.HTTP_404_NOT_FOUND)
 
-        else:  # Response status indicated a failure
-            return 0  # Return result with failure information
+        # Response status indicated a failure
+        return 0, res  # Return result with failure information
 
     def _strip_member_data(self, raw_member_data: dict) -> dict:
         keys_to_transfer = [
