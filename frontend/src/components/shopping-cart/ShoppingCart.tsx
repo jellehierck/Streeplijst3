@@ -23,6 +23,14 @@ const ShoppingCart : React.FC<CartProps> = () => {
   const api = useAPI();
   const navigate = useNavigate();
 
+  // Empty the cart context whenever the shopping cart is unmounted
+  React.useEffect(() => {
+    // Do nothing except returning a cleanup function which is run when the component unmounts
+    return () => {
+      cart.empty();  // Remove all components from the cart
+    };
+  }, [auth.isLoggedIn]);
+
   // Store boolean to indicate whether the cart is currently empty
   const cartEmpty = cart.items.length === 0;
 
