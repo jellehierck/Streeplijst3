@@ -9,6 +9,7 @@ import LocalAPIRequestButton from "../../api/LocalAPIRequestButton";
 import { SaleSummaryType } from "../../api/QueryTestComponent";
 
 import { useAuth } from "../auth/AuthContext";
+import SaleStatistics from "./SaleStatistics";
 import SaleSummariesDropdown from "./SaleSummariesDropdown";
 
 type UserInformationProps = {}
@@ -74,7 +75,10 @@ const UserInformation : React.FC<UserInformationProps> = (props) => {
           }
         });
 
-        return <SaleSummariesDropdown saleSummaries={saleSummaries} />;
+        return <>
+          <SaleStatistics saleSummaries={saleSummaries} />
+          <SaleSummariesDropdown saleSummaries={saleSummaries} />
+        </>;
 
 
       } else if (salesByUsernameRes.isLoading) {  // If the response is still loading
