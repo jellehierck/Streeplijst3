@@ -17,11 +17,14 @@ type StatisticsType = {
   lastBought : Date
 }
 
-enum SortByType {
-  Price,
-  Quantity,
-  Recent,
+// Possible sort types
+enum SortMethod {
+  Price = "Price",
+  Quantity = "Quantity",
+  Recent = "Recent"
 }
+
+// type SortMethodType = "price" | "quantity" | "recent";
 
 // React component
 const SaleStatistics : React.FC<SaleStatisticsProps> = (
@@ -31,7 +34,7 @@ const SaleStatistics : React.FC<SaleStatisticsProps> = (
   console.log(saleSummaries);
 
   // Sort by descending (high to low)
-  const [descending, setDescending] = React.useState(true);
+  const [descending, setDescending] = React.useState<boolean>(true);
 
   /**
    * Toggle between descending and ascending
@@ -41,7 +44,7 @@ const SaleStatistics : React.FC<SaleStatisticsProps> = (
   };
 
   // Sort method, null is default sort
-  const [sortMethod, setSortMethod] = React.useState<SortByType | null>(null);
+  const [sortMethod, setSortMethod] = React.useState<keyof typeof SortMethod | string>("");
 
   /**
    * Sort statistics by total price
@@ -115,19 +118,16 @@ const SaleStatistics : React.FC<SaleStatisticsProps> = (
     const statisticsArray = Array.from(statisticsMap.values());  // Convert to array so we can use .sort() and .map()
 
     // Sort the array based on the selected sort method
-    switch (sortMethod) {
-      case SortByType.Price:
-        statisticsArray.sort(sortByPrice);
-        break;
-      case SortByType.Quantity:
-        statisticsArray.sort(sortByQuantity);
-        break;
-      case SortByType.Recent:
-        statisticsArray.sort(sortByRecent);
-        break;
-      default:
-        statisticsArray.sort(sortByNone);
+    if (sortMethod === SortMethod.Price) {
+      statisticsArray.sort(sortByPrice);
+    } else if (sortMethod === SortMethod.Quantity) {
+      statisticsArray.sort(sortByQuantity);
+    } else if (sortMethod === SortMethod.Recent) {
+      statisticsArray.sort(sortByRecent);
+    } else {
+      statisticsArray.sort(sortByNone);  // Do not sort
     }
+
     return statisticsArray.map(statistic => {
       return <ItemCard title={statistic.name + " x" + statistic.totalQuantity}
                        media={statistic.media}
@@ -140,27 +140,20 @@ const SaleStatistics : React.FC<SaleStatisticsProps> = (
 
   const statisticsHeader = () => {
     return <ButtonGroup>
-      <Button variant="secondary bg-transparent"
-              className="w-50 p-1 text-start"
-              disabled>
-        {/* {saleDateString} */}
-      </Button>
-      <Button variant="secondary bg-transparent"
-              className="w-25 p-1 text-start"
-              disabled>
-        {/* {totalQuantityString()} */}
-      </Button>
-      <Button variant="secondary bg-transparent"
-              className="w-25 p-1 text-end"
-              disabled>
-        {/* €{saleSummary.total_price.toFixed(2)} */}
-      </Button>
       <DropdownButton as={ButtonGroup}
-                      title={"Sort by"}
+                      title={Object.values(SortMethod).includes(sortMethod as SortMethod) ? sortMethod : "Sort by"}
                       variant="secondary"
       >
-        <Dropdown.Item eventKey="1">Dropdown link</Dropdown.Item>
-        <Dropdown.Item eventKey="2">Dropdown link</Dropdown.Item>
+        {
+          // Iterate all possible sort methods and display a button for each one
+          Object.keys(SortMethod).map(method => {
+            return <Dropdown.Item eventKey={method}
+                                  onClick={() => setSortMethod(method)}
+            >
+              {method}
+            </Dropdown.Item>;
+          })
+        }
       </DropdownButton>
     </ButtonGroup>;
   };
