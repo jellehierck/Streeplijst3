@@ -1,3 +1,4 @@
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import React from "react";
 import { ButtonGroup, ButtonToolbar, DropdownButton, Dropdown } from "react-bootstrap";
 import Button from "react-bootstrap/Button";
@@ -34,23 +35,23 @@ const SaleStatistics : React.FC<SaleStatisticsProps> = (
   console.log(saleSummaries);
 
   // Sort by descending (high to low)
-  const [descending, setDescending] = React.useState<boolean>(true);
+  const [sortDescending, setSortDescending] = React.useState<boolean>(true);
 
   /**
    * Toggle between descending and ascending
    */
   const toggleDescending = () => {
-    setDescending(!descending);
+    setSortDescending(!sortDescending);
   };
 
   // Sort method, null is default sort
-  const [sortMethod, setSortMethod] = React.useState<keyof typeof SortMethod | string>("");
+  const [sortMethod, setSortMethod] = React.useState<keyof typeof SortMethod | string>(SortMethod.Recent);
 
   /**
    * Sort statistics by total price
    */
   const sortByPrice = (a : StatisticsType, b : StatisticsType) => {
-    if (descending) {
+    if (sortDescending) {
       return b.totalPrice - a.totalPrice;
     } else {
       return a.totalPrice - b.totalPrice;
@@ -61,7 +62,7 @@ const SaleStatistics : React.FC<SaleStatisticsProps> = (
    * Sort by total quantity
    */
   const sortByQuantity = (a : StatisticsType, b : StatisticsType) => {
-    if (descending) {
+    if (sortDescending) {
       return b.totalQuantity - a.totalQuantity;
     } else {
       return a.totalQuantity - b.totalQuantity;
@@ -72,7 +73,7 @@ const SaleStatistics : React.FC<SaleStatisticsProps> = (
    * Sort by recently bought
    */
   const sortByRecent = (a : StatisticsType, b : StatisticsType) => {
-    if (descending) {
+    if (sortDescending) {
       return b.lastBought.getTime() - a.lastBought.getTime();
     } else {
       return a.lastBought.getTime() - b.lastBought.getTime();
@@ -139,22 +140,37 @@ const SaleStatistics : React.FC<SaleStatisticsProps> = (
   };
 
   const statisticsHeader = () => {
+    // Get the sort method title or default to "Sory By" if the current title does not match the SortMethod entries
+    const sortMethodTitle = Object.values(SortMethod).includes(sortMethod as SortMethod) ? sortMethod : "Sort by";
+
+    // Iterate all possible sort methods and display a button for each one
+    const sortMethodDropdownButtons = Object.keys(SortMethod).map(method => {
+      return <Dropdown.Item eventKey={method}
+                            onClick={() => setSortMethod(method)}
+                            className="px-2">
+        {method}
+      </Dropdown.Item>;
+    });
+
+    const sortDirectionButton = <Button variant="secondary"
+                                        onClick={toggleDescending}
+                                        className="px-2">
+      {
+        sortDescending ?  // Set sort arrow direction based on the sort direction state
+          <FontAwesomeIcon icon={["fas", "sort-amount-up"]} /> :
+          <FontAwesomeIcon icon={["fas", "sort-amount-up-alt"]} />
+      }
+    </Button>;
+
     return <ButtonGroup>
       <DropdownButton as={ButtonGroup}
-                      title={Object.values(SortMethod).includes(sortMethod as SortMethod) ? sortMethod : "Sort by"}
+                      title={sortMethodTitle}
                       variant="secondary"
+                      className="px-2"
       >
-        {
-          // Iterate all possible sort methods and display a button for each one
-          Object.keys(SortMethod).map(method => {
-            return <Dropdown.Item eventKey={method}
-                                  onClick={() => setSortMethod(method)}
-            >
-              {method}
-            </Dropdown.Item>;
-          })
-        }
+        {sortMethodDropdownButtons}
       </DropdownButton>
+      {sortDirectionButton}
     </ButtonGroup>;
   };
 

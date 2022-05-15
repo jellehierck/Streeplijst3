@@ -21,6 +21,8 @@ import {
   faPlus,
   fas,
   faShoppingCart,
+  faSortAmountUpAlt,
+  faSortAmountUp,
   faTrash,
 } from "@fortawesome/free-solid-svg-icons";
 
@@ -34,6 +36,8 @@ library.add(  // Solid icons
   faTrash,
   faShoppingCart,
   faPaperPlane,
+  faSortAmountUp,
+  faSortAmountUpAlt,
 );
 
 const queryClient = new QueryClient();
