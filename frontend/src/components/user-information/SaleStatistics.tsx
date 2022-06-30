@@ -134,7 +134,7 @@ const SaleStatistics : React.FC<SaleStatisticsProps> = (
                        media={statistic.media}
                        small
       >
-        <p>Tot. €{statistic.totalPrice}</p>
+        <p>Tot. €{statistic.totalPrice.toFixed(2)}</p>
       </ItemCard>;
     });
   };
