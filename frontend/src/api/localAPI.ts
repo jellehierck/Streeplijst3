@@ -213,6 +213,7 @@ export type SaleInvoiceFilterType = {
   period_filter? : string
   product_offer_id? : number[]
   order? : string
+  category? : "contribution" | "event_participation" | "planning" | "rental" | "webshop"
 }
 
 /**
@@ -223,7 +224,7 @@ export type SaleInvoiceFilterType = {
 export const getSalesByUsername = (username : string, filters? : SaleInvoiceFilterType) : Promise<SaleInvoiceType[]> => {
   return request<SaleInvoiceType[]>({
     url: "/sales/" + username,
-    data: filters,
+    params: filters,
   });
 };
 
