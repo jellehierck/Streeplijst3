@@ -42,6 +42,22 @@ function App() {
 
   return (
     <QueryClientProvider client={queryClient}>
+      <AlertContextProvider> {/* Context provider for alerts */}
+        <AuthContextProvider>  {/* Context provider for authentication of users */}
+          <APIContextProvider> {/* Context provider for API data except for authentication */}
+            <ShoppingCartContextProvider> {/* Context provider for the shopping cart */}
+
+              {/* <QueryTestComponent /> */}
+
+              <p>Ik voeg gewoon dingen toe die niet werken</p>
+
+              <BrowserRouter> {/* react-router-dom base, enables routing */}
+                <StreeplijstRoutes /> {/* The Streeplijst app, TODO: we could also add the Bierstreeplijst here */}
+              </BrowserRouter>
+            </ShoppingCartContextProvider>
+          </APIContextProvider>
+        </AuthContextProvider>
+      </AlertContextProvider>
       <ReactQueryDevtools initialIsOpen={false} />
     </QueryClientProvider>
   );
