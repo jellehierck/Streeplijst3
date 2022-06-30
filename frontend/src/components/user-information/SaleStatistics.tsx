@@ -146,15 +146,13 @@ const SaleStatistics : React.FC<SaleStatisticsProps> = (
     // Iterate all possible sort methods and display a button for each one
     const sortMethodDropdownButtons = Object.keys(SortMethod).map(method => {
       return <Dropdown.Item eventKey={method}
-                            onClick={() => setSortMethod(method)}
-                            className="px-2">
+                            onClick={() => setSortMethod(method)}>
         {method}
       </Dropdown.Item>;
     });
 
     const sortDirectionButton = <Button variant="secondary"
-                                        onClick={toggleDescending}
-                                        className="px-2">
+                                        onClick={toggleDescending}>
       {
         sortDescending ?  // Set sort arrow direction based on the sort direction state
           <FontAwesomeIcon icon={["fas", "sort-amount-up"]} /> :
@@ -163,14 +161,12 @@ const SaleStatistics : React.FC<SaleStatisticsProps> = (
     </Button>;
 
     return <ButtonGroup>
-      <DropdownButton as={ButtonGroup}
-                      title={sortMethodTitle}
-                      variant="secondary"
-                      className="px-2"
-      >
+      {sortDirectionButton}
+      <DropdownButton title={sortMethodTitle}
+                      variant="secondary">
         {sortMethodDropdownButtons}
       </DropdownButton>
-      {sortDirectionButton}
+
     </ButtonGroup>;
   };
 
