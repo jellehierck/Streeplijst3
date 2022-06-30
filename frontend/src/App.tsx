@@ -49,6 +49,8 @@ function App() {
 
               {/* <QueryTestComponent /> */}
 
+              <p>Ik voeg gewoon dingen toe die niet werken</p>
+
               <BrowserRouter> {/* react-router-dom base, enables routing */}
                 <StreeplijstRoutes /> {/* The Streeplijst app, TODO: we could also add the Bierstreeplijst here */}
               </BrowserRouter>
