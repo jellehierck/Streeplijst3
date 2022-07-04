@@ -141,3 +141,71 @@ STATIC_URL = '/static/'
 # https://docs.djangoproject.com/en/3.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+# Logging
+
+LOG_FOLDER = BASE_DIR / 'logs'
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'formatters': {
+        'verbose': {
+            'format': '{levelname:<8} {asctime} {module:<10} {message}',
+            'style': '{',
+            'datefmt': '%Y-%m-%d %H:%M:%S',
+        },
+        'simple': {
+            'format': '{levelname:<8} {message}',
+            'style': '{',
+        },
+    },
+    'handlers': {
+        'log_to_file': {
+            'level': 'INFO',
+            'class': 'logging.FileHandler',
+            'filename': str(LOG_FOLDER / 'test.log'),
+            'formatter': 'verbose'
+        },
+        'request_log_to_file': {
+            'level': 'INFO',
+            'class': 'logging.FileHandler',
+            'filename': str(LOG_FOLDER / 'request_test.log'),
+            'formatter': 'verbose'
+        },
+        'daily_log_to_file': {  # Handler which will log to a new file every day
+            'level': 'INFO',
+            'class': 'logging.handlers.TimedRotatingFileHandler',
+            'filename': str(LOG_FOLDER / 'daily_test.log'),
+            'formatter': 'verbose',
+            'when': 'midnight'
+        },
+        'console': {
+            'level': 'INFO',
+            'class': 'logging.StreamHandler',
+            'formatter': 'simple'
+        },
+    },
+    'loggers': {
+        'django': {
+            'handlers': ['daily_log_to_file', 'console'],
+            'level': 'INFO',
+            'propagate': True,
+        },
+        # 'django.server': {
+        #     'handlers': ['request_log_to_file', 'console'],
+        #     'level': 'INFO',
+        #     'propagate': True,
+        # },
+        # 'django.request': {  # TODO: This seems to do the same as django.server, only in production? Needs investigation
+        #     'handlers': ['request_log_to_file', 'console'],
+        #     'level': 'INFO',
+        #     'propagate': True,
+        # },
+        'streeplijst.api': {
+            'handlers': ['request_log_to_file', 'console'],
+            'level': 'INFO',
+            'propagate': True,
+        },
+    },
+}
