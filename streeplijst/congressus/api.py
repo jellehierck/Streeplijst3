@@ -1,14 +1,18 @@
 import abc  # Abstract Base Class package
 import datetime
 import os
-from typing import Dict, List
+import json
+from typing import Dict, List, Tuple
+from deprecated import deprecated
 
 import requests
 from rest_framework import status
+from rest_framework.exceptions import APIException
 from rest_framework.request import Request
 from rest_framework.response import Response
 
-from streeplijst.congressus.utils import STREEPLIJST_PARENT_FOLDER_ID, _extract_keys, STREEPLIJST_FOLDER_CONFIGURATION
+from streeplijst.congressus.utils import extract_keys
+from streeplijst.congressus.config import STREEPLIJST_PARENT_FOLDER_ID, STREEPLIJST_FOLDER_CONFIGURATION
 
 
 class ApiBase:
@@ -114,7 +118,8 @@ class ApiBase:
                   invoice_type: str = None, period_filter: str = None, product_offer_id: List[str] = None,
                   order: str = None, req: Request = None) -> Response:
         """
-        Get sales with some parameters.
+        Get sales with some parameters. If a user is searched by username but is not found, sales will not be obtained
+        for that user.
 
         :param usernames: List of usernames to filter by user
         :param member_ids: List of member IDs to filter by user
@@ -137,10 +142,10 @@ class ApiBase:
         pass
 
     @abc.abstractmethod
-    def _member_username_to_id(self, username: str) -> int:
+    def _member_username_to_id(self, username: str) -> Tuple[int, Response]:
         """
         Convert a member username to a member id by searching for the member username on Congressus API. Returns 0 if
-        the username could not be found.
+        the username could not be found. Always returns the raw Response too.
         """
         pass
 
@@ -207,10 +212,9 @@ class ApiV30(ApiBase):
             return res
 
     def get_member_by_username(self, username: str, req: Request = None) -> Response:
-        member_id = self._member_username_to_id(username=username)  # Get member ID
+        member_id, member_id_res = self._member_username_to_id(username=username)  # Get member ID
         if member_id == 0:  # No user was found
-            error_data = {'message': f"No user found for {username}"}
-            return Response(data=error_data, status=status.HTTP_404_NOT_FOUND)
+            return member_id_res  # Return the response message
 
         else:  # A user was found, get details of that user
             return self.get_member_by_id(id=member_id, req=req)
@@ -242,12 +246,14 @@ class ApiV30(ApiBase):
         else:  # Response status indicated a failure
             return res  # Return result with failure information
 
-    def get_sales(self, username: List[str] = None, member_id: List[int] = None, invoice_status: str = None,
+    def get_sales(self, usernames: List[str] = None, member_ids: List[int] = None, invoice_status: str = None,
                   invoice_type: str = None, period_filter: str = None, product_offer_id: List[str] = None,
                   order: str = None, req: Request = None) -> Response:
-        if username:  # If usernames are given, iterate all usernames and convert them to member IDs
-            for username in username:
-                member_id.append(self._member_username_to_id(username))
+        if usernames:  # If usernames are given, iterate all usernames and convert them to member IDs
+            for username in usernames:
+                id, _ = self._member_username_to_id(username)  # Get user ID from username
+                if id != 0:  # If the username search did not yield a user ID (ID is set to zero), ignore it
+                    member_ids.append(id)
 
         if not invoice_type:  # If invoice type is not given, use the default
             invoice_type = self.DEFAULT_INVOICE_TYPE
@@ -262,7 +268,7 @@ class ApiV30(ApiBase):
             params = req.query_params.copy()  # Copy the existing params to a mutable copy
 
         params.update({  # Store additional request parameters in the format required by Congressus
-            "member_id": member_id,  # User ids (not username)
+            "member_id": member_ids,  # User ids (not usernames)
             "invoice_status": invoice_status,  # Optional filter for invoice status
             "invoice_type": invoice_type,  # Type of invoice
             "period_filter": period_filter,  # Period filter to request
@@ -285,11 +291,12 @@ class ApiV30(ApiBase):
     def get_sales_by_username(self, username: str, invoice_status: str = None, invoice_type: str = None,
                               period_filter: str = None, product_offer_id: List[str] = None, order: str = None,
                               req: Request = None) -> Response:
-        member_id = self._member_username_to_id(username)  # First convert username to member ID
-        return self.get_sales(member_id=[member_id], invoice_status=invoice_status, invoice_type=invoice_type,
+        member_id, member_id_res = self._member_username_to_id(username)  # First convert username to member ID
+
+        return self.get_sales(member_ids=[member_id], invoice_status=invoice_status, invoice_type=invoice_type,
                               period_filter=period_filter, product_offer_id=product_offer_id, order=order, req=req)
 
-    def post_sale(self, member_id: int, items, req: Request = None):
+    def post_sale(self, member_id: int, items, req: Request = None) -> Response:
         payload = {  # Store the sales parameters in the format required by Congressus
             "member_id": member_id,  # User id (not username)
             "items": items,  # List of items
@@ -298,11 +305,29 @@ class ApiV30(ApiBase):
         res = self._congressus_api_call_single(method='post',
                                                url_endpoint='/sale-invoices',
                                                payload=payload)
-        if status.is_success(res.status_code):  # Request is OK
-            stripped_data = self._strip_sales_data(raw_sales_data=res.data)  # Strip sale data
-            return Response(data=stripped_data, status=res.status_code)  # Return response
-        else:  # Response status indicated a failure
+        if not status.is_success(res.status_code):  # Response status indicated a failure
             return res  # Return result with failure information
+
+        # Request is OK. An extra step for posting a sale is to send the invoice to the buyer immediately
+        res_send = self.send_sale_invoice(invoice_id=res.data["id"])
+        if not status.is_success(res_send.status_code):
+            raise APIException(detail=json.dumps(res_send.data), code=res_send.status_code)  # TODO: Log proper warning
+
+        # Strip and send the sale data to the frontend
+        stripped_data = self._strip_sales_data(raw_sales_data=res.data)  # Strip sale data
+        return Response(data=stripped_data, status=res.status_code)  # Return sale response
+
+    def send_sale_invoice(self, invoice_id: int) -> Response:
+        """Send an invoice with a specific ID, marking it as OPEN so the buyer will receive an email."""
+        # The payload is always the same and is required to correctly send the invoice
+        payload = {
+            "email_subject": None,
+            "delivery_method": "according_workflow",
+            "email_text": None
+        }
+        return self._congressus_api_call_single(method='post',
+                                                url_endpoint=f'/sale-invoices/{invoice_id}/send',
+                                                payload=payload)
 
     def _congressus_api_call_single(self, method: str, url_endpoint: str, query_params: dict = None,
                                     payload: dict = None, timeout: int = None, max_retries: int = None) -> Response:
@@ -337,14 +362,16 @@ class ApiV30(ApiBase):
                                             params=query_params,
                                             json=payload,
                                             timeout=timeout)
-                curr_res_data = curr_res.json()  # Convert data to a python dict
+                curr_res_data = None  # We assume no content is sent
+                if curr_res.content:  # If there is any content, convert it to a dict
+                    curr_res_data = curr_res.json()  # Convert data to a python dict
 
                 # Return the response from the API server converted to a rest_framework.Response object
                 return Response(data=curr_res_data,  # Return the current response data
                                 status=curr_res.status_code,  # Copy the status code
                                 )
             except (requests.exceptions.Timeout,
-                    requests.exceptions.ConnectionError):  # If the request timed out or no connection could be made, try again
+                    requests.exceptions.ConnectionError):  # If request timed out or no connection was made, try again
                 retries += 1  # Increment the number of retries
 
         # If the number of retries is exceeded, return a response with an error code
@@ -422,13 +449,13 @@ class ApiV30(ApiBase):
                     curr_page += 1  # Increment the current page
 
             except (requests.exceptions.Timeout,
-                    requests.exceptions.ConnectionError):  # If the request timed out or no connection could be made, try again
+                    requests.exceptions.ConnectionError):  # If request timed out or no connection was made, try again
                 retries += 1  # Increment number of retries
 
         # If the while loop is exited, at some point there were too many timeouts and an error should be returned
         return Response(data={"error": "Request timeout"}, status=status.HTTP_408_REQUEST_TIMEOUT)
 
-    def _member_username_to_id(self, username: str) -> int:
+    def _member_username_to_id(self, username: str) -> Tuple[int, Response]:
         # Make API call with pagination as we have to perform a search
         res = self._congressus_api_call_pagination(method='get',
                                                    url_endpoint='/members/search',
@@ -441,13 +468,14 @@ class ApiV30(ApiBase):
                                   None)
             if correct_member:  # An exact match for the username was found
                 # A call to /search gives a simplified user overview, we need to request all user data and return that
-                return correct_member['id']
+                return correct_member['id'], res
 
-            else:  # No exact match for the username was found, return an error
-                return 0
+            else:  # No exact match for the username was found
+                error_data = {'message': f"No user found for {username}"}
+                return 0, Response(data=error_data, status=status.HTTP_404_NOT_FOUND)
 
-        else:  # Response status indicated a failure
-            return 0  # Return result with failure information
+        # Response status indicated a failure
+        return 0, res  # Return result with failure information
 
     def _strip_member_data(self, raw_member_data: dict) -> dict:
         keys_to_transfer = [
@@ -462,7 +490,7 @@ class ApiV30(ApiBase):
             'status',  # Current membership status TODO: Check if user has valid status
             'bank_account'  # All banking information TODO: Remove this and only extract sdd mandate, if necessary
         ]
-        stripped_data = _extract_keys(raw_member_data, keys_to_transfer)
+        stripped_data = extract_keys(raw_member_data, keys_to_transfer)
         return stripped_data
 
     def _strip_product_data(self, raw_product_data: dict) -> dict:
@@ -475,7 +503,7 @@ class ApiV30(ApiBase):
             'price',  # Price of product in euros
             'media',  # Media object
         ]
-        stripped_data = _extract_keys(from_dict=raw_product_data, keys=keys_to_transfer, default=None)
+        stripped_data = extract_keys(from_dict=raw_product_data, keys=keys_to_transfer, default=None)
 
         # media is an array of nested dicts, strip them to only leave the url to the image file
         if stripped_data['media']:  # If the media is not an empty array
@@ -499,10 +527,11 @@ class ApiV30(ApiBase):
             'created',  # Datetime on which invoice was created
             'modified',  # Datetime on which invoice was modified
         ]
-        stripped_data = _extract_keys(from_dict=raw_sales_data, keys=keys_to_transfer, default=None)
+        stripped_data = extract_keys(from_dict=raw_sales_data, keys=keys_to_transfer, default=None)
         return stripped_data
 
 
+@deprecated(reason="Congressus API v20 is not supported from July 17th, 2022.")
 class ApiV20(ApiBase):
     API_VERSION = 'v20'
 
@@ -714,7 +743,7 @@ class ApiV20(ApiBase):
             'status_id',
             'username'
         ]
-        stripped_data = _extract_keys(raw_member_data, keys_to_transfer)
+        stripped_data = extract_keys(raw_member_data, keys_to_transfer)
         return stripped_data
 
     def _strip_product_data(self, raw_product_data: dict) -> dict:
@@ -730,7 +759,7 @@ class ApiV20(ApiBase):
             'published',
             'url',
         ]
-        stripped_data = _extract_keys(raw_product_data, keys_to_transfer)
+        stripped_data = extract_keys(raw_product_data, keys_to_transfer)
 
         # Perform some additional cleaning up
         # media is an array of nested dicts, strip them to only leave the url to the image file
@@ -752,7 +781,7 @@ class ApiV20(ApiBase):
             'id',
             'user_id'
         ]
-        stripped_data = _extract_keys(raw_sales_data, keys_to_transfer)
+        stripped_data = extract_keys(raw_sales_data, keys_to_transfer)
 
         # Perform some additional cleaning up
         if stripped_data['items']:  # If the items list is not None
