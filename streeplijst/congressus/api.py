@@ -2,13 +2,15 @@ import abc  # Abstract Base Class package
 import datetime
 import os
 from typing import Dict, List, Tuple
+from deprecated import deprecated
 
 import requests
 from rest_framework import status
 from rest_framework.request import Request
 from rest_framework.response import Response
 
-from streeplijst.congressus.utils import STREEPLIJST_PARENT_FOLDER_ID, _extract_keys, STREEPLIJST_FOLDER_CONFIGURATION
+from streeplijst.congressus.utils import extract_keys
+from streeplijst.congressus.config import STREEPLIJST_PARENT_FOLDER_ID, STREEPLIJST_FOLDER_CONFIGURATION
 
 
 class ApiBase:
@@ -347,7 +349,7 @@ class ApiV30(ApiBase):
                                 status=curr_res.status_code,  # Copy the status code
                                 )
             except (requests.exceptions.Timeout,
-                    requests.exceptions.ConnectionError):  # If the request timed out or no connection could be made, try again
+                    requests.exceptions.ConnectionError):  # If request timed out or no connection was made, try again
                 retries += 1  # Increment the number of retries
 
         # If the number of retries is exceeded, return a response with an error code
@@ -425,7 +427,7 @@ class ApiV30(ApiBase):
                     curr_page += 1  # Increment the current page
 
             except (requests.exceptions.Timeout,
-                    requests.exceptions.ConnectionError):  # If the request timed out or no connection could be made, try again
+                    requests.exceptions.ConnectionError):  # If request timed out or no connection was made, try again
                 retries += 1  # Increment number of retries
 
         # If the while loop is exited, at some point there were too many timeouts and an error should be returned
@@ -466,7 +468,7 @@ class ApiV30(ApiBase):
             'status',  # Current membership status TODO: Check if user has valid status
             'bank_account'  # All banking information TODO: Remove this and only extract sdd mandate, if necessary
         ]
-        stripped_data = _extract_keys(raw_member_data, keys_to_transfer)
+        stripped_data = extract_keys(raw_member_data, keys_to_transfer)
         return stripped_data
 
     def _strip_product_data(self, raw_product_data: dict) -> dict:
@@ -479,7 +481,7 @@ class ApiV30(ApiBase):
             'price',  # Price of product in euros
             'media',  # Media object
         ]
-        stripped_data = _extract_keys(from_dict=raw_product_data, keys=keys_to_transfer, default=None)
+        stripped_data = extract_keys(from_dict=raw_product_data, keys=keys_to_transfer, default=None)
 
         # media is an array of nested dicts, strip them to only leave the url to the image file
         if stripped_data['media']:  # If the media is not an empty array
@@ -503,10 +505,11 @@ class ApiV30(ApiBase):
             'created',  # Datetime on which invoice was created
             'modified',  # Datetime on which invoice was modified
         ]
-        stripped_data = _extract_keys(from_dict=raw_sales_data, keys=keys_to_transfer, default=None)
+        stripped_data = extract_keys(from_dict=raw_sales_data, keys=keys_to_transfer, default=None)
         return stripped_data
 
 
+@deprecated(reason="Congressus API v20 is not supported from July 17th, 2022.")
 class ApiV20(ApiBase):
     API_VERSION = 'v20'
 
@@ -718,7 +721,7 @@ class ApiV20(ApiBase):
             'status_id',
             'username'
         ]
-        stripped_data = _extract_keys(raw_member_data, keys_to_transfer)
+        stripped_data = extract_keys(raw_member_data, keys_to_transfer)
         return stripped_data
 
     def _strip_product_data(self, raw_product_data: dict) -> dict:
@@ -734,7 +737,7 @@ class ApiV20(ApiBase):
             'published',
             'url',
         ]
-        stripped_data = _extract_keys(raw_product_data, keys_to_transfer)
+        stripped_data = extract_keys(raw_product_data, keys_to_transfer)
 
         # Perform some additional cleaning up
         # media is an array of nested dicts, strip them to only leave the url to the image file
@@ -756,7 +759,7 @@ class ApiV20(ApiBase):
             'id',
             'user_id'
         ]
-        stripped_data = _extract_keys(raw_sales_data, keys_to_transfer)
+        stripped_data = extract_keys(raw_sales_data, keys_to_transfer)
 
         # Perform some additional cleaning up
         if stripped_data['items']:  # If the items list is not None

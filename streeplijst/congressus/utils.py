@@ -1,57 +1,7 @@
-from typing import List, Any
-
-STREEPLIJST_PARENT_FOLDER_ID = 1989
-
-STREEPLIJST_FOLDER_CONFIGURATION = [
-    {
-        'name': "Chips",  # folder name
-        'id': 1991,  # folder id (determined by Congressus, found in URL of the folder in the manager)
-        'media': "https://www.paradoks.utwente.nl/_media/889901/afa76d9d15c44705a9b7ef4da818ef2c/view"  # url to image
-    },
-    {
-        'name': "Soep",
-        'id': 1992,
-        'media': "https://www.paradoks.utwente.nl/_media/889902/d1de3e30149f48238d7df0566454a55f/view"
-    },
-    {
-        'name': "Healthy",
-        'id': 1993,
-        'media': "https://www.paradoks.utwente.nl/_media/889906/447f0d874bcb48479b43dede97149183/view"
-    },
-    {
-        'name': "Diepvries",
-        'id': 1994,
-        'media': "https://www.paradoks.utwente.nl/_media/889938/a1be36b57e9d4cd4aba77a0a169ad8ed/view"
-    },
-    {
-        'name': "Snoep",
-        'id': 1995,
-        'media': "https://www.paradoks.utwente.nl/_media/889918/eda7aefce97745488c867c1fd46e580b/view"
-    },
-    {
-        'name': "Koek",
-        'id': 1996,
-        'media': "https://www.paradoks.utwente.nl/_media/889908/5bbaa93d68fb4886974309dd09e3920f/view"
-    },
-    {
-        'name': "Repen",
-        'id': 1997,
-        'media': "https://www.paradoks.utwente.nl/_media/889915/596ad94dc4fc42b6910d9648fed06aad/view"
-    },
-    {
-        'name': "Speciaal",
-        'id': 1998,
-        'media': "https://www.paradoks.utwente.nl/_media/889910/63b78b80f2224dff8c46bfb8456d0bc8/view"
-    },
-    {
-        'name': "Frisdrank",
-        'id': 2600,
-        'media': "https://www.paradoks.utwente.nl/_media/1074042/9737731eab49463eb625490e9d2d1b20/view"
-    },
-]
+from typing import Any
 
 
-def strip_member_data(raw_member_data: dict) -> dict:
+def strip_member_data(raw_member_data: dict[str, Any]) -> dict[str, Any]:
     """
     Strips data from a user API response to only include data that is relevant and not unnecessary personal details.
 
@@ -84,11 +34,11 @@ def strip_member_data(raw_member_data: dict) -> dict:
         'has_sdd_mandate',  # TODO: See how this works with sdd mandate
         'bank_account'  # TODO: Remove this and only extract sdd mandate
     ]
-    stripped_data = _extract_keys(raw_member_data, keys_to_transfer)
+    stripped_data = extract_keys(raw_member_data, keys_to_transfer)
     return stripped_data
 
 
-def strip_product_data(raw_product_data: dict) -> dict:
+def strip_product_data(raw_product_data: dict[str, Any]) -> dict[str, Any]:
     """
     Strips data from a product API response to only include data that is relevant and clean up some weird nested
     objects.
@@ -108,7 +58,7 @@ def strip_product_data(raw_product_data: dict) -> dict:
         'published',
         'url',
     ]
-    stripped_data = _extract_keys(raw_product_data, keys_to_transfer)
+    stripped_data = extract_keys(raw_product_data, keys_to_transfer)
 
     # Perform some additional cleaning up
     stripped_data['media'] = _extract_media_url(stripped_data)  # Replace list of media with a more sensible url
@@ -116,7 +66,7 @@ def strip_product_data(raw_product_data: dict) -> dict:
     return stripped_data
 
 
-def strip_sales_data(raw_sales_data: dict) -> dict:
+def strip_sales_data(raw_sales_data: dict[str, Any]) -> dict[str, Any]:
     """
     Strips data from a sales API response to only include data that is relevant and clean up some weird nested objects.
 
@@ -131,14 +81,14 @@ def strip_sales_data(raw_sales_data: dict) -> dict:
         'id',
         'user_id'
     ]
-    stripped_data = _extract_keys(raw_sales_data, keys_to_transfer)
+    stripped_data = extract_keys(raw_sales_data, keys_to_transfer)
 
     # Perform some additional cleaning up
     stripped_data['items'] = _cleanup_sales_items(stripped_data)  # Replace list of media with a more sensible url
     return stripped_data
 
 
-def _extract_keys(from_dict: dict, keys: List[str], default: Any = 'error') -> dict:
+def extract_keys(from_dict: dict[str, Any], keys: list[str], default: Any = 'error') -> dict[str, Any]:
     """
     Utility function. Transfers a list of keys and their associated values to a new dict.
 
@@ -152,7 +102,7 @@ def _extract_keys(from_dict: dict, keys: List[str], default: Any = 'error') -> d
     return return_dict
 
 
-def _extract_media_url(product_data: dict) -> str:
+def _extract_media_url(product_data: dict[str, Any]) -> str:
     media_list: list = product_data.get('media', None)
 
     if media_list:
@@ -161,7 +111,7 @@ def _extract_media_url(product_data: dict) -> str:
         return ''
 
 
-def _cleanup_offers(product_data: dict) -> List:
+def _cleanup_offers(product_data: dict[str, Any]) -> list[dict[str, Any]]:
     offers_list: list = product_data.get('offers', None)
 
     if offers_list:
@@ -170,7 +120,7 @@ def _cleanup_offers(product_data: dict) -> List:
     return offers_list
 
 
-def _cleanup_sales_items(sales_data: dict) -> List:
+def _cleanup_sales_items(sales_data: dict[str, Any]) -> list[dict[str, Any]]:
     items_list: list = sales_data.get('items', None)
 
     if items_list:
