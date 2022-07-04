@@ -13,7 +13,7 @@ from rest_framework.response import Response
 
 from streeplijst.congressus.utils import extract_keys
 from streeplijst.congressus.config import STREEPLIJST_PARENT_FOLDER_ID, STREEPLIJST_FOLDER_CONFIGURATION
-from streeplijst.congressus.logging import api_logger, api_log_request
+from streeplijst.congressus.api_logging import api_logger, api_log_request
 
 
 class ApiBase:

@@ -151,7 +151,7 @@ LOGGING = {
     'disable_existing_loggers': False,
     'formatters': {
         'verbose': {
-            'format': '{levelname:<8} {asctime} {module:<10} {message}',
+            'format': '{levelname:<8} {asctime} {module:<12} {message}',
             'style': '{',
             'datefmt': '%Y-%m-%d %H:%M:%S',
         },
