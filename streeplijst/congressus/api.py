@@ -13,6 +13,7 @@ from rest_framework.response import Response
 
 from streeplijst.congressus.utils import extract_keys
 from streeplijst.congressus.config import STREEPLIJST_PARENT_FOLDER_ID, STREEPLIJST_FOLDER_CONFIGURATION
+from streeplijst.congressus.logging import api_logger, api_log_request
 
 
 class ApiBase:
@@ -352,6 +353,9 @@ class ApiV30(ApiBase):
         if max_retries is None:
             max_retries = self.CONGRESSUS_MAX_RETRIES
 
+        # Log request which is to be made
+        api_log_request(method=method, url_endpoint=url_endpoint, params=query_params, payload=payload)
+
         # Attempt making the request, taking into account the timeout and retries limits
         retries = 0
         while retries < max_retries:  # Attempt to get a response a number of times
@@ -406,6 +410,9 @@ class ApiV30(ApiBase):
         params = {'page_size': page_size}  # Create dict for query params to send with the request
         if query_params:  # If extra params were provided
             params.update(query_params)  # Add extra params to the existing params
+
+        # Log request which is to be made
+        api_log_request(method=method, url_endpoint=url_endpoint, params=params, payload=payload)
 
         # Run a loop to make continuous calls to Congressus in case a response contains pagination
         retries = 0  # Retries are restartTimer after Congressus returns a successful response (i.e. after every page)
