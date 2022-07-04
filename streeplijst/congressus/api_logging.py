@@ -6,7 +6,9 @@ from typing import Callable, Optional
 
 from rest_framework.response import Response
 
-api_logger = logging.getLogger('streeplijst.api')
+api_local_logger = logging.getLogger('api.local')
+
+api_congressus_logger = logging.getLogger('api.congressus')
 
 
 def _request_str(method: str, url_endpoint: str, params: dict = None, payload: dict = None) -> str:
@@ -47,6 +49,23 @@ def _response_str(status_code: int, elapsed_time: TimeDelta = None) -> str:
     return f"Response: {status_code}{elapsed_str}"
 
 
+def log_congressus_request_response(res_status: int, method: str, url_endpoint: str, params: dict = None,
+                                    payload: dict = None, elapsed_time: TimeDelta = None) -> None:
+    """
+    Log request and response to Congressus.
+
+    :param res_status: Status code of request
+    :param elapsed_time: Optional time before response
+    :param method: HTTP method
+    :param url_endpoint: URL endpoint
+    :param params: Optional dictionary containing URL query (everything after question mark)
+    :param payload: Optional dictionary containing the request body
+    """
+    log_str = f"{_response_str(status_code=res_status, elapsed_time=elapsed_time)} | " \
+              f"{_request_str(method=method, url_endpoint=url_endpoint, payload=payload, params=params)}"
+    api_congressus_logger.info(msg=log_str)
+
+
 def log_request(method: str, url_endpoint: str, params: dict = None, payload: dict = None) -> None:
     """
     Log a request to the api logger.
@@ -56,7 +75,7 @@ def log_request(method: str, url_endpoint: str, params: dict = None, payload: di
     :param params: Optional dictionary containing URL query (everything after question mark)
     :param payload: Optional dictionary containing the request body
     """
-    api_logger.info(msg=_request_str(method=method, url_endpoint=url_endpoint, params=params, payload=payload))
+    api_local_logger.info(msg=_request_str(method=method, url_endpoint=url_endpoint, params=params, payload=payload))
 
 
 def log_response(status_code: int, elapsed_time: TimeDelta = None) -> None:
@@ -66,10 +85,10 @@ def log_response(status_code: int, elapsed_time: TimeDelta = None) -> None:
     :param status_code: Status code
     :param elapsed_time: How much time passed during the request
     """
-    api_logger.info(msg=_response_str(status_code=status_code, elapsed_time=elapsed_time))
+    api_local_logger.info(msg=_response_str(status_code=status_code, elapsed_time=elapsed_time))
 
 
-def log_request_response(func: Callable[..., Response]) -> Callable[..., Response]:
+def log_request_response_decorator(func: Callable[..., Response]) -> Callable[..., Response]:
     """
     Decorator to log request and response from the API.
 
@@ -84,7 +103,7 @@ def log_request_response(func: Callable[..., Response]) -> Callable[..., Respons
                    **kwargs)
         log_str = _response_str(status_code=res.status_code)
         log_str += " | " + _request_str(method=method, url_endpoint=url_endpoint, params=query_params, payload=payload)
-        api_logger.info(log_str)
+        api_local_logger.info(log_str)
         return res
 
     return wrapper

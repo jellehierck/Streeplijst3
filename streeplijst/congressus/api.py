@@ -4,6 +4,7 @@ import os
 import json
 from typing import Dict, List, Tuple
 from deprecated import deprecated
+from datetime import datetime as DateTime
 
 import requests
 from rest_framework import status
@@ -13,7 +14,8 @@ from rest_framework.response import Response
 
 from streeplijst.congressus.utils import extract_keys
 from streeplijst.congressus.config import STREEPLIJST_PARENT_FOLDER_ID, STREEPLIJST_FOLDER_CONFIGURATION
-from streeplijst.congressus.api_logging import log_request, log_response, log_request_response
+from streeplijst.congressus.api_logging import log_request, log_response, log_request_response_decorator, \
+    log_congressus_request_response
 
 
 class ApiBase:
@@ -330,7 +332,7 @@ class ApiV30(ApiBase):
                                                 url_endpoint=f'/sale-invoices/{invoice_id}/send',
                                                 payload=payload)
 
-    @log_request_response
+    # @log_request_response_decorator
     def _congressus_api_call_single(self, method: str, url_endpoint: str, query_params: dict = None,
                                     payload: dict = None, timeout: int = None, max_retries: int = None) -> Response:
         """
@@ -354,24 +356,27 @@ class ApiV30(ApiBase):
         if max_retries is None:
             max_retries = self.CONGRESSUS_MAX_RETRIES
 
-        # Log request which is to be made
-        # log_request(method=method, url_endpoint=url_endpoint, params=query_params, payload=payload)
+        params = query_params  # Rename to params
 
         # Attempt making the request, taking into account the timeout and retries limits
+        start_time = DateTime.now()  # Track current time in case a timeout occurs
         retries = 0
         while retries < max_retries:  # Attempt to get a response a number of times
             try:
                 curr_res = requests.request(method=method,
                                             url=self._congressus_url_base + url_endpoint,
                                             headers=self._congressus_headers,
-                                            params=query_params,
+                                            params=params,
                                             json=payload,
                                             timeout=timeout)
                 curr_res_data = None  # We assume no content is sent
                 if curr_res.content:  # If there is any content, convert it to a dict
                     curr_res_data = curr_res.json()  # Convert data to a python dict
 
-                # log_response(curr_res.status_code, elapsed_time=curr_res.elapsed)
+                # Log response and request
+                log_congressus_request_response(res_status=curr_res.status_code, elapsed_time=curr_res.elapsed,
+                                                method=method, url_endpoint=url_endpoint, params=params,
+                                                payload=payload)
 
                 # Return the response from the API server converted to a rest_framework.Response object
                 return Response(data=curr_res_data,  # Return the current response data
@@ -379,12 +384,18 @@ class ApiV30(ApiBase):
                                 )
             except (requests.exceptions.Timeout,
                     requests.exceptions.ConnectionError):  # If request timed out or no connection was made, try again
+                # TODO: Maybe move ConnectionError to its own except block?
                 retries += 1  # Increment the number of retries
+
+        # Log response and request
+        elapsed_time = DateTime.now() - start_time
+        log_congressus_request_response(res_status=status.HTTP_408_REQUEST_TIMEOUT, elapsed_time=elapsed_time,
+                                        method=method, url_endpoint=url_endpoint, params=params, payload=payload)
 
         # If the number of retries is exceeded, return a response with an error code
         return Response(data={"error": "Request timeout"}, status=status.HTTP_408_REQUEST_TIMEOUT)
 
-    @log_request_response
+    # @log_request_response_decorator
     def _congressus_api_call_pagination(self, method: str, url_endpoint: str, page_size: int = 25,
                                         query_params: dict = None, payload: dict = None, timeout: int = None,
                                         max_retries: int = None) -> Response:
@@ -415,11 +426,9 @@ class ApiV30(ApiBase):
         if query_params:  # If extra params were provided
             params.update(query_params)  # Add extra params to the existing params
 
-        # Log request which is to be made
-        # log_request(method=method, url_endpoint=url_endpoint, params=params, payload=payload)
-
         # Run a loop to make continuous calls to Congressus in case a response contains pagination
         retries = 0  # Retries are restartTimer after Congressus returns a successful response (i.e. after every page)
+        start_time = DateTime.now()  # Track current time in case a timeout occurs
         curr_page = 1  # Start at page 1
         total_res_data = []  # Instantiate empty list to hold all combined data in case of pagination
         while retries < max_retries:  # Get responses until the number of retries is met or restartTimer
@@ -434,6 +443,11 @@ class ApiV30(ApiBase):
                                             json=payload,
                                             timeout=timeout)
                 curr_res_data = curr_res.json()  # Convert data to a python dict
+
+                # Log response and request
+                log_congressus_request_response(res_status=curr_res.status_code, elapsed_time=curr_res.elapsed,
+                                                method=method, url_endpoint=url_endpoint, params=params,
+                                                payload=payload)
 
                 # Check if there is an error in the response and return that error response
                 if not status.is_success(curr_res.status_code):
@@ -461,7 +475,14 @@ class ApiV30(ApiBase):
 
             except (requests.exceptions.Timeout,
                     requests.exceptions.ConnectionError):  # If request timed out or no connection was made, try again
+                # TODO: Maybe move ConnectionError to its own except block?
                 retries += 1  # Increment number of retries
+
+        # Log response and request
+        elapsed_time = DateTime.now() - start_time
+        log_congressus_request_response(res_status=status.HTTP_408_REQUEST_TIMEOUT, elapsed_time=elapsed_time,
+                                        method=method, url_endpoint=url_endpoint, params=params,
+                                        payload=payload)
 
         # If the while loop is exited, at some point there were too many timeouts and an error should be returned
         return Response(data={"error": "Request timeout"}, status=status.HTTP_408_REQUEST_TIMEOUT)
