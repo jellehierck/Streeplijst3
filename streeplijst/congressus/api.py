@@ -1,11 +1,13 @@
 import abc  # Abstract Base Class package
 import datetime
 import os
+import json
 from typing import Dict, List, Tuple
 from deprecated import deprecated
 
 import requests
 from rest_framework import status
+from rest_framework.exceptions import APIException
 from rest_framework.request import Request
 from rest_framework.response import Response
 
@@ -294,7 +296,7 @@ class ApiV30(ApiBase):
         return self.get_sales(member_ids=[member_id], invoice_status=invoice_status, invoice_type=invoice_type,
                               period_filter=period_filter, product_offer_id=product_offer_id, order=order, req=req)
 
-    def post_sale(self, member_id: int, items, req: Request = None):
+    def post_sale(self, member_id: int, items, req: Request = None) -> Response:
         payload = {  # Store the sales parameters in the format required by Congressus
             "member_id": member_id,  # User id (not username)
             "items": items,  # List of items
@@ -303,11 +305,29 @@ class ApiV30(ApiBase):
         res = self._congressus_api_call_single(method='post',
                                                url_endpoint='/sale-invoices',
                                                payload=payload)
-        if status.is_success(res.status_code):  # Request is OK
-            stripped_data = self._strip_sales_data(raw_sales_data=res.data)  # Strip sale data
-            return Response(data=stripped_data, status=res.status_code)  # Return response
-        else:  # Response status indicated a failure
+        if not status.is_success(res.status_code):  # Response status indicated a failure
             return res  # Return result with failure information
+
+        # Request is OK. An extra step for posting a sale is to send the invoice to the buyer immediately
+        res_send = self.send_sale_invoice(invoice_id=res.data["id"])
+        if not status.is_success(res_send.status_code):
+            raise APIException(detail=json.dumps(res_send.data), code=res_send.status_code)  # TODO: Log proper warning
+
+        # Strip and send the sale data to the frontend
+        stripped_data = self._strip_sales_data(raw_sales_data=res.data)  # Strip sale data
+        return Response(data=stripped_data, status=res.status_code)  # Return sale response
+
+    def send_sale_invoice(self, invoice_id: int) -> Response:
+        """Send an invoice with a specific ID, marking it as OPEN so the buyer will receive an email."""
+        # The payload is always the same and is required to correctly send the invoice
+        payload = {
+            "email_subject": None,
+            "delivery_method": "according_workflow",
+            "email_text": None
+        }
+        return self._congressus_api_call_single(method='post',
+                                                url_endpoint=f'/sale-invoices/{invoice_id}/send',
+                                                payload=payload)
 
     def _congressus_api_call_single(self, method: str, url_endpoint: str, query_params: dict = None,
                                     payload: dict = None, timeout: int = None, max_retries: int = None) -> Response:
@@ -342,7 +362,9 @@ class ApiV30(ApiBase):
                                             params=query_params,
                                             json=payload,
                                             timeout=timeout)
-                curr_res_data = curr_res.json()  # Convert data to a python dict
+                curr_res_data = None  # We assume no content is sent
+                if curr_res.content:  # If there is any content, convert it to a dict
+                    curr_res_data = curr_res.json()  # Convert data to a python dict
 
                 # Return the response from the API server converted to a rest_framework.Response object
                 return Response(data=curr_res_data,  # Return the current response data
