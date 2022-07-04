@@ -13,7 +13,7 @@ from rest_framework.response import Response
 
 from streeplijst.congressus.utils import extract_keys
 from streeplijst.congressus.config import STREEPLIJST_PARENT_FOLDER_ID, STREEPLIJST_FOLDER_CONFIGURATION
-from streeplijst.congressus.api_logging import log_request, log_response
+from streeplijst.congressus.api_logging import log_request, log_response, log_request_response
 
 
 class ApiBase:
@@ -330,6 +330,7 @@ class ApiV30(ApiBase):
                                                 url_endpoint=f'/sale-invoices/{invoice_id}/send',
                                                 payload=payload)
 
+    @log_request_response
     def _congressus_api_call_single(self, method: str, url_endpoint: str, query_params: dict = None,
                                     payload: dict = None, timeout: int = None, max_retries: int = None) -> Response:
         """
@@ -354,7 +355,7 @@ class ApiV30(ApiBase):
             max_retries = self.CONGRESSUS_MAX_RETRIES
 
         # Log request which is to be made
-        log_request(method=method, url_endpoint=url_endpoint, params=query_params, payload=payload)
+        # log_request(method=method, url_endpoint=url_endpoint, params=query_params, payload=payload)
 
         # Attempt making the request, taking into account the timeout and retries limits
         retries = 0
@@ -370,7 +371,7 @@ class ApiV30(ApiBase):
                 if curr_res.content:  # If there is any content, convert it to a dict
                     curr_res_data = curr_res.json()  # Convert data to a python dict
 
-                log_response(curr_res.status_code, elapsed_time=curr_res.elapsed)
+                # log_response(curr_res.status_code, elapsed_time=curr_res.elapsed)
 
                 # Return the response from the API server converted to a rest_framework.Response object
                 return Response(data=curr_res_data,  # Return the current response data
@@ -383,6 +384,7 @@ class ApiV30(ApiBase):
         # If the number of retries is exceeded, return a response with an error code
         return Response(data={"error": "Request timeout"}, status=status.HTTP_408_REQUEST_TIMEOUT)
 
+    @log_request_response
     def _congressus_api_call_pagination(self, method: str, url_endpoint: str, page_size: int = 25,
                                         query_params: dict = None, payload: dict = None, timeout: int = None,
                                         max_retries: int = None) -> Response:
@@ -414,7 +416,7 @@ class ApiV30(ApiBase):
             params.update(query_params)  # Add extra params to the existing params
 
         # Log request which is to be made
-        log_request(method=method, url_endpoint=url_endpoint, params=params, payload=payload)
+        # log_request(method=method, url_endpoint=url_endpoint, params=params, payload=payload)
 
         # Run a loop to make continuous calls to Congressus in case a response contains pagination
         retries = 0  # Retries are restartTimer after Congressus returns a successful response (i.e. after every page)
