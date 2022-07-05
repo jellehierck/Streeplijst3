@@ -171,25 +171,14 @@ LOGGING = {
         },
     },
     'handlers': {
-        'log_to_file': {
-            'level': 'INFO',
-            'class': 'logging.FileHandler',
-            'filename': str(LOG_FOLDER / 'test.log'),
-            'formatter': 'verbose'
-        },
-        'request_log_to_file': {
-            'level': 'INFO',
-            'class': 'logging.FileHandler',
-            'filename': str(LOG_FOLDER / 'request_test.log'),
-            'formatter': 'verbose_request',
-            'filters': ['inject_request_id']
-        },
-        'daily_log_to_file': {  # Handler which will log to a new file every day
+        'daily_request_log_to_file': {
             'level': 'INFO',
             'class': 'logging.handlers.TimedRotatingFileHandler',
-            'filename': str(LOG_FOLDER / 'daily_test.log'),
-            'formatter': 'verbose',
-            'when': 'midnight'
+            'filename': str(LOG_FOLDER / 'requests.log'),
+            'formatter': 'verbose_request',
+            'filters': ['inject_request_id'],  # Allow different logs for the same request to access their ID
+            'when': 'midnight',  # Create a new file for each day
+            'backupCount': 365  # Keep one year of information
         },
         'console': {
             'level': 'INFO',
@@ -208,18 +197,18 @@ LOGGING = {
         #     'level': 'INFO',
         #     'propagate': True,
         # },
-        # 'django.request': {  # TODO: This seems to do the same as django.server, only in production? Needs investigation
+        # 'django.request': {  # TODO: This seems to be equal to django.server, only in production? Needs investigation
         #     'handlers': ['request_log_to_file', 'console'],
         #     'level': 'INFO',
         #     'propagate': True,
         # },
         'api.local': {
-            'handlers': ['request_log_to_file', 'console'],
+            'handlers': ['daily_request_log_to_file', 'console'],
             'level': 'INFO',
             'propagate': True,
         },
         'api.congressus': {
-            'handlers': ['request_log_to_file', 'console'],
+            'handlers': ['daily_request_log_to_file', 'console'],
             'level': 'INFO',
             'propagate': True,
         },
