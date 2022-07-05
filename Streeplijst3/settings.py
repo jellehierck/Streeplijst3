@@ -151,7 +151,7 @@ LOGGING = {
     'disable_existing_loggers': False,
     'formatters': {
         'verbose': {
-            'format': '{levelname:<8} {asctime} {name:<15} {module:<12} {message}',
+            'format': '{levelname:<8} {asctime} {module:<12} {name:<15} {message}',
             'style': '{',
             'datefmt': '%Y-%m-%d %H:%M:%S',
         },
@@ -188,7 +188,7 @@ LOGGING = {
     },
     'loggers': {
         'django': {
-            'handlers': ['daily_log_to_file', 'console'],
+            'handlers': ['console'],  # ['daily_log_to_file', 'console']
             'level': 'INFO',
             'propagate': True,
         },
