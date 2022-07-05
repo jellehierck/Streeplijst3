@@ -2,17 +2,28 @@ import logging
 import json
 from functools import wraps
 from datetime import timedelta as TimeDelta, datetime as DateTime
-from typing import Callable
+from typing import Callable, Union
+import uuid
+import threading
 
-from django.utils.html import escape
 from rest_framework.response import Response
 from rest_framework.request import Request
 
 from streeplijst.congressus.api_base import ApiBase
 
-api_local_logger = logging.getLogger('api.local')
+api_local_logger = logging.getLogger('api.local')  # Local API call logs
 
-api_congressus_logger = logging.getLogger('api.congressus')
+api_congressus_logger = logging.getLogger('api.congressus')  # Congressus API call logs
+
+threading_local = threading.local()  # Object which allows sharing information between logs which belong to the same request
+
+
+class InjectRequestIdFilter(logging.Filter):
+
+    def filter(self, record: logging.LogRecord) -> bool:
+        # record.id = uuid.uuid4()  # Add a uuid to the record so that we can differentiate it from other requests
+        record.request_id = getattr(threading_local, "request_id", "NO_ID")
+        return True
 
 
 def _congressus_request_str(method: str, url_endpoint: str, params: dict = None, payload: dict = None) -> str:
@@ -67,7 +78,14 @@ def log_congressus_request_response(res_status: int, method: str, url: str, para
     """
     log_str = f"{_response_str(status_code=res_status, elapsed_time=elapsed_time)} | " \
               f"{_congressus_request_str(method=method, url_endpoint=url, payload=payload, params=params)}"
-    api_congressus_logger.info(msg=log_str)
+
+    # Log message based on status code
+    if res_status >= 500:  # Status is server error
+        api_congressus_logger.error(msg=log_str)
+    elif res_status >= 400:  # Status is client error
+        api_congressus_logger.warning(msg=log_str)
+    else:  # Status is OK
+        api_congressus_logger.info(msg=log_str)
 
 
 def log_local_request_response(func: Callable[..., Response]) \
@@ -80,6 +98,8 @@ def log_local_request_response(func: Callable[..., Response]) \
 
     @wraps(func)
     def wrapper(self: ApiBase, req: Request, *args, **kwargs) -> Response:
+        threading_local.request_id = str(uuid.uuid4())[:8]  # Set an 8 char request ID to access it from other loggers
+
         start_time = DateTime.now()
         res = func(self, req, *args, **kwargs)
         log_str = _response_str(status_code=res.status_code, elapsed_time=DateTime.now() - start_time)
@@ -100,7 +120,15 @@ def log_local_request_response(func: Callable[..., Response]) \
 
         # Form the final representation by adding func name and print everything
         log_str += f" function: {func.__name__}({args_str}{kwargs_str})"
-        api_local_logger.info(log_str)
+
+        # Log message based on status code
+        if res.status_code >= 500:  # Status is server error
+            api_local_logger.error(msg=log_str)
+        elif res.status_code >= 400:  # Status is client error
+            api_local_logger.warning(msg=log_str)
+        else:  # Status is OK
+            api_local_logger.info(msg=log_str)
+
         return res
 
     return wrapper

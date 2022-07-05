@@ -149,9 +149,19 @@ LOG_FOLDER = BASE_DIR / 'logs'
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
+    'filters': {
+        'inject_request_id': {
+            '()': 'streeplijst.congressus.logging.InjectRequestIdFilter',
+        },
+    },
     'formatters': {
         'verbose': {
-            'format': '{levelname:<8} {asctime} {module:<12} {name:<15} {message}',
+            'format': '{levelname:<8} {asctime} {module:<10} {name:<15} {message}',
+            'style': '{',
+            'datefmt': '%Y-%m-%d %H:%M:%S',
+        },
+        'verbose_request': {
+            'format': '{levelname:<8} {asctime} {module:<10} {name:<15} {request_id:<8} {message}',
             'style': '{',
             'datefmt': '%Y-%m-%d %H:%M:%S',
         },
@@ -171,7 +181,8 @@ LOGGING = {
             'level': 'INFO',
             'class': 'logging.FileHandler',
             'filename': str(LOG_FOLDER / 'request_test.log'),
-            'formatter': 'verbose'
+            'formatter': 'verbose_request',
+            'filters': ['inject_request_id']
         },
         'daily_log_to_file': {  # Handler which will log to a new file every day
             'level': 'INFO',
