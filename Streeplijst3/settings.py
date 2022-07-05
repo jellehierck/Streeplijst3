@@ -141,3 +141,76 @@ STATIC_URL = '/static/'
 # https://docs.djangoproject.com/en/3.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+# Logging
+
+LOG_FOLDER = BASE_DIR / 'logs'
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'filters': {
+        'inject_request_id': {
+            '()': 'streeplijst.congressus.logging.InjectRequestIdFilter',
+        },
+    },
+    'formatters': {
+        'verbose': {
+            'format': '{levelname:<8} {asctime} {module:<10} {name:<15} {message}',
+            'style': '{',
+            'datefmt': '%Y-%m-%d %H:%M:%S',
+        },
+        'verbose_request': {
+            'format': '{levelname:<8} {asctime} {module:<10} {name:<15} {request_id:<8} {message}',
+            'style': '{',
+            'datefmt': '%Y-%m-%d %H:%M:%S',
+        },
+        'simple': {
+            'format': '{levelname:<8} {message}',
+            'style': '{',
+        },
+    },
+    'handlers': {
+        'daily_request_log_to_file': {
+            'level': 'INFO',
+            'class': 'logging.handlers.TimedRotatingFileHandler',
+            'filename': str(LOG_FOLDER / 'requests.log'),
+            'formatter': 'verbose_request',
+            'filters': ['inject_request_id'],  # Allow different logs for the same request to access their ID
+            'when': 'midnight',  # Create a new file for each day
+            'backupCount': 365  # Keep one year of information
+        },
+        'console': {
+            'level': 'INFO',
+            'class': 'logging.StreamHandler',
+            'formatter': 'simple'
+        },
+    },
+    'loggers': {
+        'django': {
+            'handlers': ['console'],  # ['daily_log_to_file', 'console']
+            'level': 'INFO',
+            'propagate': True,
+        },
+        # 'django.server': {
+        #     'handlers': ['request_log_to_file', 'console'],
+        #     'level': 'INFO',
+        #     'propagate': True,
+        # },
+        # 'django.request': {  # TODO: This seems to be equal to django.server, only in production? Needs investigation
+        #     'handlers': ['request_log_to_file', 'console'],
+        #     'level': 'INFO',
+        #     'propagate': True,
+        # },
+        'api.local': {
+            'handlers': ['daily_request_log_to_file'],
+            'level': 'INFO',
+            'propagate': True,
+        },
+        'api.congressus': {
+            'handlers': ['daily_request_log_to_file'],
+            'level': 'INFO',
+            'propagate': True,
+        },
+    },
+}
