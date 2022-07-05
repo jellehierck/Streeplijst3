@@ -18,7 +18,7 @@
 /build
 
 # Logging files
-/logs
+*.log
 
 # misc
 .DS_Store
