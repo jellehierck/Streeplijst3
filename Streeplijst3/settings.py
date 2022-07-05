@@ -203,12 +203,12 @@ LOGGING = {
         #     'propagate': True,
         # },
         'api.local': {
-            'handlers': ['daily_request_log_to_file', 'console'],
+            'handlers': ['daily_request_log_to_file'],
             'level': 'INFO',
             'propagate': True,
         },
         'api.congressus': {
-            'handlers': ['daily_request_log_to_file', 'console'],
+            'handlers': ['daily_request_log_to_file'],
             'level': 'INFO',
             'propagate': True,
         },
