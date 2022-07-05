@@ -18,9 +18,9 @@ def ping(req: Request, version: str) -> Response:
     :param version: API version to use.
     """
     if version == ApiV30.API_VERSION:
-        return api_v30_obj.ping()
+        return api_v30_obj.ping(req=req)
     elif version == ApiV20.API_VERSION:
-        return api_v20_obj.ping()
+        return api_v20_obj.ping(req=req)
     else:
         return Response(data={'message': f"API version {version} not recognized"}, status=status.HTTP_404_NOT_FOUND)
 
@@ -148,7 +148,7 @@ def sales(req: Request, version: str) -> Response:
         if req.method == 'POST':
             member_id = req.data['member_id']
             items = req.data['items']
-            return api_v30_obj.post_sale(member_id=member_id, items=items, req=req)
+            return api_v30_obj.post_sale(req=req, member_id=member_id, items=items)
         elif req.method == 'GET':
             return api_v30_obj.get_sales(req=req)
 

@@ -1,9 +1,9 @@
-import abc  # Abstract Base Class package
 import datetime
 import os
 import json
-from typing import Dict, List, Tuple
+from typing import Tuple
 from deprecated import deprecated
+from datetime import datetime as DateTime
 
 import requests
 from rest_framework import status
@@ -11,173 +11,10 @@ from rest_framework.exceptions import APIException
 from rest_framework.request import Request
 from rest_framework.response import Response
 
+from streeplijst.congressus.api_base import ApiBase
 from streeplijst.congressus.utils import extract_keys
 from streeplijst.congressus.config import STREEPLIJST_PARENT_FOLDER_ID, STREEPLIJST_FOLDER_CONFIGURATION
-
-
-class ApiBase:
-    CONGRESSUS_MAX_RETRIES: int = 2  # Max number of retries for any call to Congressus API
-    CONGRESSUS_TIMEOUT: int = 10  # Seconds before a request to Congressus API times out
-
-    @property
-    def _congressus_url_base(self) -> str:
-        """Returns the base URL for making calls to Congressus API"""
-        return f"https://api.congressus.nl/{self.version}"
-
-    @property
-    @abc.abstractmethod
-    def _congressus_headers(self) -> Dict[str, str]:
-        """Returns the congressus authorization headers."""
-        pass
-
-    @property
-    @abc.abstractmethod
-    def version(self) -> str:
-        """Returns the api version."""
-        pass
-
-    def ping(self) -> Response:
-        """Ping the local server."""
-        ping_data = {'message': f"Ping to local API {self.version} successful"}
-        return Response(data=ping_data)
-
-    @abc.abstractmethod
-    def list_members(self, req: Request = None, extra_params: dict = None) -> Response:
-        """
-        Get multiple members from Congressus.
-        :param req:
-        :param extra_params:
-        """
-        pass
-
-    @abc.abstractmethod
-    def get_member_by_id(self, id: int, req: Request = None) -> Response:
-        """
-        Get a member by their internal Congressus ID. When getting a member by username, use 'get_member_by_username'
-        instead.
-        :param req: Original request.
-        :param id:
-        """
-        pass
-
-    @abc.abstractmethod
-    def get_member_by_username(self, username: str, req: Request = None) -> Response:
-        """
-        Get a member by their username.
-        :param req: Original request.
-        :param username:
-        """
-        pass
-
-    @abc.abstractmethod
-    def list_products(self, extra_params: dict = None, req: Request = None) -> Response:
-        """
-        Get products from Congressus. See https://docs.congressus.nl/#!/default/get_products for query parameters.
-
-        :param req: Original request. Request object.
-        :param extra_params: Extra request query parameters. Useful parameters are listed in documentation above.
-        """
-        pass
-
-    @abc.abstractmethod
-    def list_streeplijst_folders(self, req: Request = None) -> Response:
-        """
-        Get all folders from Congressus linked to the Streeplijst specification. TODO: Add way to store which folders to
-        retrieve
-        :param req: Original request. 
-        """
-        pass
-
-    @abc.abstractmethod
-    def list_products_in_folder(self, folder_id: int, req: Request = None) -> Response:
-        """
-        Get all products in a specific folder.
-        :param req: Original request.
-        :param folder_id:
-        """
-
-    @abc.abstractmethod
-    def get_sales_by_username(self, username: str, invoice_status: str = None, invoice_type: str = None,
-                              period_filter: str = None, product_offer_id: List[str] = None, order: str = None,
-                              req: Request = None) -> Response:
-        """
-        Get sales for a specific user.
-
-        :param username: Username to filter by user
-        :param invoice_status: Filter by invoice status string
-        :param invoice_type: Filter by invoice type, defaults to "webshop"
-        :param product_offer_id: Filter by product based on product_offer_id
-        :param period_filter: Filter by period, defaults to 1 year back
-        :param order: Optional order string
-        :param req: Original request (not used currently)
-        """
-        pass
-
-    @abc.abstractmethod
-    def get_sales(self, usernames: List[str] = None, member_ids: List[int] = None, invoice_status: str = None,
-                  invoice_type: str = None, period_filter: str = None, product_offer_id: List[str] = None,
-                  order: str = None, req: Request = None) -> Response:
-        """
-        Get sales with some parameters. If a user is searched by username but is not found, sales will not be obtained
-        for that user.
-
-        :param usernames: List of usernames to filter by user
-        :param member_ids: List of member IDs to filter by user
-        :param invoice_status: Filter by invoice status string
-        :param invoice_type: Filter by invoice type, defaults to "webshop"
-        :param product_offer_id: Filter by product based on product_offer_id
-        :param period_filter: Filter by period, defaults to 1 year back
-        :param order: Optional order string
-        :param req: Original request (not used currently)
-        """
-        pass
-
-    @abc.abstractmethod
-    def post_sale(self, member_id: int, items, req: Request = None):
-        """
-        :param req: Original request.
-        :param member_id:
-        :param items:
-        """
-        pass
-
-    @abc.abstractmethod
-    def _member_username_to_id(self, username: str) -> Tuple[int, Response]:
-        """
-        Convert a member username to a member id by searching for the member username on Congressus API. Returns 0 if
-        the username could not be found. Always returns the raw Response too.
-        """
-        pass
-
-    @abc.abstractmethod
-    def _strip_member_data(self, raw_member_data: dict) -> dict:
-        """
-        Strips data from member API response to only include data that is relevant and no unnecessary personal details.
-
-        :param raw_member_data: Raw API response from Congressus.
-        :return: A stripped dict only including some details of a user.
-        """
-        pass
-
-    @abc.abstractmethod
-    def _strip_product_data(self, raw_product_data: dict) -> dict:
-        """
-        Strips data from product API response to only include data that is relevant.
-
-        :param raw_product_data: Raw API response from Congressus.
-        :return: A stripped dict only including some details of a product.
-        """
-        pass
-
-    @abc.abstractmethod
-    def _strip_sales_data(self, raw_sales_data: dict):
-        """
-        Strips data from sales API response to only include data that is relevant.
-
-        :param raw_sales_data: Raw API response from Congressus.
-        :return: A stripped dict only including some details of a sale.
-        """
-        pass
+from streeplijst.congressus.logging import log_local_request_response, log_congressus_request_response
 
 
 class ApiV30(ApiBase):
@@ -187,7 +24,7 @@ class ApiV30(ApiBase):
     DEFAULT_INVOICE_PERIOD_FILTER = datetime.timedelta(weeks=52)  # Default a year back
 
     @property
-    def _congressus_headers(self) -> Dict[str, str]:
+    def _congressus_headers(self) -> dict[str, str]:
         # v30 requires a space between the word Bearer and the token
         return {'Authorization': 'Bearer ' + os.environ.get('CONGRESSUS_API_TOKEN')}
 
@@ -195,14 +32,16 @@ class ApiV30(ApiBase):
     def version(self) -> str:
         return self.API_VERSION
 
-    def list_members(self, req: Request = None, extra_params: dict = None) -> Response:
+    @log_local_request_response
+    def list_members(self, req: Request, extra_params: dict = None) -> Response:
         """
         Deprecated for v30, use 'get_member_by_*' instead.
         """
         message_data = {'message': "It is not allowed to list all members, use a search instead"}
         return Response(data=message_data, status=status.HTTP_403_FORBIDDEN)
 
-    def get_member_by_id(self, id: int, req: Request = None) -> Response:
+    @log_local_request_response
+    def get_member_by_id(self, req: Request, id: int) -> Response:
         res = self._congressus_api_call_single(method='get',
                                                url_endpoint=f'/members/{id}')
         if status.is_success(res.status_code):  # Request is ok
@@ -211,7 +50,8 @@ class ApiV30(ApiBase):
         else:  # Response status indicated a failure
             return res
 
-    def get_member_by_username(self, username: str, req: Request = None) -> Response:
+    @log_local_request_response
+    def get_member_by_username(self, req: Request, username: str) -> Response:
         member_id, member_id_res = self._member_username_to_id(username=username)  # Get member ID
         if member_id == 0:  # No user was found
             return member_id_res  # Return the response message
@@ -219,21 +59,24 @@ class ApiV30(ApiBase):
         else:  # A user was found, get details of that user
             return self.get_member_by_id(id=member_id, req=req)
 
-    def list_products(self, extra_params: dict = None, req: Request = None) -> Response:
+    @log_local_request_response
+    def list_products(self, req: Request, extra_params: dict = None) -> Response:
         """
         Deprecated for v30, use 'list_products_*' instead.
         """
         message_data = {'message': "It is not allowed to list all products, list them by folders instead"}
         return Response(data=message_data, status=status.HTTP_403_FORBIDDEN)
 
-    def list_streeplijst_folders(self, req: Request = None) -> Response:
+    @log_local_request_response
+    def list_streeplijst_folders(self, req: Request) -> Response:
         res = self._congressus_api_call_pagination(method='get',
                                                    url_endpoint='/product-folders',
                                                    query_params={'parent_id': STREEPLIJST_PARENT_FOLDER_ID})
         # TODO: Add image files to folders (image urls are not included in Congressus API response)
         return res
 
-    def list_products_in_folder(self, folder_id: int, req: Request = None) -> Response:
+    @log_local_request_response
+    def list_products_in_folder(self, req: Request, folder_id: int) -> Response:
         res = self._congressus_api_call_pagination(method='get',
                                                    url_endpoint='/products',
                                                    query_params={'folder_id': folder_id})  # Add the folder_id
@@ -246,9 +89,11 @@ class ApiV30(ApiBase):
         else:  # Response status indicated a failure
             return res  # Return result with failure information
 
-    def get_sales(self, usernames: List[str] = None, member_ids: List[int] = None, invoice_status: str = None,
-                  invoice_type: str = None, period_filter: str = None, product_offer_id: List[str] = None,
-                  order: str = None, req: Request = None) -> Response:
+    @log_local_request_response
+    def get_sales(self, req: Request, usernames: list[str] = None, member_ids: list[int] = None,
+                  invoice_status: str = None,
+                  invoice_type: str = None, period_filter: str = None, product_offer_id: list[str] = None,
+                  order: str = None) -> Response:
         if usernames:  # If usernames are given, iterate all usernames and convert them to member IDs
             for username in usernames:
                 id, _ = self._member_username_to_id(username)  # Get user ID from username
@@ -288,15 +133,17 @@ class ApiV30(ApiBase):
         else:  # Response status indicated a failure
             return res  # Return result with failure information
 
-    def get_sales_by_username(self, username: str, invoice_status: str = None, invoice_type: str = None,
-                              period_filter: str = None, product_offer_id: List[str] = None, order: str = None,
-                              req: Request = None) -> Response:
+    @log_local_request_response
+    def get_sales_by_username(self, req: Request, username: str, invoice_status: str = None, invoice_type: str = None,
+                              period_filter: str = None, product_offer_id: list[str] = None,
+                              order: str = None) -> Response:
         member_id, member_id_res = self._member_username_to_id(username)  # First convert username to member ID
 
         return self.get_sales(member_ids=[member_id], invoice_status=invoice_status, invoice_type=invoice_type,
                               period_filter=period_filter, product_offer_id=product_offer_id, order=order, req=req)
 
-    def post_sale(self, member_id: int, items, req: Request = None) -> Response:
+    @log_local_request_response
+    def post_sale(self, req: Request, member_id: int, items: list[dict[str, ...]]) -> Response:
         payload = {  # Store the sales parameters in the format required by Congressus
             "member_id": member_id,  # User id (not username)
             "items": items,  # List of items
@@ -309,7 +156,7 @@ class ApiV30(ApiBase):
             return res  # Return result with failure information
 
         # Request is OK. An extra step for posting a sale is to send the invoice to the buyer immediately
-        res_send = self.send_sale_invoice(invoice_id=res.data["id"])
+        res_send = self.send_sale_invoice(req=req, invoice_id=res.data["id"])
         if not status.is_success(res_send.status_code):
             raise APIException(detail=json.dumps(res_send.data), code=res_send.status_code)  # TODO: Log proper warning
 
@@ -317,7 +164,8 @@ class ApiV30(ApiBase):
         stripped_data = self._strip_sales_data(raw_sales_data=res.data)  # Strip sale data
         return Response(data=stripped_data, status=res.status_code)  # Return sale response
 
-    def send_sale_invoice(self, invoice_id: int) -> Response:
+    @log_local_request_response
+    def send_sale_invoice(self, req: Request, invoice_id: int) -> Response:
         """Send an invoice with a specific ID, marking it as OPEN so the buyer will receive an email."""
         # The payload is always the same and is required to correctly send the invoice
         payload = {
@@ -352,19 +200,27 @@ class ApiV30(ApiBase):
         if max_retries is None:
             max_retries = self.CONGRESSUS_MAX_RETRIES
 
+        params = query_params  # Rename to params
+
         # Attempt making the request, taking into account the timeout and retries limits
+        start_time = DateTime.now()  # Track current time in case a timeout occurs
         retries = 0
         while retries < max_retries:  # Attempt to get a response a number of times
             try:
                 curr_res = requests.request(method=method,
                                             url=self._congressus_url_base + url_endpoint,
                                             headers=self._congressus_headers,
-                                            params=query_params,
+                                            params=params,
                                             json=payload,
                                             timeout=timeout)
                 curr_res_data = None  # We assume no content is sent
                 if curr_res.content:  # If there is any content, convert it to a dict
                     curr_res_data = curr_res.json()  # Convert data to a python dict
+
+                # Log response and request
+                log_congressus_request_response(res_status=curr_res.status_code, elapsed_time=curr_res.elapsed,
+                                                method=method, url=self._congressus_url_base + url_endpoint,
+                                                params=params, payload=payload)
 
                 # Return the response from the API server converted to a rest_framework.Response object
                 return Response(data=curr_res_data,  # Return the current response data
@@ -372,7 +228,14 @@ class ApiV30(ApiBase):
                                 )
             except (requests.exceptions.Timeout,
                     requests.exceptions.ConnectionError):  # If request timed out or no connection was made, try again
+                # TODO: Maybe move ConnectionError to its own except block?
                 retries += 1  # Increment the number of retries
+
+        # Log response and request
+        elapsed_time = DateTime.now() - start_time
+        log_congressus_request_response(res_status=status.HTTP_408_REQUEST_TIMEOUT, elapsed_time=elapsed_time,
+                                        method=method, url=self._congressus_url_base + url_endpoint, params=params,
+                                        payload=payload)
 
         # If the number of retries is exceeded, return a response with an error code
         return Response(data={"error": "Request timeout"}, status=status.HTTP_408_REQUEST_TIMEOUT)
@@ -409,6 +272,7 @@ class ApiV30(ApiBase):
 
         # Run a loop to make continuous calls to Congressus in case a response contains pagination
         retries = 0  # Retries are restartTimer after Congressus returns a successful response (i.e. after every page)
+        start_time = DateTime.now()  # Track current time in case a timeout occurs
         curr_page = 1  # Start at page 1
         total_res_data = []  # Instantiate empty list to hold all combined data in case of pagination
         while retries < max_retries:  # Get responses until the number of retries is met or restartTimer
@@ -423,6 +287,11 @@ class ApiV30(ApiBase):
                                             json=payload,
                                             timeout=timeout)
                 curr_res_data = curr_res.json()  # Convert data to a python dict
+
+                # Log response and request
+                log_congressus_request_response(res_status=curr_res.status_code, elapsed_time=curr_res.elapsed,
+                                                method=method, url=self._congressus_url_base + url_endpoint,
+                                                params=params, payload=payload)
 
                 # Check if there is an error in the response and return that error response
                 if not status.is_success(curr_res.status_code):
@@ -450,7 +319,14 @@ class ApiV30(ApiBase):
 
             except (requests.exceptions.Timeout,
                     requests.exceptions.ConnectionError):  # If request timed out or no connection was made, try again
+                # TODO: Maybe move ConnectionError to its own except block?
                 retries += 1  # Increment number of retries
+
+        # Log response and request
+        elapsed_time = DateTime.now() - start_time
+        log_congressus_request_response(res_status=status.HTTP_408_REQUEST_TIMEOUT, elapsed_time=elapsed_time,
+                                        method=method, url=self._congressus_url_base + url_endpoint, params=params,
+                                        payload=payload)
 
         # If the while loop is exited, at some point there were too many timeouts and an error should be returned
         return Response(data={"error": "Request timeout"}, status=status.HTTP_408_REQUEST_TIMEOUT)
@@ -536,7 +412,7 @@ class ApiV20(ApiBase):
     API_VERSION = 'v20'
 
     @property
-    def _congressus_headers(self) -> Dict[str, str]:
+    def _congressus_headers(self) -> dict[str, str]:
         # v20 requires NO space between the word Bearer and the token
         return {'Authorization': 'Bearer:' + os.environ.get('CONGRESSUS_API_TOKEN')}
 
@@ -544,7 +420,7 @@ class ApiV20(ApiBase):
     def version(self) -> str:
         return self.API_VERSION
 
-    def list_members(self, req: Request = None, extra_params: dict = None) -> Response:
+    def list_members(self, req: Request, extra_params: dict = None) -> Response:
         params = dict()
         # Alter params according to the input parameters
         if req:
@@ -567,7 +443,7 @@ class ApiV20(ApiBase):
         else:  # Status indicated a failure
             return res
 
-    def get_member_by_id(self, id: int, req: Request = None) -> Response:
+    def get_member_by_id(self, req: Request, id: int) -> Response:
         res = self._congressus_api_call(method='get',
                                         url_endpoint=f'/members/{id}')
         if status.is_success(res.status_code):  # Request is ok
@@ -576,8 +452,8 @@ class ApiV20(ApiBase):
         else:  # Response status indicated a failure
             return res
 
-    def get_member_by_username(self, username: str, req: Request = None) -> Response:
-        res = self.list_members(extra_params={'username': username})
+    def get_member_by_username(self, req: Request, username: str) -> Response:
+        res = self.list_members(req=req, extra_params={'username': username})
 
         if status.is_success(res.status_code):  # Request is ok
 
@@ -595,7 +471,7 @@ class ApiV20(ApiBase):
         else:  # Response status indicated a failure
             return res
 
-    def list_products(self, extra_params: dict = None, req: Request = None) -> Response:
+    def list_products(self, req: Request, extra_params: dict = None) -> Response:
         params = dict()
         # Alter params according to the input parameters
         if req:
@@ -617,17 +493,17 @@ class ApiV20(ApiBase):
         else:  # Status indicated a failure
             return res
 
-    def list_streeplijst_folders(self, req: Request = None) -> Response:
+    def list_streeplijst_folders(self, req: Request) -> Response:
         # Do not make a call to Congressus but only return the local configuration of Streeplijst folders
         return Response(data=STREEPLIJST_FOLDER_CONFIGURATION, status=status.HTTP_200_OK)
 
-    def list_products_in_folder(self, folder_id: int, req: Request = None) -> Response:
+    def list_products_in_folder(self, req: Request, folder_id: int) -> Response:
         # Return a set of products with the specified folder id
-        return self.list_products(extra_params={'folder_id': folder_id})
+        return self.list_products(req=req, extra_params={'folder_id': folder_id})
 
-    def get_sales_by_username(self, username: str, invoice_status: str = None, invoice_type: str = None,
-                              period_filter: str = None, product_offer_id: List[str] = None, order: str = None,
-                              req: Request = None) -> Response:
+    def get_sales_by_username(self, req: Request, username: str, invoice_status: str = None, invoice_type: str = None,
+                              period_filter: str = None, product_offer_id: list[str] = None,
+                              order: str = None) -> Response:
         # Getting sales using the API v20 is not supported (it gives unexpected results and queries don't work)
         message_data = {
             'message': f"This action is not supported in Congressus API {self.version}, "
@@ -651,9 +527,10 @@ class ApiV20(ApiBase):
         # else:  # Status indicated a failure
         #     return res
 
-    def get_sales(self, usernames: List[str] = None, member_ids: List[int] = None, invoice_status: str = None,
-                  invoice_type: str = None, period_filter: str = None, product_offer_id: List[str] = None,
-                  order: str = None, req: Request = None) -> Response:
+    def get_sales(self, req: Request, usernames: list[str] = None, member_ids: list[int] = None,
+                  invoice_status: str = None,
+                  invoice_type: str = None, period_filter: str = None, product_offer_id: list[str] = None,
+                  order: str = None) -> Response:
         # Getting sales using the API v20 is not supported (it gives unexpected results and queries don't work)
         message_data = {
             'message': f"This action is not supported in Congressus API {self.version}, "
@@ -661,7 +538,7 @@ class ApiV20(ApiBase):
         }
         return Response(data=message_data, status=status.HTTP_403_FORBIDDEN)
 
-    def post_sale(self, member_id: int, items, req: Request = None):
+    def post_sale(self, req: Request, member_id: int, items):
         """
         Deprecated for v20, use v30 instead.
         """
@@ -712,8 +589,8 @@ class ApiV20(ApiBase):
         # If the number of retries is exceeded, return a response with an error code
         return Response(data={"error": "Request timeout"}, status=status.HTTP_408_REQUEST_TIMEOUT)
 
-    def _member_username_to_id(self, username: str) -> int:
-        res = self.list_members(extra_params={'username': username})
+    def _member_username_to_id(self, req: Request, username: str) -> int:
+        res = self.list_members(req=req, extra_params={'username': username})
 
         if status.is_success(res.status_code):  # Request is ok
 
