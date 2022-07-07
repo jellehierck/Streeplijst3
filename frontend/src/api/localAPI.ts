@@ -208,11 +208,12 @@ export const postSale = (sale : SalePostType) : Promise<SaleInvoiceType> => {
 export type SaleInvoiceFilterType = {
   username? : string[]
   member_id? : number[]
-  invoice_status? : string
-  invoice_type? : string
+  invoice_status? : "concept" | "open" | "pending_payment" | "late" | "reminded" | "paid" | "uncollectible"
+  invoice_type? : "credit" | "debit" | "is_credited" | "is_not_credited" | "overpaid" | "suppressed"
   period_filter? : string
   product_offer_id? : number[]
   order? : string
+  category? : "contribution" | "event_participation" | "planning" | "rental" | "webshop"
 }
 
 /**
@@ -223,7 +224,8 @@ export type SaleInvoiceFilterType = {
 export const getSalesByUsername = (username : string, filters? : SaleInvoiceFilterType) : Promise<SaleInvoiceType[]> => {
   return request<SaleInvoiceType[]>({
     url: "/sales/" + username,
-    data: filters,
+    // data: filters,
+    params: filters,
   });
 };
 

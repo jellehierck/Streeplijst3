@@ -150,7 +150,7 @@ const APIContextProvider : React.FC = (props) => {
   // Make the query
   const saleInvoicesRes = useSalesByUsername(
     currUsername,
-    {},  // No filters applied for now (could possibly change in the future?
+    {category: "webshop"},  // No filters applied for now (could possibly change in the future?
     {onError: onSalesByUsernameError},
     {enabled: false},
   );
