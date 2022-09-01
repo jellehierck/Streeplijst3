@@ -238,7 +238,7 @@ test(`if posting multiple sales of different test products for the testUser is s
 
 test(`if getting the previous sales for the test user is successful`, () => {
   // return getSalesByUsername(testMember.username)
-  return getSalesByUsername("s1779397")
+  return getSalesByUsername("s1779397", {category: "webshop"})
     .then(data => {
       expect(data).toEqual(  // Expect an object which is...
         expect.arrayContaining([  // an array that contains...

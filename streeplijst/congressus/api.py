@@ -20,7 +20,7 @@ from streeplijst.congressus.logging import log_local_request_response, log_congr
 class ApiV30(ApiBase):
     API_VERSION = 'v30'
 
-    DEFAULT_INVOICE_TYPE = "webshop"
+    DEFAULT_INVOICE_CATEGORY = "webshop"
     DEFAULT_INVOICE_PERIOD_FILTER = datetime.timedelta(weeks=52)  # Default a year back
 
     @property
@@ -91,17 +91,16 @@ class ApiV30(ApiBase):
 
     @log_local_request_response
     def get_sales(self, req: Request, usernames: list[str] = None, member_ids: list[int] = None,
-                  invoice_status: str = None,
-                  invoice_type: str = None, period_filter: str = None, product_offer_id: list[str] = None,
-                  order: str = None) -> Response:
+                  invoice_status: str = None, invoice_type: str = None, period_filter: str = None,
+                  product_offer_id: list[str] = None, category: str = None, order: str = None) -> Response:
         if usernames:  # If usernames are given, iterate all usernames and convert them to member IDs
             for username in usernames:
                 id, _ = self._member_username_to_id(username)  # Get user ID from username
                 if id != 0:  # If the username search did not yield a user ID (ID is set to zero), ignore it
                     member_ids.append(id)
 
-        if not invoice_type:  # If invoice type is not given, use the default
-            invoice_type = self.DEFAULT_INVOICE_TYPE
+        if not category:  # If invoice category is not given, use the default
+            category = self.DEFAULT_INVOICE_CATEGORY
 
         if not period_filter:  # If the period is not given, use the default
             curr_date = datetime.date.today()  # Get current date
@@ -110,7 +109,20 @@ class ApiV30(ApiBase):
 
         params = dict()  # Create a parameters dict to hold all request parameters
         if req:  # If a request was passed in, initialize params with the request data
-            params = req.query_params.copy()  # Copy the existing params to a mutable copy
+            for key, value in req.query_params.items():  # Copy all items in the parameters
+                params[key] = value
+            # params = req.query_params.copy()  # Copy the existing params to a mutable copy
+
+        # TODO: Prevent the praams QueryDict from making each parameter a list instead of just the value
+
+        # params.setdefault("member_id", member_ids)
+        # params.setdefault("invoice_status", invoice_status)
+        # params.setdefault("invoice_type", invoice_type)
+        # params.setdefault("period_filter", period_filter)
+        # params.setdefault("invoice_status", invoice_status)
+        # params.setdefault("product_offer_id", product_offer_id)
+        # params.setdefault("order", order)
+        # params.setdefault("category", category)
 
         params.update({  # Store additional request parameters in the format required by Congressus
             "member_id": member_ids,  # User ids (not usernames)
@@ -118,7 +130,8 @@ class ApiV30(ApiBase):
             "invoice_type": invoice_type,  # Type of invoice
             "period_filter": period_filter,  # Period filter to request
             "product_offer_id": product_offer_id,  # List of items
-            "order": order
+            "order": order,
+            "category": category
         })
 
         # Make request
@@ -135,19 +148,20 @@ class ApiV30(ApiBase):
 
     @log_local_request_response
     def get_sales_by_username(self, req: Request, username: str, invoice_status: str = None, invoice_type: str = None,
-                              period_filter: str = None, product_offer_id: list[str] = None,
+                              period_filter: str = None, product_offer_id: list[str] = None, category: str = None,
                               order: str = None) -> Response:
         member_id, member_id_res = self._member_username_to_id(username)  # First convert username to member ID
 
         return self.get_sales(member_ids=[member_id], invoice_status=invoice_status, invoice_type=invoice_type,
-                              period_filter=period_filter, product_offer_id=product_offer_id, order=order, req=req)
+                              period_filter=period_filter, product_offer_id=product_offer_id, order=order,
+                              category=category, req=req)
 
     @log_local_request_response
     def post_sale(self, req: Request, member_id: int, items: list[dict[str, ...]]) -> Response:
         payload = {  # Store the sales parameters in the format required by Congressus
             "member_id": member_id,  # User id (not username)
             "items": items,  # List of items
-            "invoice_type": self.DEFAULT_INVOICE_TYPE  # Type of invoice so we can filter
+            "invoice_type": self.DEFAULT_INVOICE_CATEGORY  # Type of invoice so we can filter
         }
         res = self._congressus_api_call_single(method='post',
                                                url_endpoint='/sale-invoices',

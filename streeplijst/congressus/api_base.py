@@ -88,7 +88,7 @@ class ApiBase:
 
     @abc.abstractmethod
     def get_sales_by_username(self, req: Request, username: str, invoice_status: str = None, invoice_type: str = None,
-                              period_filter: str = None, product_offer_id: list[str] = None,
+                              period_filter: str = None, product_offer_id: list[str] = None, category: str = None,
                               order: str = None) -> Response:
         """
         Get sales for a specific user.
@@ -105,9 +105,8 @@ class ApiBase:
 
     @abc.abstractmethod
     def get_sales(self, req: Request, usernames: list[str] = None, member_ids: list[int] = None,
-                  invoice_status: str = None,
-                  invoice_type: str = None, period_filter: str = None, product_offer_id: list[str] = None,
-                  order: str = None) -> Response:
+                  invoice_status: str = None, invoice_type: str = None, period_filter: str = None,
+                  product_offer_id: list[str] = None, category: str = None, order: str = None) -> Response:
         """
         Get sales with some parameters. If a user is searched by username but is not found, sales will not be obtained
         for that user.
@@ -115,9 +114,10 @@ class ApiBase:
         :param usernames: List of usernames to filter by user
         :param member_ids: List of member IDs to filter by user
         :param invoice_status: Filter by invoice status string
-        :param invoice_type: Filter by invoice type, defaults to "webshop"
+        :param invoice_type: Filter by invoice type, basically its status
         :param product_offer_id: Filter by product based on product_offer_id
         :param period_filter: Filter by period, defaults to 1 year back
+        :param category: Filter by invoice category, should probably be "webshop"
         :param order: Optional order string
         :param req: Original request (not used currently)
         """
