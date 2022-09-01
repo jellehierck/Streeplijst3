@@ -40,6 +40,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'rest_framework',
     'streeplijst.apps.StreeplijstConfig',
+    'nfc_reader.apps.NfcReaderConfig',
     'frontend',
     'corsheaders'
 ]
