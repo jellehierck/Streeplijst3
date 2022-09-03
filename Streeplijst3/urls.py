@@ -19,5 +19,6 @@ from django.urls import path, include
 urlpatterns = [
     path('', include('frontend.urls')),
     path('streeplijst/', include('streeplijst.urls')),
+    path('nfc/', include('nfc_reader.urls')),
     path('admin/', admin.site.urls),
 ]
