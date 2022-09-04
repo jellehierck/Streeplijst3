@@ -1,10 +1,8 @@
-from threading import Thread
 from typing import Optional
 
 import smartcard.System
 from smartcard.ATR import ATR
 from smartcard.CardConnection import CardConnection
-from smartcard.CardRequest import CardRequest
 from smartcard.Exceptions import NoCardException, NoReadersException
 from smartcard.reader import Reader
 from smartcard.util import toHexString
@@ -273,40 +271,3 @@ class Acr122u:
     def print_sw1_sw2(sw1, sw2):
         print(f"sw1 : {sw1} {hex(sw1)}\n"
               f"sw2 : {sw2} {hex(sw2)}")
-
-
-class Acr122uWaitingThread(Thread, Acr122u):
-    def __init__(self) -> None:
-        super().__init__(name="ACR122U", daemon=True)
-        # self.reader = Acr122u(connect=False)
-
-    def run(self) -> None:
-        print(f"Starting {self.name}")
-
-        # TODO: Handle case in which reader is not connected yet or is disconnected
-
-        while True:
-            print("Waiting for next card")
-            card_request = CardRequest(newcardonly=True,  # Only accept a card which is not already on the reader
-                                       # readers=[self.reader],
-                                       timeout=None)
-            try:
-                card_service = card_request.waitforcard()  # Wait  until a card is detected
-                self.connection: CardConnection = card_service.connection  # Store the connection
-                self.connection.connect()  # Establish connection
-
-                print(f"Card read from {self.connection.getReader()}, "
-                      f"ATR: {toHexString(self.connection.getATR())}, "
-                      f"uid: {toHexString(self.get_uid())}")
-
-                self.connection.disconnect()  # Disconnect from the card again
-
-            except NoCardException as e:
-                print("Card removed unexpectedly")
-                raise e
-
-
-if __name__ == '__main__':
-    nfc_waiting_service = Acr122uWaitingThread()
-    nfc_waiting_service.start()
-    nfc_waiting_service.join()
