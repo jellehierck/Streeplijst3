@@ -255,18 +255,12 @@ class Acr122u:
         """
         self.led_control(0b0101_0001, 1, 1, 3, 0x1)
 
-    def led_blink_once(self) -> None:
-        """
-        Blink once.
-        """
-        self.led_control(0b0101_0001, 1, 1, 1, 0x0)
-
     def enable_buzzer_on_card_detect(self) -> None:
-        """Enables the buzzer sound on detection of card."""
+        """Enables the buzzer sound on detection of card. Only works when a card is connected."""
         self.buzzer_sound(0xFF)
 
     def disable_buzzer_on_card_detect(self) -> None:
-        """Disables the buzzer sound on detection of card."""
+        """Disables the buzzer sound on detection of card. Only works when a card is connected."""
         self.buzzer_sound(0x00)
 
     @staticmethod
@@ -301,7 +295,6 @@ class Acr122uWaitingThread(Thread, Acr122u):
                 self.connection: CardConnection = card_service.connection  # Store the connection
                 self.connection.connect()  # Establish connection
 
-                self.disable_buzzer_on_card_detect()
                 print(f"Card read from {self.connection.getReader()}, "
                       f"ATR: {toHexString(self.connection.getATR())}, "
                       f"uid: {toHexString(self.get_uid())}")
