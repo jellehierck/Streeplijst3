@@ -61,7 +61,13 @@ def all_nfc_cards(req: Request) -> Response:
 
 @api_view(['GET'])
 def last_connected_card(req: Request) -> Response:
-    """Get the last connected card if """
+    """
+    Get the last connected card. Takes a querystring called "seconds" to only return a card if it is at most that many
+    seconds old.
+
+    Returns a 404 error if no card was ever added to the reader since startup, or if the last card added to the reader
+    is older than seconds.
+    """
     query_params = req.query_params
     seconds: Optional[int] = query_params.get("seconds", None)  # Extract the seconds from querystring, default to None
     if seconds is not None:  # If seconds was passed, convert it to an integer
