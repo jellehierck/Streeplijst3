@@ -228,6 +228,7 @@ class LastConnectedCardTest(APITestCase):
         self.assertEqual(LastConnectedCard.objects.get().connected, card1_connected)
 
     def test_was_connected_recently(self) -> None:
+        """Ensure that the was_connected_recently method works when passing time"""
         # Set a specific time to freeze so we can emulate passing time in a unit test with freezegun library
         set_time = DateTime(year=2022, month=9, day=5, hour=17, minute=0, second=0, tzinfo=TimeZone.utc)
         with freeze_time(set_time) as frozen_time:  # Freeze time, all calls to .now() return the set_time
@@ -242,3 +243,18 @@ class LastConnectedCardTest(APITestCase):
             card2 = LastConnectedCard(card_uid=TestData.test_card_uid2)
             card2.save()
             self.assertTrue(LastConnectedCard.objects.get().was_connected_recently(seconds=10))
+
+    def test_was_connected_recently_none(self) -> None:
+        """Ensure that the was_connected_recently method always returns True if None is passed"""
+        # Set a specific time to freeze so we can emulate passing time in a unit test with freezegun library
+        set_time = DateTime(year=2022, month=9, day=5, hour=17, minute=0, second=0, tzinfo=TimeZone.utc)
+        with freeze_time(set_time) as frozen_time:  # Freeze time, all calls to .now() return the set_time
+            # Add card 1
+            card = LastConnectedCard(card_uid=TestData.test_card_uid1)
+            card.save()
+            self.assertTrue(LastConnectedCard.objects.get().was_connected_recently(seconds=10))
+            self.assertTrue(LastConnectedCard.objects.get().was_connected_recently(seconds=None))
+
+            frozen_time.move_to(set_time + TimeDelta(seconds=15))  # Move time forward 15 seconds
+            self.assertFalse(LastConnectedCard.objects.get().was_connected_recently(seconds=10))
+            self.assertTrue(LastConnectedCard.objects.get().was_connected_recently(seconds=None))

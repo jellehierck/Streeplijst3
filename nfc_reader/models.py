@@ -1,4 +1,5 @@
 from datetime import datetime as DateTime, timedelta as TimeDelta, timezone as TimeZone  # Rename to python-like classes
+from typing import Optional
 
 from django.db import models
 
@@ -41,14 +42,17 @@ class LastConnectedCard(models.Model):
         self.currently_connected = False
         self.save()
 
-    def was_connected_recently(self, seconds: int = 10) -> bool:
+    def was_connected_recently(self, seconds: Optional[int] = 10) -> bool:
         """
         Whether the card was connected recently.
 
-        :param seconds: How many seconds is considered recent
+        :param seconds: How many seconds is considered recent. If None is passed, this method always returns True
         """
-        now = DateTime.now(tz=TimeZone.utc)
-        return self.connected + TimeDelta(seconds=seconds) >= now
+        if seconds is None:
+            return True
+        else:
+            now = DateTime.now(tz=TimeZone.utc)
+            return self.connected + TimeDelta(seconds=seconds) >= now
 
     def __str__(self) -> str:
         connected_str = "connected" if self.currently_connected else "not connected"
