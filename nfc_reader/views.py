@@ -1,10 +1,12 @@
+from typing import Optional
+
 from rest_framework import status
 from rest_framework.decorators import api_view
 from rest_framework.request import Request
 from rest_framework.response import Response
 
-from nfc_reader.models import UserNfcCard
-from nfc_reader.serializers import UserNfcCardSerializer
+from nfc_reader.models import UserNfcCard, LastConnectedCard
+from nfc_reader.serializers import UserNfcCardSerializer, LastConnectedCardSerializer
 
 
 @api_view(['GET', 'POST', 'DELETE'])
@@ -55,3 +57,23 @@ def all_nfc_cards(req: Request) -> Response:
     all_user_nfc_cards = UserNfcCard.objects.all()
     all_user_nfc_card_serializer = UserNfcCardSerializer(all_user_nfc_cards, many=True)
     return Response(data=all_user_nfc_card_serializer.data, status=200)
+
+
+@api_view(['GET'])
+def last_connected_card(req: Request) -> Response:
+    """Get the last connected card if """
+    query_params = req.query_params
+    seconds: Optional[int] = query_params.get("seconds", None)  # Extract the seconds from querystring, default to None
+    if seconds is not None:  # If seconds was passed, convert it to an integer
+        seconds = int(seconds)
+    try:
+        last_card = LastConnectedCard.objects.get()
+        if last_card.was_connected_recently(seconds=seconds):  # If card was connected recently, return the card
+            last_card_serializer = LastConnectedCardSerializer(last_card)
+            return Response(data=last_card_serializer.data, status=status.HTTP_200_OK)
+
+    except LastConnectedCard.DoesNotExist:  # If no card was connected yet, move to the return statement
+        pass
+
+    # If no cards are connected yet or the last card was not connected recently, return an error
+    return Response(status=status.HTTP_404_NOT_FOUND)

@@ -258,3 +258,42 @@ class LastConnectedCardTest(APITestCase):
             frozen_time.move_to(set_time + TimeDelta(seconds=15))  # Move time forward 15 seconds
             self.assertFalse(LastConnectedCard.objects.get().was_connected_recently(seconds=10))
             self.assertTrue(LastConnectedCard.objects.get().was_connected_recently(seconds=None))
+
+    def test_get_last_connected_card(self) -> None:
+        """Ensure that getting the last connected card from the API works without seconds query parameter"""
+        card = LastConnectedCard(card_uid=TestData.test_card_uid1)
+        card.save()
+
+        url = f"{reverse('nfc:last-connected-card')}"
+        response = self.client.get(path=url)
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data["card_uid"], TestData.test_card_uid1)
+        self.assertTrue(response.data["currently_connected"])
+        self.assertNotIn("id", response.data)  # Ensure ID is not sent since that information is irrelevant
+
+    def test_get_last_connected_card_seconds(self) -> None:
+        """Ensure that getting the last connected card from the API works without seconds query parameter"""
+        # Set a specific time to freeze so we can emulate passing time in a unit test with freezegun library
+        set_time = DateTime(year=2022, month=9, day=5, hour=17, minute=0, second=0, tzinfo=TimeZone.utc)
+        with freeze_time(set_time) as frozen_time:  # Freeze time, all calls to .now() return the set_time
+            # Add card 1
+            card = LastConnectedCard(card_uid=TestData.test_card_uid1)
+            card.save()
+
+            # Get the last connected card within 10 seconds
+            url_10 = f"{reverse('nfc:last-connected-card')}?seconds={10}"
+            response = self.client.get(path=url_10)
+            self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+            frozen_time.move_to(set_time + TimeDelta(seconds=15))  # Move time forward 15 seconds
+
+            response = self.client.get(path=url_10)  # The card should be too old now
+            self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+    def test_get_last_connected_card_error(self) -> None:
+        """Ensure that getting a card when no recent card is stored in the database returns an error"""
+        url = f"{reverse('nfc:last-connected-card')}"
+        response = self.client.get(path=url)  # Get the card without storing a card in the database first
+
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
