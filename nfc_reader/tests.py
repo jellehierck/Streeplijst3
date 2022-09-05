@@ -1,11 +1,13 @@
+import functools
+import logging
+from datetime import datetime as DateTime, timedelta as TimeDelta, timezone as TimeZone
+
 from django.urls import reverse
+from freezegun import freeze_time
 from rest_framework import status
 from rest_framework.test import APITestCase
 
-from nfc_reader.models import UserNfcCard
-
-import logging
-import functools
+from nfc_reader.models import UserNfcCard, LastConnectedCard
 
 
 def prevent_request_warnings(original_function):
@@ -175,3 +177,68 @@ class NfcTests(APITestCase):
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(response.data), 2)
+
+
+class LastConnectedCardTest(APITestCase):
+    def test_create(self) -> None:
+        """Ensure that creating a last connected card works"""
+        card = LastConnectedCard(card_uid=TestData.test_card_uid1)
+        card.save()
+        self.assertEqual(LastConnectedCard.objects.count(), 1)
+        self.assertEqual(LastConnectedCard.objects.get().card_uid, TestData.test_card_uid1)
+        self.assertEqual(LastConnectedCard.objects.get().currently_connected, True)
+
+    def test_overwrite(self) -> None:
+        """Ensure that creating a last connected card replaces the existing card so there is one row in the database"""
+        # Add card 1
+        card = LastConnectedCard(card_uid=TestData.test_card_uid1)
+        card.save()
+        card1_connected = card.connected.replace(tzinfo=TimeZone.utc)  # Store current time with correct timezone
+
+        self.assertEqual(LastConnectedCard.objects.count(), 1)
+        self.assertEqual(LastConnectedCard.objects.get().card_uid, TestData.test_card_uid1)
+        self.assertEqual(LastConnectedCard.objects.get().currently_connected, True)
+        # Ensure they have the same DateTime as the stored card (disregard timezone)
+        self.assertEqual(LastConnectedCard.objects.get().connected, card1_connected)
+
+        # Add card 2 which should overwrite card 1
+        card = LastConnectedCard(card_uid=TestData.test_card_uid2)
+        card.save()
+        self.assertEqual(LastConnectedCard.objects.count(), 1)
+        self.assertEqual(LastConnectedCard.objects.get().card_uid, TestData.test_card_uid2)
+        self.assertEqual(LastConnectedCard.objects.get().currently_connected, True)
+        # Ensure they have different DateTime as the stored card
+        self.assertNotEqual(LastConnectedCard.objects.get().connected, card1_connected)
+
+    def test_delete(self) -> None:
+        """Ensure the delete function does not actually delete a card but changes currently_connected instead"""
+        # Add card 1
+        card = LastConnectedCard(card_uid=TestData.test_card_uid1)
+        card.save()
+        card1_connected = card.connected.replace(tzinfo=TimeZone.utc)  # Store current time with correct timezone
+        self.assertEqual(LastConnectedCard.objects.count(), 1)
+        self.assertEqual(LastConnectedCard.objects.get().card_uid, TestData.test_card_uid1)
+        self.assertEqual(LastConnectedCard.objects.get().currently_connected, True)
+
+        card.delete()
+        self.assertEqual(LastConnectedCard.objects.count(), 1)
+        self.assertEqual(LastConnectedCard.objects.get().card_uid, TestData.test_card_uid1)
+        self.assertEqual(LastConnectedCard.objects.get().currently_connected, False)
+        # Ensure that the connected DateTime did not change
+        self.assertEqual(LastConnectedCard.objects.get().connected, card1_connected)
+
+    def test_was_connected_recently(self) -> None:
+        # Set a specific time to freeze so we can emulate passing time in a unit test with freezegun library
+        set_time = DateTime(year=2022, month=9, day=5, hour=17, minute=0, second=0, tzinfo=TimeZone.utc)
+        with freeze_time(set_time) as frozen_time:  # Freeze time, all calls to .now() return the set_time
+            # Add card 1
+            card = LastConnectedCard(card_uid=TestData.test_card_uid1)
+            card.save()
+            self.assertTrue(LastConnectedCard.objects.get().was_connected_recently(seconds=10))
+            frozen_time.move_to(set_time + TimeDelta(seconds=15))  # Move time forward 15 seconds
+            self.assertFalse(LastConnectedCard.objects.get().was_connected_recently(seconds=10))
+
+            # Add new card which should update the card connected to the current time
+            card2 = LastConnectedCard(card_uid=TestData.test_card_uid2)
+            card2.save()
+            self.assertTrue(LastConnectedCard.objects.get().was_connected_recently(seconds=10))

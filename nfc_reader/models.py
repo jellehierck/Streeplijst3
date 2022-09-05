@@ -1,4 +1,4 @@
-from datetime import datetime as DateTime, timedelta as TimeDelta  # Rename to more python-like capitalization
+from datetime import datetime as DateTime, timedelta as TimeDelta, timezone as TimeZone  # Rename to python-like classes
 
 from django.db import models
 
@@ -21,7 +21,7 @@ class LastConnectedCard(models.Model):
     """
     card_uid = models.CharField(max_length=20)  # Card UID stored as hex, e.g. "00 00 00 00 00 00 00"
     currently_connected = models.BooleanField(default=True)  # Whether the card is currently connected
-    connected = models.DateTimeField(auto_now_add=True)  # When this card was connected
+    connected = models.DateTimeField()  # When this card was connected
 
     def save(self, *args, **kwargs) -> None:
         """
@@ -29,6 +29,8 @@ class LastConnectedCard(models.Model):
         Based on: https://stackoverflow.com/a/60274685
         """
         self.pk = 1  # Ensures every saved card always overwrites any previous card due to having the same primary key
+        if self._state.adding is True:  # Only set the connected timestamp when a new card is connected, not for update
+            self.connected = DateTime.now()
         super().save(*args, **kwargs)
 
     def delete(self, using=None, keep_parents=False) -> None:
@@ -37,6 +39,7 @@ class LastConnectedCard(models.Model):
         currently_connected flag to False.
         """
         self.currently_connected = False
+        self.save()
 
     def was_connected_recently(self, seconds: int = 10) -> bool:
         """
@@ -44,8 +47,8 @@ class LastConnectedCard(models.Model):
 
         :param seconds: How many seconds is considered recent
         """
-        now = DateTime.now()
-        return self.connected < (now - TimeDelta(seconds=seconds))
+        now = DateTime.now(tz=TimeZone.utc)
+        return self.connected + TimeDelta(seconds=seconds) >= now
 
     def __str__(self) -> str:
         connected_str = "connected" if self.currently_connected else "not connected"
