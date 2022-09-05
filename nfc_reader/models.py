@@ -1,3 +1,5 @@
+from datetime import datetime as DateTime, timedelta as TimeDelta  # Rename to more python-like capitalization
+
 from django.db import models
 
 
@@ -35,6 +37,15 @@ class LastConnectedCard(models.Model):
         currently_connected flag to False.
         """
         self.currently_connected = False
+
+    def was_connected_recently(self, seconds: int = 10) -> bool:
+        """
+        Whether the card was connected recently.
+
+        :param seconds: How many seconds is considered recent
+        """
+        now = DateTime.now()
+        return self.connected < (now - TimeDelta(seconds=seconds))
 
     def __str__(self) -> str:
         connected_str = "connected" if self.currently_connected else "not connected"
