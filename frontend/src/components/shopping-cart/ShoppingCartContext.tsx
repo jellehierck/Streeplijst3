@@ -164,8 +164,12 @@ export const useShoppingCart = () : ShoppingCartContextType => {
   return React.useContext(ShoppingCartContext);
 };
 
+type ShoppingCartContextProps = {
+  children? : React.ReactNode
+};
+
 // Shopping cart context provider, exposes shopping cart information and functions
-export const ShoppingCartContextProvider : React.FC = (props) => {
+export const ShoppingCartContextProvider : React.FC<ShoppingCartContextProps> = (props) => {
   const [items, cartItemsDispatch] = React.useReducer<React.Reducer<ShoppingCartStateType, ShoppingCartActionType>>(ShoppingCartReducer, initialShoppingCartState);
 
   const add = (product : ProductType, quantity : number = 1) : void => {

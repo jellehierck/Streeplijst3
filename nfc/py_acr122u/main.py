@@ -1,4 +1,4 @@
-from nfc_reader.py_acr122u.acr122u import Acr122u
+from nfc.py_acr122u.acr122u import Acr122u
 
 if __name__ == '__main__':
     reader = Acr122u(connect=True)

@@ -7,9 +7,9 @@ from smartcard.Exceptions import NoCardException, NoReadersException
 from smartcard.reader import Reader
 from smartcard.util import toHexString
 
-from nfc_reader.py_acr122u.error import InstructionFailedError, OptionOutOfRangeError, NotInitializedError
-from nfc_reader.py_acr122u.option import cards, answers, alias, commands
-from nfc_reader.py_acr122u.utils import int_list_to_hexadecimal_list, int_list_to_string_list, replace_arguments
+from nfc.py_acr122u.error import InstructionFailedError, OptionOutOfRangeError, NotInitializedError
+from nfc.py_acr122u.option import cards, answers, alias, commands
+from nfc.py_acr122u.utils import int_list_to_hexadecimal_list, int_list_to_string_list, replace_arguments
 
 
 class Acr122u:

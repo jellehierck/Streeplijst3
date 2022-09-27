@@ -3,6 +3,7 @@ import { Col, Container, Row } from "react-bootstrap";
 
 // Props type
 type ContentContainerProps = {
+  children? : React.ReactNode,
   sidebarContent? : JSX.Element
 }
 

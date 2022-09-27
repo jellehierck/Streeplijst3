@@ -4,8 +4,8 @@
  */
 import React, { createContext, useContext, useEffect } from "react";
 import { UseQueryResult } from "react-query";
-import { FolderType, LocalAPIError, MemberType } from "../../api/localAPI";
-import { useFolders, useMemberByUsername } from "../../api/localAPIHooks";
+import { LocalAPIError, MemberType } from "../../api/localAPI";
+import { useMemberByUsername } from "../../api/localAPIHooks";
 import { useAlert } from "../alert/AlertContext";
 import { timeoutAlert, unknownErrorAlert, usernameNotFoundAlert } from "../alert/standardAlerts";
 
@@ -44,8 +44,12 @@ export const useAuth = () : AuthContextType => {
   return useContext(AuthContext);
 };
 
+type AuthContextProps = {
+  children? : React.ReactNode
+};
+
 // AuthContext provider
-export const AuthContextProvider : React.FC = (props) => {
+export const AuthContextProvider : React.FC<AuthContextProps> = (props) => {
   const alert = useAlert();  // Alert context, used to display an error message on a failed login attempt
 
   const [loggedInMember, setLoggedInMember] = React.useState<MemberType | null>(null);
@@ -55,7 +59,7 @@ export const AuthContextProvider : React.FC = (props) => {
   const onMemberSuccess = (data : MemberType, username : string) : void => {
     setLoggedInMember(data); // Set user as logged in
     alert.hide(); // Remove any current alerts
-    // setUsername("");  // Reset the username
+    setUsername("");  // Reset the username
   };
 
   // When the function has an error, display the error
@@ -77,7 +81,7 @@ export const AuthContextProvider : React.FC = (props) => {
   // Query the member based on the username state (set by login function) and disabled by default
   const memberRes = useMemberByUsername(username,
     {
-      onSuccess: onMemberSuccess,
+      // onSuccess: onMemberSuccess,
       onError: onMemberError,
     },
     {
@@ -86,6 +90,13 @@ export const AuthContextProvider : React.FC = (props) => {
       cacheTime: 0,
     },
   );
+
+  if (memberRes.isSuccess) {
+    if (loggedInMember !== memberRes.data) {
+      setLoggedInMember(memberRes.data); // Set user as logged in
+      alert.hide(); // Remove any current alerts
+    }
+  }
 
   // When there is data in the member query result, log in a member
   // if (memberRes.data) {
@@ -99,13 +110,13 @@ export const AuthContextProvider : React.FC = (props) => {
   // updated username value.
   useEffect(() => {
     if (username) {
-      memberRes.refetch({cancelRefetch: true}); // Refetch again while canceling any previous requests
+      // memberRes.refetch({cancelRefetch: true}); // Refetch again while canceling any previous requests
+      memberRes.refetch(); // Refetch again while canceling any previous requests
     }
   }, [username]);
 
   // Login function to log a user in
   const login = (username : string) => {
-    // setLoggedInMember(null);  // Set the user to null to log it out
     setUsername(username);
   };
 
@@ -113,7 +124,8 @@ export const AuthContextProvider : React.FC = (props) => {
   const logout = () : void => {
     setUsername("");
     setLoggedInMember(null);  // Set the user to null to log it out
-    memberRes.remove();  // Remove query to cancel any current requests
+    // memberRes.remove();  // Remove query to cancel any current requests TODO: removed because this would invalidate
+    // cache
   };
 
   return (

@@ -7,7 +7,7 @@ from smartcard.CardConnection import CardConnection
 from smartcard.CardMonitoring import CardObserver, CardMonitor
 from smartcard.util import toHexString
 
-from nfc_reader.models import LastConnectedCard
+from nfc.models import LastConnectedCard
 
 GET_UID = [0xFF, 0xCA, 0x00, 0x00, 0x00]
 """Command to get card uid"""
@@ -58,4 +58,4 @@ class Acr122uWaitingThread(Thread):
         self.card_monitor.addObserver(self.card_observer)  # Start observing card insertion/removal
 
         while True:  # Loop forever
-            sleep(10)  # Sleep for some time since this thread does nothing anymore, uses almost no CPU this way
+            sleep(10)  # Sleep for some time since this thread does nothing anymore, uses almost noviews.py CPU this way

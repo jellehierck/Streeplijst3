@@ -6,7 +6,8 @@ import streeplijstConfig from "../../streeplijst/streeplijstConfig";
 import ItemCard from "../products/ItemCard";
 
 type SaleSummaryCardProps = {
-  productSummary : ProductSummaryType
+  productSummary : ProductSummaryType,
+  children? : React.ReactNode
 }
 
 // React component

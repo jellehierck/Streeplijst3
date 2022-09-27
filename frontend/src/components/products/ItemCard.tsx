@@ -6,6 +6,7 @@ type BaseCardProps = {
   media? : string | null
   onClick? : VoidFunction
   small? : boolean  // When true, less padding is added
+  children? : React.ReactNode
 }
 
 /**

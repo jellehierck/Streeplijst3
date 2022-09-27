@@ -1,21 +1,20 @@
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import React from "react";
+import Button from "react-bootstrap/Button";
 
 import Col from "react-bootstrap/Col";
 import Row from "react-bootstrap/Row";
-import Button from "react-bootstrap/Button";
 import Stack from "react-bootstrap/Stack";
 
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import LocalAPIRequestButton from "../../api/LocalAPIRequestButton";
 
 import useEventListener from "../../hooks/useEventListener";
 
 import { useAuth } from "../auth/AuthContext";
-import { SNumberAction, SNumberContextProvider, useSNumber } from "./SNumberContext";
-
-import LocalAPIRequestButton from "../../api/LocalAPIRequestButton";
-import SNumberPadButton from "./SNumberPadButton";
+import { SNumberAction, useSNumber } from "./SNumberContext";
 
 import "./SNumberPad.css";
+import SNumberPadButton from "./SNumberPadButton";
 
 // Props sent to SNumberPadFrame
 type SNumberPadFrameProps = {
@@ -96,7 +95,7 @@ const SNumberPadFrame : React.FC<SNumberPadFrameProps> = (props) => {
         <LocalAPIRequestButton variant="success"
                                className="numpad-btn"
                                onClick={onSubmit}
-                               loading={auth.memberRes.isFetching}>
+                               loading={auth.memberRes.isLoading}>
           <h3 className="text-reset">
             <FontAwesomeIcon icon={["fas", "paper-plane"]} />
           </h3>

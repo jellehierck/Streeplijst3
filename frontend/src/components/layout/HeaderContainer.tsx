@@ -1,7 +1,9 @@
 import React from "react";
 import { Container } from "react-bootstrap";
 
-type HeaderContainerProps = {}
+type HeaderContainerProps = {
+  children? : React.ReactNode
+}
 
 /**
  * Container for the header of the page

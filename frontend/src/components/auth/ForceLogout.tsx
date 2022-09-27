@@ -1,7 +1,9 @@
 import React, { useEffect } from "react";
 import { useAuth } from "./AuthContext";
 
-type ForceLogoutProps = {}
+type ForceLogoutProps = {
+  children? : React.ReactNode
+}
 
 // Forces logout when the wrapped children are mounted
 const ForceLogout : React.FC<ForceLogoutProps> = (props) => {

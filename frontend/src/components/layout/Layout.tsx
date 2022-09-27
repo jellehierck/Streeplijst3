@@ -6,6 +6,7 @@ import HeaderContainer from "./HeaderContainer";
 
 // Props for the layout
 type LayoutProps = {
+  children? : React.ReactNode
   headerContent? : JSX.Element
   footerContent? : JSX.Element
 }

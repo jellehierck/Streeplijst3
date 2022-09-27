@@ -7,7 +7,9 @@ import ItemCardGrid from "../products/ItemCardGrid";
 import ProductCard from "../products/ProductCard";
 import ShoppingCart from "../shopping-cart/ShoppingCart";
 
-type FolderProductsProps = {}
+type FolderProductsProps = {
+  children? : React.ReactNode
+}
 
 // Parameter for the
 type FolderIdType = {
@@ -33,7 +35,7 @@ const FolderProducts : React.FC<FolderProductsProps> = (props) => {
     if (productsRes.error) {  // Some error occurred
       return <ContentContainer sidebarContent={<ShoppingCart />}>
         <div>{`Error while getting products in folder with ID ${folderId}`}</div>
-        <div>{productsRes.error}</div>
+        <div>{productsRes.error.rawError}</div>
       </ContentContainer>;
     }
 

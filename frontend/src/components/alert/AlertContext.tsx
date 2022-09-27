@@ -32,8 +32,12 @@ const useAlert = () => {
   return useContext(AlertContext);
 };
 
+type AlertContextProps = {
+  children? : React.ReactNode
+};
+
 // React component
-const AlertContextProvider : React.FC = (props) => {
+const AlertContextProvider : React.FC<AlertContextProps> = (props) => {
   const [currAlert, setCurrAlert] = useState(initialAlertState);
 
   /**

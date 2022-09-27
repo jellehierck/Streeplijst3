@@ -1,18 +1,3 @@
-import React from "react";
-
-import { QueryClient, QueryClientProvider } from "react-query";
-import { ReactQueryDevtools } from "react-query/devtools";
-import { BrowserRouter } from "react-router-dom";
-import { APIContextProvider } from "./api/APIContext";
-
-import { AlertContextProvider } from "./components/alert/AlertContext";
-import { AuthContextProvider } from "./components/auth/AuthContext";
-import { ShoppingCartContextProvider } from "./components/shopping-cart/ShoppingCartContext";
-
-import StreeplijstRoutes from "./streeplijst/StreeplijstRoutes";
-
-import QueryTestComponent from "./api/QueryTestComponent";
-
 import { library } from "@fortawesome/fontawesome-svg-core";
 import {
   faBackspace,
@@ -23,6 +8,16 @@ import {
   faShoppingCart,
   faTrash,
 } from "@fortawesome/free-solid-svg-icons";
+import React from "react";
+
+import { QueryClient, QueryClientProvider } from "react-query";
+import { ReactQueryDevtools } from "react-query/devtools";
+import { APIContextProvider } from "./api/APIContext";
+
+import { AlertContextProvider } from "./components/alert/AlertContext";
+import { AuthContextProvider } from "./components/auth/AuthContext";
+import { ShoppingCartContextProvider } from "./components/shopping-cart/ShoppingCartContext";
+import NfcCardOverview from "./nfc/NfcCardOverview";
 
 // Initialize a font-awesome library to use icons easily throughout the project
 // src: https://fontawesome.com/v5.15/how-to-use/on-the-web/using-with/react
@@ -49,9 +44,11 @@ function App() {
 
               {/* <QueryTestComponent /> */}
 
-              <BrowserRouter> {/* react-router-dom base, enables routing */}
-                <StreeplijstRoutes /> {/* The Streeplijst app, TODO: we could also add the Bierstreeplijst here */}
-              </BrowserRouter>
+              <NfcCardOverview />
+
+              {/* <BrowserRouter> /!* react-router-dom base, enables routing *!/ */}
+              {/*   <StreeplijstRoutes /> /!* The Streeplijst app, TODO: we could also add the Bierstreeplijst here *!/ */}
+              {/* </BrowserRouter> */}
             </ShoppingCartContextProvider>
           </APIContextProvider>
         </AuthContextProvider>

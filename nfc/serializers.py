@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from nfc_reader.models import UserNfcCard, LastConnectedCard
+from nfc.models import UserNfcCard, LastConnectedCard
 
 
 class UserNfcCardSerializer(serializers.ModelSerializer):

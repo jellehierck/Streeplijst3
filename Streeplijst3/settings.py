@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/3.2/ref/settings/
 """
 import os
 from pathlib import Path
+
 from dotenv import load_dotenv
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -38,9 +39,10 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'channels',
     'rest_framework',
     'streeplijst.apps.StreeplijstConfig',
-    'nfc_reader.apps.NfcReaderConfig',
+    'nfc.apps.NfcReaderConfig',
     'frontend',
     'corsheaders'
 ]
@@ -76,6 +78,15 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'Streeplijst3.wsgi.application'
+ASGI_APPLICATION = 'Streeplijst3.asgi.application'
+
+# Layer configuration for channels package
+
+CHANNEL_LAYERS = {
+    "default": {
+        "BACKEND": "channels.layers.InMemoryChannelLayer"  # TODO: Change this to production-friendly setting
+    }
+}
 
 # React serve settings
 # https://fractalideas.com/blog/making-react-and-django-play-well-together-single-page-app-model/

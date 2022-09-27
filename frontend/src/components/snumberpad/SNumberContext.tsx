@@ -149,8 +149,12 @@ const useSNumber = () => {
   return React.useContext(SNumberContext);
 };
 
+type SNumberPadContextProps = {
+  children? : React.ReactNode
+};
+
 // User context provider
-const SNumberContextProvider : React.FC = (props) => {
+const SNumberContextProvider : React.FC<SNumberPadContextProps> = (props) => {
   const [sNumber, sNumberDispatch] = React.useReducer<React.Reducer<SNumberType, SNumberActionType>>(sNumberReducer, initialSNumber);
 
   const add = (nr : number) : void => {

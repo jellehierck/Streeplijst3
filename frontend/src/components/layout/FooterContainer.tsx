@@ -1,7 +1,9 @@
 import React from "react";
 import { Container } from "react-bootstrap";
 
-type FooterContainerProps = {}
+type FooterContainerProps = {
+  children? : React.ReactNode
+}
 
 /**
  * Container for the fixed footer of a page

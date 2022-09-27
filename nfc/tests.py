@@ -7,7 +7,7 @@ from freezegun import freeze_time
 from rest_framework import status
 from rest_framework.test import APITestCase
 
-from nfc_reader.models import UserNfcCard, LastConnectedCard
+from nfc.models import UserNfcCard, LastConnectedCard
 
 
 def prevent_request_warnings(original_function):

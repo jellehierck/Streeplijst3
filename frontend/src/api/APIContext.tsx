@@ -1,16 +1,8 @@
 import React, { createContext, useContext, useState } from "react";
 import { UseMutationResult, UseQueryResult } from "react-query";
-import { useNavigate } from "react-router-dom";
 import { useAlert } from "../components/alert/AlertContext";
-import {
-  saleSuccessfulAlert,
-  timeoutAlert,
-  unknownErrorAlert,
-  validationErrorAlert,
-} from "../components/alert/standardAlerts";
-import streeplijstConfig from "../streeplijst/streeplijstConfig";
+import { timeoutAlert, unknownErrorAlert, validationErrorAlert } from "../components/alert/standardAlerts";
 import { FolderType, LocalAPIError, ProductType, SaleInvoiceType, SalePostType } from "./localAPI";
-import { testMember } from "./localAPI.test.data";
 import { useFolders, usePostSale, useProducts, useSalesByUsername } from "./localAPIHooks";
 
 // Default time for which queried data is considered fresh and should not be fetched again (to make the app fast), since
@@ -57,8 +49,13 @@ const useAPI = () : APIContextType => {
   return useContext(APIContext);
 };
 
+
+type APIContextProps = {
+  children? : React.ReactNode
+};
+
 // React component
-const APIContextProvider : React.FC = (props) => {
+const APIContextProvider : React.FC<APIContextProps> = (props) => {
   const alert = useAlert();
 
   /* ---------------------- All folders ---------------------- */

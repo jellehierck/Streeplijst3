@@ -1,12 +1,9 @@
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import React from "react";
-import { Button } from "react-bootstrap";
 import Stack from "react-bootstrap/Stack";
 import { useAPI } from "../../api/APIContext";
-import { testMember } from "../../api/localAPI.test.data";
-import { useSalesByUsername } from "../../api/localAPIHooks";
 import LocalAPIRequestButton from "../../api/LocalAPIRequestButton";
 import { SaleSummaryType } from "../../api/QueryTestComponent";
+import NfcCardOverview from "../../nfc/NfcCardOverview";
 
 import { useAuth } from "../auth/AuthContext";
 import SaleSummariesDropdown from "./SaleSummariesDropdown";
@@ -87,6 +84,7 @@ const UserInformation : React.FC<UserInformationProps> = (props) => {
 
     // Return the component
     return <>
+      <NfcCardOverview />
       <Stack direction="horizontal">
         <h1>Hallo {auth.loggedInMember.first_name}!</h1>
         <div className="mx-auto" />
