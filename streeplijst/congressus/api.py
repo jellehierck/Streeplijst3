@@ -1,20 +1,20 @@
 import datetime
-import os
 import json
-from typing import Tuple
-from deprecated import deprecated
+import os
 from datetime import datetime as DateTime
+from typing import Tuple
 
 import requests
+from deprecated import deprecated
 from rest_framework import status
 from rest_framework.exceptions import APIException
 from rest_framework.request import Request
 from rest_framework.response import Response
 
 from streeplijst.congressus.api_base import ApiBase
-from streeplijst.congressus.utils import extract_keys
 from streeplijst.congressus.config import STREEPLIJST_PARENT_FOLDER_ID, STREEPLIJST_FOLDER_CONFIGURATION
 from streeplijst.congressus.logging import log_local_request_response, log_congressus_request_response
+from streeplijst.congressus.utils import extract_keys
 
 
 class ApiV30(ApiBase):
@@ -115,7 +115,7 @@ class ApiV30(ApiBase):
         params.update({  # Store additional request parameters in the format required by Congressus
             "member_id": member_ids,  # User ids (not usernames)
             "invoice_status": invoice_status,  # Optional filter for invoice status
-            "invoice_type": invoice_type,  # Type of invoice
+            "category": invoice_type,  # Type of invoice
             "period_filter": period_filter,  # Period filter to request
             "product_offer_id": product_offer_id,  # List of items
             "order": order
